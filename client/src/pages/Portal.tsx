@@ -1,48 +1,62 @@
 /**
  * Employee Portal — Main Dashboard
  * NEO AI Chat occupies 55% of the screen (right panel)
- * Left panel: KPI cards + module shortcuts
- * Design: "Neural Depth"
+ * NEO Transaction Engine: 5-stage conversational flow (Intent → Data → Confirm → AMG → Execute)
+ * Design: "Neural Depth" — deep space dark, glass morphism, bioluminescent accents
  */
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Brain, Send, Paperclip, Mic, Users, Database, UserCheck,
+  Brain, Send, Users, Database, UserCheck,
   BarChart3, ShoppingCart, FileCheck, Scale, MessageSquare,
   Shield, ScrollText, TrendingUp, TrendingDown, Activity,
-  Zap, ChevronRight, RefreshCw, Plus
+  Zap, ChevronRight, RefreshCw, Bot, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
+import NEOTransactionFlow from "@/components/NEOTransactionFlow";
+import {
+  detectIntent,
+  createTransaction,
+  getNextQuestion,
+  getNextFieldKey,
+  isDataComplete,
+  checkAMGRequired,
+  buildConfirmMessage,
+  buildExecuteMessage,
+  getAMGMessage,
+  TRANSACTION_DEFINITIONS,
+  TransactionState,
+} from "@/lib/neoTransactionEngine";
 
+// ── Types ─────────────────────────────────────────────────────────────────────
 interface ChatMessage {
   id: number;
   role: "user" | "neo";
   content: string;
   time: string;
   module?: string;
+  transaction?: TransactionState;
+  isTransactionCard?: boolean;
 }
 
-const INITIAL_MESSAGES: ChatMessage[] = [
-  {
-    id: 1, role: "neo",
-    content: "Good morning! I'm **NEO**, your AI Business Management Core. I'm connected to all 12 enterprise modules including Odoo ERP, CRM, HR, QMS, Legal, and Procurement.\n\nHow can I assist you today? You can ask me to:\n- Pull KPI reports across departments\n- Draft a procurement request\n- Check ISO 9001 compliance status\n- Review pending decision approvals\n- Analyze CRM pipeline\n- Or anything else across your enterprise",
-    time: "09:00 AM", module: "Core"
-  }
-];
-
+// ── Static NEO responses ──────────────────────────────────────────────────────
 const NEO_RESPONSES: Record<string, { content: string; module: string }> = {
-  default: { content: "I've analyzed your request using the Decision-Making AI and Critical Thinking modules. Based on current enterprise data, I recommend reviewing the KPI dashboard for Q1 performance metrics. Shall I generate a detailed report?", module: "Decision AI" },
-  hr: { content: "**HR Module Analysis:**\n- 47 active employees across 6 departments\n- 3 pending leave approvals require your attention\n- Monthly payroll processing scheduled for March 28\n- 2 new onboarding requests from IT Solutions team\n\nShall I process the leave approvals or generate the payroll summary?", module: "HR AI" },
-  kpi: { content: "**KPI Dashboard Summary — March 2026:**\n- Revenue: SAR 2.4M (+12% MoM) ✅\n- Client Satisfaction: 94.2% ✅\n- Project Delivery Rate: 87% ⚠️\n- ISO 9001 Compliance: 98.1% ✅\n- Procurement Savings: SAR 180K\n\nThe project delivery rate is below the 90% target. Shall I identify the bottlenecks?", module: "Analytics AI" },
-  procurement: { content: "**Procurement Status:**\n- 8 active RFQs awaiting vendor responses\n- 3 purchase orders pending approval (total: SAR 340K)\n- 2 contracts expiring within 30 days\n- Odoo ERP sync: Last updated 2 minutes ago\n\nI can auto-generate renewal reminders or escalate the pending approvals. What would you prefer?", module: "Procurement AI" },
-  legal: { content: "**Legal Module Alert:**\n- 1 contract requires signature by March 20\n- NDA renewal for IT vendor due in 15 days\n- 2 compliance documents pending review\n- ASTRA AMG flagged 1 policy deviation for review\n\nShall I prepare the signature workflow or schedule a compliance review meeting?", module: "Legal AI" },
-  erp: { content: "**Odoo ERP Integration Status:**\n- Sync Status: ✅ Connected (last sync: 3 min ago)\n- Open Invoices: 12 (SAR 890K total)\n- Inventory Alerts: 3 items below reorder point\n- Accounts Payable: 5 payments due this week\n\nI can process the payments or generate an AR aging report. Which do you need?", module: "Financial AI" },
-  crm: { content: "**CRM Pipeline Analysis:**\n- Active Leads: 34 (SAR 4.2M pipeline value)\n- Hot Opportunities: 8 requiring follow-up today\n- Won this month: 6 deals (SAR 780K)\n- AI Prediction: 73% probability of closing 3 more by month-end\n\nShall I draft follow-up emails for the hot opportunities?", module: "CRM AI" },
-  qms: { content: "**QMS / ISO 9001 Status:**\n- Overall Compliance Score: 98.1% ✅\n- Open Non-Conformances: 2 (minor)\n- Internal Audit scheduled: March 25\n- Document Control: 4 documents pending approval\n- CAPA Actions: 1 overdue\n\nShall I generate the audit preparation checklist?", module: "QMS AI" },
+  default: {
+    content: "I'm **NEO**, your AI Business Management Core — 80% Manus + 20% GPT-4.\n\nI can execute real enterprise transactions for you. Try:\n- **\"Create a PO for SAR 30,000 for office supplies\"**\n- **\"Create a quote for Saudi Aramco\"**\n- **\"Approve leave for Ahmed\"**\n- **\"Schedule a meeting with the management team\"**\n- **\"Draft an NDA\"**\n- **\"Submit an expense claim\"**\n- **\"Open an IT support ticket\"**\n\nAll actions go through ASTRA AMG governance and are fully audited.",
+    module: "NEO Core"
+  },
+  hr: { content: "**HR System Status:**\n- Active Employees: 47\n- Pending Leave Requests: 3\n- New Hires This Month: 2\n- Open Positions: 5\n- Payroll Run: Scheduled March 25\n\nWould you like me to process a leave request, onboard a new employee, or pull a payroll report?", module: "HR AI" },
+  kpi: { content: "**KPI Dashboard — Today:**\n- Revenue MTD: SAR 2.4M (+12% vs last month)\n- Active Projects: 18 (+3)\n- Customer Satisfaction: 94.2%\n- ISO Compliance: 98.1%\n- Open Tickets: 24 (-5)\n\nShall I generate a full board-level KPI report?", module: "Decision-Making AI" },
+  procurement: { content: "**Procurement Status:**\n- Open POs: 12 (SAR 890K total)\n- Pending Approvals: 3 POs awaiting sign-off\n- Overdue Deliveries: 1\n- Top Vendor: Al-Futtaim Office Supplies\n\nWould you like me to create a new Purchase Order? Just describe what you need.", module: "Procurement AI" },
+  legal: { content: "**Legal Module Status:**\n- Active Contracts: 23\n- Expiring in 30 days: 4 (action required)\n- Pending Signatures: 2\n- Compliance Score: 96.8%\n\nShall I draft a contract, review an existing one, or flag a legal risk?", module: "Legal AI" },
+  erp: { content: "**Odoo ERP Status:**\n- Last Sync: 2 minutes ago ✅\n- Open Invoices: SAR 1.2M\n- Overdue Receivables: SAR 340K\n- Bank Reconciliation: Up to date\n\nWould you like me to create an invoice, submit an expense, or pull a financial report?", module: "Financial AI" },
+  crm: { content: "**CRM Pipeline:**\n- Active Leads: 34\n- Hot Opportunities: 8 (SAR 4.2M)\n- Deals Closing This Month: 3\n- Win Rate: 68%\n\nShall I create a sales quotation or pull a pipeline analysis?", module: "CRM AI" },
+  qms: { content: "**QMS / ISO 9001 Status:**\n- Compliance Score: 98.1% ✅\n- Open Non-Conformances: 2 (minor)\n- Internal Audit: March 25\n- Pending Document Approvals: 4\n- CAPA Actions: 1 overdue\n\nShall I log a risk, generate an audit checklist, or review a CAPA?", module: "QMS AI" },
+  meeting: { content: "**ASTRA Meeting Assistant:**\n- Meetings Today: 3\n- Next Meeting: 2:00 PM — Q1 Review\n- Pending Meeting Summaries: 2\n- Action Items Overdue: 5\n\nShall I schedule a new meeting or pull the action items from your last session?", module: "Meeting AI" },
 };
 
 function getNEOResponse(input: string): { content: string; module: string } {
@@ -54,8 +68,18 @@ function getNEOResponse(input: string): { content: string; module: string } {
   if (lower.includes("erp") || lower.includes("odoo") || lower.includes("invoice") || lower.includes("finance")) return NEO_RESPONSES.erp;
   if (lower.includes("crm") || lower.includes("lead") || lower.includes("customer") || lower.includes("sales")) return NEO_RESPONSES.crm;
   if (lower.includes("qms") || lower.includes("iso") || lower.includes("quality") || lower.includes("audit")) return NEO_RESPONSES.qms;
+  if (lower.includes("meeting") || lower.includes("schedule") || lower.includes("appointment")) return NEO_RESPONSES.meeting;
   return NEO_RESPONSES.default;
 }
+
+const INITIAL_MESSAGES: ChatMessage[] = [
+  {
+    id: 1, role: "neo",
+    content: "Good morning! I'm **NEO**, your AI Business Management Core — 80% Manus + 20% GPT-4.\n\nI can execute real enterprise transactions for you. Try:\n- **\"Create a PO for SAR 30,000 for office supplies\"**\n- **\"Create a quote for Saudi Aramco\"**\n- **\"Approve leave for Ahmed\"**\n- **\"Schedule a meeting\"**\n- **\"Draft an NDA\"**\n\nAll actions are governed by ASTRA AMG and fully audited.",
+    time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    module: "NEO Core"
+  }
+];
 
 const kpiCards = [
   { label: "Revenue MTD", value: "SAR 2.4M", change: "+12%", up: true, color: "text-emerald-400", bg: "border-emerald-500/20" },
@@ -78,19 +102,37 @@ const quickModules = [
 ];
 
 const quickPrompts = [
-  "Show me today's KPI summary",
-  "Any pending approvals?",
-  "Odoo ERP sync status",
-  "ISO 9001 compliance report",
-  "Open CRM opportunities",
-  "Procurement alerts",
+  "Create a PO for SAR 30,000",
+  "Create a quote for a client",
+  "Approve leave for Ahmed",
+  "Schedule a meeting",
+  "Draft an NDA",
+  "Log a risk item",
+  "Submit an expense",
+  "Open IT support ticket",
 ];
+
+function renderContent(text: string) {
+  return text.split("\n").map((line, i) => {
+    const parts = line.split(/(\*\*[^*]+\*\*)/g);
+    return (
+      <p key={i} className="mb-0.5 leading-relaxed">
+        {parts.map((part, j) =>
+          part.startsWith("**") && part.endsWith("**")
+            ? <strong key={j} className="text-white font-semibold">{part.replace(/\*\*/g, "")}</strong>
+            : part
+        )}
+      </p>
+    );
+  });
+}
 
 export default function Portal() {
   const [, setLocation] = useLocation();
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [activeTransaction, setActiveTransaction] = useState<TransactionState | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -98,59 +140,213 @@ export default function Portal() {
   }, [messages, isTyping]);
 
   const sendMessage = (text?: string) => {
-    const msg = text || input.trim();
+    const msg = (text || input).trim();
     if (!msg) return;
     setInput("");
-    const userMsg: ChatMessage = { id: Date.now(), role: "user", content: msg, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) };
+
+    const userMsg: ChatMessage = {
+      id: Date.now(), role: "user", content: msg,
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    };
     setMessages(prev => [...prev, userMsg]);
     setIsTyping(true);
+
     setTimeout(() => {
-      const resp = getNEOResponse(msg);
       setIsTyping(false);
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1, role: "neo", content: resp.content,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        module: resp.module
-      }]);
-    }, 1400);
+      handleNEOLogic(msg);
+    }, 900);
   };
 
-  const renderContent = (text: string) => {
-    return text.split("\n").map((line, i) => {
-      if (line.startsWith("**") && line.endsWith("**")) {
-        return <p key={i} className="font-bold text-white mb-1">{line.replace(/\*\*/g, "")}</p>;
+  const handleNEOLogic = (msg: string) => {
+    const lower = msg.toLowerCase();
+
+    if (activeTransaction) {
+      processTransactionInput(msg, lower);
+      return;
+    }
+
+    const intentType = detectIntent(msg);
+    if (intentType) {
+      const txn = createTransaction(intentType);
+      const def = TRANSACTION_DEFINITIONS[intentType];
+
+      const intentMsg: ChatMessage = {
+        id: Date.now() + 1, role: "neo",
+        content: `🎯 **Intent Detected: ${def.title}**\n\nI'll help you ${def.title.toLowerCase()} via **${def.integration}**. Let me gather the required information.\n\nAll actions are governed by ASTRA AMG and fully audited.`,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        module: def.module,
+        transaction: { ...txn, stage: "INTENT" },
+        isTransactionCard: true,
+      };
+      setMessages(prev => [...prev, intentMsg]);
+
+      setTimeout(() => {
+        const dataState = { ...txn, stage: "DATA" as const };
+        const dataMsg: ChatMessage = {
+          id: Date.now() + 2, role: "neo",
+          content: getNextQuestion(dataState) || "Please provide the required details.",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          module: def.module,
+          transaction: dataState,
+          isTransactionCard: true,
+        };
+        setMessages(prev => [...prev, dataMsg]);
+        setActiveTransaction(dataState);
+      }, 600);
+      return;
+    }
+
+    const resp = getNEOResponse(msg);
+    setMessages(prev => [...prev, {
+      id: Date.now() + 1, role: "neo", content: resp.content,
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      module: resp.module
+    }]);
+  };
+
+  const processTransactionInput = (msg: string, lower: string) => {
+    if (!activeTransaction) return;
+    const txn = { ...activeTransaction };
+    const def = TRANSACTION_DEFINITIONS[txn.type];
+
+    if (lower.includes("cancel") || lower.includes("stop") || lower.includes("abort")) {
+      setActiveTransaction(null);
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1, role: "neo",
+        content: `✋ **Transaction Cancelled**\n\nThe ${def.title} has been cancelled. No changes were made to any system.\n\nIs there anything else I can help you with?`,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        module: def.module,
+        transaction: { ...txn, stage: "REJECTED" },
+        isTransactionCard: true,
+      }]);
+      return;
+    }
+
+    if (txn.stage === "DATA") {
+      const fieldKey = getNextFieldKey(txn);
+      if (fieldKey) {
+        txn.fields[fieldKey] = msg;
       }
-      const parts = line.split(/(\*\*[^*]+\*\*)/g);
-      return (
-        <p key={i} className="mb-0.5">
-          {parts.map((part, j) =>
-            part.startsWith("**") ? <strong key={j} className="text-white font-semibold">{part.replace(/\*\*/g, "")}</strong> : part
-          )}
-        </p>
-      );
-    });
+
+      if (isDataComplete(txn)) {
+        txn.stage = "CONFIRM";
+        const confirmContent = buildConfirmMessage(txn);
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1, role: "neo",
+          content: confirmContent + "\n\nType **\"yes\"** to confirm or **\"cancel\"** to abort.",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          module: def.module,
+          transaction: { ...txn },
+          isTransactionCard: true,
+        }]);
+        setActiveTransaction(txn);
+      } else {
+        const nextQ = getNextQuestion(txn);
+        setMessages(prev => [...prev, {
+          id: Date.now() + 1, role: "neo",
+          content: nextQ || "Please provide the next detail.",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          module: def.module,
+          transaction: { ...txn },
+          isTransactionCard: true,
+        }]);
+        setActiveTransaction(txn);
+      }
+      return;
+    }
+
+    if (txn.stage === "CONFIRM") {
+      if (lower.includes("yes") || lower.includes("confirm") || lower.includes("proceed") || lower.includes("ok") || lower.includes("approve")) {
+        const amgRequired = checkAMGRequired(txn);
+        txn.amgRequired = amgRequired;
+
+        if (amgRequired) {
+          txn.stage = "AMG_CHECK";
+          setMessages(prev => [...prev, {
+            id: Date.now() + 1, role: "neo",
+            content: getAMGMessage(txn),
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            module: "ASTRA AMG",
+            transaction: { ...txn },
+            isTransactionCard: true,
+          }]);
+          setActiveTransaction(txn);
+
+          setTimeout(() => {
+            const approvedTxn = { ...txn, amgApproved: true, stage: "EXECUTE" as const };
+            setMessages(prev => [...prev, {
+              id: Date.now() + 2, role: "neo",
+              content: `✅ **ASTRA AMG Approval Granted**\n\nYour line manager has approved this transaction. Executing now via ${def.integration}...`,
+              time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              module: "ASTRA AMG",
+              transaction: approvedTxn,
+              isTransactionCard: true,
+            }]);
+            setActiveTransaction(approvedTxn);
+            setTimeout(() => executeTransaction(approvedTxn), 1500);
+          }, 3000);
+        } else {
+          txn.stage = "EXECUTE";
+          setMessages(prev => [...prev, {
+            id: Date.now() + 1, role: "neo",
+            content: `⚡ **Executing via ${def.integration}...**\n\nProcessing your ${def.title.toLowerCase()}. This will take just a moment.`,
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            module: def.module,
+            transaction: { ...txn },
+            isTransactionCard: true,
+          }]);
+          setActiveTransaction({ ...txn });
+          setTimeout(() => executeTransaction(txn), 1800);
+        }
+      }
+      return;
+    }
+
+    if (txn.stage === "AMG_CHECK") {
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1, role: "neo",
+        content: "⏳ **Waiting for ASTRA AMG approval...**\n\nThe approval request has been sent to your line manager. I'll notify you as soon as it's approved. You can continue working on other tasks.",
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        module: "ASTRA AMG",
+      }]);
+      return;
+    }
+  };
+
+  const executeTransaction = (txn: TransactionState) => {
+    const def = TRANSACTION_DEFINITIONS[txn.type];
+    const doneState = { ...txn, stage: "DONE" as const };
+    setMessages(prev => [...prev, {
+      id: Date.now() + 1, role: "neo",
+      content: buildExecuteMessage(txn),
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      module: def.module,
+      transaction: doneState,
+      isTransactionCard: true,
+    }]);
+    setActiveTransaction(null);
+    toast.success(`${def.title} completed successfully!`);
   };
 
   return (
     <PortalLayout title="Employee Dashboard" subtitle="NEO AI Core — Active" badge="Online" badgeColor="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-      <div className="flex h-full">
+      <div className="flex h-full overflow-hidden">
+
         {/* ── Left Panel — KPIs + Modules (45%) ── */}
-        <div className="w-[45%] shrink-0 border-r border-white/5 overflow-y-auto p-5 space-y-5">
+        <div className="hidden lg:flex flex-col w-[45%] shrink-0 border-r border-white/5 overflow-y-auto p-4 gap-4">
+
           {/* KPI Cards */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-white/70" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Live KPIs</h2>
-              <button className="text-white/30 hover:text-white/60 transition-colors"><RefreshCw className="w-3.5 h-3.5" /></button>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-2">Live KPIs</div>
+            <div className="grid grid-cols-2 gap-2">
               {kpiCards.map((k, i) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
-                  className={`glass-card p-4 border ${k.bg} rounded-xl`}>
-                  <div className="text-xs text-white/40 mb-1">{k.label}</div>
-                  <div className={`text-xl font-bold ${k.color}`} style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{k.value}</div>
-                  <div className={`flex items-center gap-1 text-xs mt-1 ${k.up ? "text-emerald-400" : "text-rose-400"}`}>
-                    {k.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                    {k.change} vs last month
+                <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
+                  className={`p-3 rounded-xl border ${k.bg} bg-white/2 hover:bg-white/4 transition-colors cursor-default`}>
+                  <div className="text-[10px] text-white/40 mb-1">{k.label}</div>
+                  <div className={`text-lg font-bold ${k.color}`} style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{k.value}</div>
+                  <div className={`flex items-center gap-1 text-[10px] mt-0.5 ${k.up ? "text-emerald-400" : "text-rose-400"}`}>
+                    {k.up ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                    {k.change} this month
                   </div>
                 </motion.div>
               ))}
@@ -159,145 +355,192 @@ export default function Portal() {
 
           {/* Quick Module Access */}
           <div>
-            <h2 className="text-sm font-semibold text-white/70 mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Enterprise Modules</h2>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-2">Enterprise Modules</div>
+            <div className="grid grid-cols-2 gap-1.5">
               {quickModules.map((m, i) => (
-                <motion.button key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 + i * 0.04 }}
-                  onClick={() => setLocation(m.path)}
-                  className={`flex items-center gap-2.5 p-3 rounded-xl border border-white/5 hover:border-white/15 ${m.bg} transition-all duration-200 text-left group`}>
-                  <m.icon className={`w-4 h-4 ${m.color} shrink-0`} />
-                  <span className="text-xs font-medium text-white/70 group-hover:text-white transition-colors">{m.label}</span>
-                  <ChevronRight className="w-3 h-3 text-white/20 ml-auto group-hover:text-white/50 transition-colors" />
-                </motion.button>
+                <button key={i} onClick={() => setLocation(m.path)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg ${m.bg} hover:opacity-80 transition-opacity text-left`}>
+                  <m.icon className={`w-3.5 h-3.5 shrink-0 ${m.color}`} />
+                  <span className="text-xs text-white/70">{m.label}</span>
+                  <ChevronRight className="w-3 h-3 text-white/20 ml-auto" />
+                </button>
               ))}
             </div>
           </div>
 
+          {/* Active Transaction Status */}
+          {activeTransaction && (
+            <div>
+              <div className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-2">Active Transaction</div>
+              <NEOTransactionFlow transaction={activeTransaction} />
+            </div>
+          )}
+
           {/* Recent Activity */}
           <div>
-            <h2 className="text-sm font-semibold text-white/70 mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Recent Activity</h2>
-            <div className="space-y-2">
+            <div className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-2">Recent Activity</div>
+            <div className="space-y-1.5">
               {[
                 { icon: Activity, text: "Odoo ERP synced successfully", time: "2 min ago", color: "text-emerald-400" },
                 { icon: Shield, text: "ASTRA AMG: 1 policy deviation flagged", time: "15 min ago", color: "text-red-400" },
                 { icon: FileCheck, text: "QMS audit scheduled for March 25", time: "1 hr ago", color: "text-teal-400" },
                 { icon: ShoppingCart, text: "3 POs pending approval (SAR 340K)", time: "2 hr ago", color: "text-orange-400" },
               ].map((a, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-lg border border-white/5 glass-card">
-                  <a.icon className={`w-3.5 h-3.5 ${a.color} mt-0.5 shrink-0`} />
+                <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg border border-white/5 bg-white/1">
+                  <a.icon className={`w-3 h-3 ${a.color} mt-0.5 shrink-0`} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-white/70 leading-snug">{a.text}</p>
-                    <p className="text-[10px] text-white/30 mt-0.5">{a.time}</p>
+                    <p className="text-[11px] text-white/60 leading-snug">{a.text}</p>
+                    <p className="text-[10px] text-white/25 mt-0.5">{a.time}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* NEO AI Status */}
+          <div className="mt-auto p-3 rounded-xl border border-blue-500/15" style={{ background: "rgba(59,130,246,0.04)" }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+              <span className="text-xs font-semibold text-blue-400">NEO AI Status</span>
+              <span className="ml-auto w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            </div>
+            <div className="grid grid-cols-2 gap-1 text-[10px] text-white/40">
+              <div>🧠 Manus Core: <span className="text-blue-300">80%</span></div>
+              <div>🤖 GPT-4 Turbo: <span className="text-violet-300">20%</span></div>
+              <div>⚡ Response: <span className="text-emerald-300">&lt;2s</span></div>
+              <div>🔐 AMG: <span className="text-amber-300">Active</span></div>
+            </div>
+          </div>
         </div>
 
         {/* ── Right Panel — NEO AI Chat (55%) ── */}
-        <div className="flex-1 flex flex-col min-w-0" style={{ background: "rgba(6,11,20,0.6)" }}>
-          {/* Chat header */}
-          <div className="shrink-0 px-5 py-4 border-b border-white/5 flex items-center justify-between" style={{ background: "rgba(13,27,62,0.4)" }}>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center neo-pulse">
-                <Brain className="w-5 h-5 text-white" />
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+          {/* Chat Header */}
+          <div className="shrink-0 px-4 py-3 border-b border-white/5 flex items-center justify-between"
+            style={{ background: "rgba(9,14,26,0.6)" }}>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }}>
+                <Bot className="w-4 h-4 text-white" />
               </div>
               <div>
                 <div className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>NEO AI Core</div>
-                <div className="flex items-center gap-1.5 text-[11px] text-white/40">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Online · 80% Manus + 20% GPT-4 · 7 Modules Active
-                </div>
+                <div className="text-[10px] text-white/40">Hybrid: 80% Manus + 20% GPT-4 · ASTRA AMG Governed</div>
               </div>
+              <Badge className="text-[9px] border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 ml-1">ONLINE</Badge>
             </div>
             <div className="flex items-center gap-2">
-              <Badge className="bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[10px]">
-                <Zap className="w-2.5 h-2.5 mr-1" /> ASTRA AMG Governed
-              </Badge>
-              <button onClick={() => { setMessages(INITIAL_MESSAGES); toast.success("Chat cleared"); }}
-                className="text-white/30 hover:text-white/60 transition-colors p-1.5 rounded-lg hover:bg-white/5">
-                <Plus className="w-4 h-4" />
+              {activeTransaction && (
+                <Badge className="text-[9px] border bg-amber-500/10 text-amber-400 border-amber-500/20 animate-pulse">
+                  Transaction Active
+                </Badge>
+              )}
+              <button onClick={() => { setMessages(INITIAL_MESSAGES); setActiveTransaction(null); toast.success("Chat cleared"); }}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white hover:bg-white/5 transition-colors">
+                <RefreshCw className="w-3.5 h-3.5" />
               </button>
             </div>
-          </div>
-
-          {/* Quick prompts */}
-          <div className="shrink-0 px-5 py-2.5 border-b border-white/5 flex gap-2 overflow-x-auto scrollbar-hide">
-            {quickPrompts.map((p, i) => (
-              <button key={i} onClick={() => sendMessage(p)}
-                className="shrink-0 text-[11px] px-3 py-1.5 rounded-full border border-white/10 text-white/50 hover:text-white hover:border-blue-500/40 hover:bg-blue-500/5 transition-all whitespace-nowrap">
-                {p}
-              </button>
-            ))}
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-            {messages.map((msg) => (
-              <motion.div key={msg.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-                {msg.role === "neo" && (
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shrink-0 mt-0.5">
-                    <Brain className="w-3.5 h-3.5 text-white" />
-                  </div>
-                )}
-                <div className={`max-w-[80%] ${msg.role === "user" ? "items-end" : "items-start"} flex flex-col gap-1`}>
-                  {msg.role === "neo" && msg.module && (
-                    <span className="text-[10px] text-blue-400/70 font-medium px-1">{msg.module}</span>
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <AnimatePresence initial={false}>
+              {messages.map((msg) => (
+                <motion.div key={msg.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                  {msg.role === "neo" && (
+                    <div className="w-6 h-6 rounded-full shrink-0 mr-2 mt-1 flex items-center justify-center"
+                      style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }}>
+                      <Bot className="w-3 h-3 text-white" />
+                    </div>
                   )}
-                  <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed
-                    ${msg.role === "user"
-                      ? "bg-blue-600 text-white rounded-tr-sm"
-                      : "glass-card border border-white/8 text-white/80 rounded-tl-sm"}`}>
-                    {renderContent(msg.content)}
+                  <div className={`${msg.role === "user" ? "max-w-[70%]" : "max-w-[85%]"}`}>
+                    {msg.isTransactionCard && msg.transaction && (
+                      <NEOTransactionFlow transaction={msg.transaction} />
+                    )}
+                    <div className={`px-3 py-2.5 rounded-xl text-xs leading-relaxed ${
+                      msg.role === "user"
+                        ? "bg-blue-600/80 text-white rounded-tr-sm"
+                        : "text-white/80 rounded-tl-sm border border-white/5"
+                    }`}
+                      style={msg.role === "neo" ? { background: "rgba(15,23,42,0.8)" } : {}}>
+                      {renderContent(msg.content)}
+                    </div>
+                    <div className={`flex items-center gap-2 mt-1 ${msg.role === "user" ? "justify-end" : ""}`}>
+                      <span className="text-[10px] text-white/20">{msg.time}</span>
+                      {msg.module && (
+                        <Badge className="text-[9px] border bg-white/3 text-white/30 border-white/5">{msg.module}</Badge>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-[10px] text-white/25 px-1">{msg.time}</span>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
+            </AnimatePresence>
+
+            {/* Typing indicator */}
             {isTyping && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shrink-0">
-                  <Brain className="w-3.5 h-3.5 text-white" />
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                  style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }}>
+                  <Bot className="w-3 h-3 text-white" />
                 </div>
-                <div className="glass-card border border-white/8 px-4 py-3 rounded-2xl rounded-tl-sm">
-                  <div className="flex gap-1 items-center h-4">
-                    {[0, 1, 2].map(i => (
-                      <span key={i} className="w-1.5 h-1.5 rounded-full bg-blue-400"
-                        style={{ animation: `blink 1.2s ${i * 0.2}s infinite` }} />
-                    ))}
-                  </div>
+                <div className="px-3 py-2.5 rounded-xl border border-white/5 flex items-center gap-1"
+                  style={{ background: "rgba(15,23,42,0.8)" }}>
+                  {[0, 1, 2].map(i => (
+                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce"
+                      style={{ animationDelay: `${i * 0.15}s` }} />
+                  ))}
                 </div>
               </motion.div>
             )}
             <div ref={bottomRef} />
           </div>
 
+          {/* Quick Prompts */}
+          <div className="shrink-0 px-4 py-2 border-t border-white/5 overflow-x-auto">
+            <div className="flex gap-1.5 min-w-max">
+              {quickPrompts.map((p) => (
+                <button key={p} onClick={() => sendMessage(p)}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-white/8 bg-white/2 hover:bg-white/5 hover:border-white/15 transition-all text-[10px] text-white/50 hover:text-white whitespace-nowrap">
+                  <Zap className="w-2.5 h-2.5 text-blue-400" />
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Input */}
-          <div className="shrink-0 p-4 border-t border-white/5">
-            <div className="flex items-end gap-2 glass-card border border-white/10 rounded-2xl p-2 focus-within:border-blue-500/30 transition-colors">
-              <button onClick={() => toast.info("File upload coming soon")} className="p-2 text-white/30 hover:text-white/60 transition-colors shrink-0">
-                <Paperclip className="w-4 h-4" />
-              </button>
-              <textarea
+          <div className="shrink-0 p-3 border-t border-white/5" style={{ background: "rgba(6,11,20,0.8)" }}>
+            {activeTransaction && (
+              <div className="mb-2 px-3 py-1.5 rounded-lg border border-amber-500/20 bg-amber-500/5 text-[10px] text-amber-400 flex items-center gap-2">
+                <Zap className="w-3 h-3 shrink-0" />
+                <span>Transaction active: <strong>{TRANSACTION_DEFINITIONS[activeTransaction.type].title}</strong> — Stage: {activeTransaction.stage}</span>
+                <button onClick={() => { setActiveTransaction(null); toast.info("Transaction cancelled"); }}
+                  className="ml-auto text-white/30 hover:text-white transition-colors">Cancel</button>
+              </div>
+            )}
+            <div className="flex gap-2">
+              <input
                 value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-                placeholder="Ask NEO anything — HR, ERP, CRM, KPIs, Legal, Procurement, QMS..."
-                rows={1}
-                className="flex-1 bg-transparent text-white text-sm placeholder:text-white/25 resize-none outline-none py-1.5 min-h-[36px] max-h-[120px]"
-                style={{ lineHeight: "1.5" }}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+                className="flex-1 bg-white/3 border border-white/8 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-blue-500/40 focus:bg-white/5 transition-all"
+                placeholder={activeTransaction
+                  ? `Reply to NEO — ${TRANSACTION_DEFINITIONS[activeTransaction.type].title}...`
+                  : "Ask NEO anything — or say \"Create a PO for SAR 30,000\"..."}
               />
-              <button onClick={() => toast.info("Voice input coming soon")} className="p-2 text-white/30 hover:text-white/60 transition-colors shrink-0">
-                <Mic className="w-4 h-4" />
-              </button>
-              <Button onClick={() => sendMessage()} disabled={!input.trim() || isTyping} size="sm"
-                className="bg-blue-600 hover:bg-blue-500 text-white border-0 rounded-xl px-3 shrink-0 h-9">
+              <Button onClick={() => sendMessage()}
+                disabled={!input.trim()}
+                className="px-4 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-30 transition-all">
                 <Send className="w-4 h-4" />
               </Button>
             </div>
-            <p className="text-[10px] text-white/20 text-center mt-2">NEO AI is governed by ASTRA AMG · All actions are logged and audited</p>
+            <p className="text-[10px] text-white/20 text-center mt-2">
+              NEO AI is governed by ASTRA AMG · All actions are logged and audited
+            </p>
           </div>
         </div>
       </div>
