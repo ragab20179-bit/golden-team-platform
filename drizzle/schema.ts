@@ -64,3 +64,26 @@ export const astraPolicyRules = mysqlTable("astra_policy_rules", {
 
 export type AstraPolicyRule = typeof astraPolicyRules.$inferSelect;
 export type InsertAstraPolicyRule = typeof astraPolicyRules.$inferInsert;
+
+/**
+ * Drive Vault — Universal file storage.
+ * Stores metadata + S3 reference for every uploaded file.
+ * Parsed text and AI summary are extracted server-side after upload.
+ */
+export const vaultFiles = mysqlTable("vault_files", {
+  id: int("id").autoincrement().primaryKey(),
+  uploadedBy: int("uploadedBy").notNull(),
+  filename: varchar("filename", { length: 255 }).notNull(),
+  originalName: varchar("originalName", { length: 255 }).notNull(),
+  mimeType: varchar("mimeType", { length: 128 }).notNull(),
+  sizeBytes: int("sizeBytes").notNull().default(0),
+  s3Key: text("s3Key").notNull(),
+  s3Url: text("s3Url").notNull(),
+  folder: varchar("folder", { length: 64 }).notNull().default("general"),
+  parsedText: text("parsedText"),
+  parsedMeta: json("parsedMeta"),
+  aiSummary: text("aiSummary"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type VaultFile = typeof vaultFiles.$inferSelect;
+export type InsertVaultFile = typeof vaultFiles.$inferInsert;

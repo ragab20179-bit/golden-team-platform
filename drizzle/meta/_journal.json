@@ -15,6 +15,13 @@
       "when": 1773506938424,
       "tag": "0001_gorgeous_stardust",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1773520089104,
+      "tag": "0002_quiet_patriot",
+      "breakpoints": true
     }
   ]
 }

@@ -50,3 +50,21 @@
 
 ## Last Updated
 2026-03-14 21:00 UTC — Phase 4 complete, full bilingual Arabic/English deployed
+
+## Phase 5 — Universal File Upload (Drive Vault)
+- [x] Audit ASTRA-TAWZEEF-V1 repo for file upload/parsing patterns
+- [x] Add vault_files table to DB schema and push migration
+- [x] Install pdf-parse, xlsx, mammoth for server-side parsing
+- [x] Create server/fileParser.ts — universal parser (PDF, Excel, CSV, Word, JSON, Markdown, images)
+- [x] Create server/db/vault.ts — all vault DB query helpers
+- [x] Create server/routers/vault.ts — tRPC procedures (upload, list, search, download, delete)
+- [x] Register vault router in server/routers.ts
+- [x] Create FileUploadZone reusable drag-and-drop component
+- [x] Create DriveVault page — full bilingual file manager UI with folder sidebar
+- [x] Add /portal/vault route in App.tsx
+- [x] Add Drive Vault nav item to PortalLayout sidebar
+- [x] Write vitest tests (30 tests passing)
+- [x] NEO AI auto-summarizes uploaded documents in background
+
+## Last Updated
+2026-03-14 21:35 UTC — Phase 5 complete, Drive Vault universal file upload deployed

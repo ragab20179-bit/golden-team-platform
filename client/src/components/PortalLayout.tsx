@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Users, Database, UserCheck, BarChart3,
   ShoppingCart, FileCheck, Scale, MessageSquare, Shield,
   ScrollText, Brain, ChevronLeft, ChevronRight, LogOut,
-  Bell, Settings, Menu, Mic, Cpu, Languages, ShieldAlert
+  Bell, Settings, Menu, Mic, Cpu, Languages, ShieldAlert, HardDrive
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,7 @@ const NAV_ITEMS_EN = [
   { key: "governance",    icon: Shield,          path: "/portal/governance",   color: "text-red-400" },
   { key: "meetings",      icon: Mic,             path: "/portal/meetings",     color: "text-blue-300" },
   { key: "neoCore",       icon: Cpu,             path: "/portal/neo-core",     color: "text-violet-300" },
+  { key: "vault",         icon: HardDrive,       path: "/portal/vault",        color: "text-amber-300" },
 ];
 
 const NAV_LABELS: Record<string, { en: string; ar: string }> = {
@@ -47,6 +48,7 @@ const NAV_LABELS: Record<string, { en: string; ar: string }> = {
   governance:  { en: "ASTRA AMG",      ar: "حوكمة أسترا" },
   meetings:    { en: "ASTRA Meetings", ar: "اجتماعات أسترا" },
   neoCore:     { en: "NEO AI Core",    ar: "محرك NEO الذكي" },
+  vault:       { en: "Drive Vault",    ar: "مستودع الملفات" },
 };
 
 // NAV_ITEMS exported from navItems.ts to avoid Fast Refresh issues

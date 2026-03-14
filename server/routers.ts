@@ -3,6 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
+import { vaultRouter } from "./routers/vault";
 import {
   insertAstraDecision,
   getAstraDecisions,
@@ -120,7 +121,9 @@ export const appRouter = router({
         await deleteAstraPolicyRule(input.id);
         return { success: true };
       }),
-  }),
-});
+   }),
 
+  // ─── Drive Vault — Universal File Upload ───────────────────────────────────
+  vault: vaultRouter,
+});
 export type AppRouter = typeof appRouter;
