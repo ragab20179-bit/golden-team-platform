@@ -20,6 +20,8 @@ import LegalModule from "./pages/LegalModule";
 import CommsModule from "./pages/CommsModule";
 import AuditModule from "./pages/AuditModule";
 import GovernanceModule from "./pages/GovernanceModule";
+import MeetingModule from "./pages/MeetingModule";
+import NEOCore from "./pages/NEOCore";
 
 function Router() {
   return (
@@ -37,6 +39,8 @@ function Router() {
       <Route path="/portal/comms" component={CommsModule} />
       <Route path="/portal/audit" component={AuditModule} />
       <Route path="/portal/governance" component={GovernanceModule} />
+      <Route path="/portal/meetings" component={MeetingModule} />
+      <Route path="/portal/neo-core" component={NEOCore} />
       <Route path="/neo-architecture" component={NEOArchitecture} />
       <Route path="/architecture" component={Architecture} />
       <Route path="/project-plan" component={ProjectPlan} />

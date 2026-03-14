@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Users, Database, UserCheck, BarChart3,
   ShoppingCart, FileCheck, Scale, MessageSquare, Shield,
   ScrollText, Brain, ChevronLeft, ChevronRight, LogOut,
-  Bell, Settings, Menu, X
+  Bell, Settings, Menu, X, Mic, Cpu
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,8 @@ export const NAV_ITEMS = [
   { label: "Communications", icon: MessageSquare, path: "/portal/comms", color: "text-sky-400" },
   { label: "Audit & Logs", icon: ScrollText, path: "/portal/audit", color: "text-slate-400" },
   { label: "ASTRA AMG", icon: Shield, path: "/portal/governance", color: "text-red-400" },
+  { label: "ASTRA Meetings", icon: Mic, path: "/portal/meetings", color: "text-blue-300" },
+  { label: "NEO AI Core", icon: Cpu, path: "/portal/neo-core", color: "text-violet-300" },
 ];
 
 interface PortalLayoutProps {
