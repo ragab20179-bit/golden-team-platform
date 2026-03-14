@@ -30,3 +30,6 @@
 - [ ] Persist ASTRA decisions from NEO Stage 4 (Portal.tsx) to DB
 - [ ] Drive Vault update after this implementation
 - [ ] Add vitest tests for ASTRA tRPC procedures
+
+## Last Updated
+2026-03-14 17:00 UTC — ASTRA AMG Phase 2 complete
