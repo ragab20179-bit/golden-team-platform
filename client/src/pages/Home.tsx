@@ -1,316 +1,563 @@
 /**
- * Golden Team Trading Services — Public Corporate Website
- * Design: "Neural Depth" — Deep space dark canvas, bioluminescent accents, glass morphism
+ * Golden Team Trading Services — Corporate Website (Public)
+ * Design: "Prestige Dark" — Deep navy/charcoal, gold accents, Space Grotesk + Playfair Display
+ * This is the CLIENT-FACING company website. The Employee Portal is a completely separate world.
+ * Three main service pillars: IT Solutions | ASTRA PM | Business Consultancy
  */
+
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
-import {
-  Brain, Shield, BarChart3, Users, ChevronRight,
-  Zap, Award, ArrowRight, CheckCircle, Star,
-  Building2, Cpu, FileCheck, TrendingUp, Database,
-  UserCheck, ShoppingCart, Scale, MessageSquare, ScrollText
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+  ArrowRight, ChevronRight, Monitor, Cpu, Shield, Cloud, Network, Code2,
+  FolderKanban, BarChart3, Users2, Calendar, CheckSquare, Layers,
+  Briefcase, TrendingUp, Award, Globe, Building2, Lightbulb,
+  Phone, Mail, MapPin, Star, ChevronDown, Menu, X, Zap
+} from "lucide-react";
+import { useState, useEffect } from "react";
 
-const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/hero-bg-ZYqyXBpXu9NZYcqkMNAPvk.webp";
-const NEO_CORE_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/neo-ai-core-Ls2GrxCppFSfrqMoUsDX9Q.webp";
-const SERVICES_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/services-bg-cpSUzQD77mgc7AELkQcPXU.webp";
+const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-hero-corporate-LAR4ea7VBJH3jL9DF5uSJy.webp";
+const IT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-it-solutions-kBJmggmFapCwtnocCUjwuj.webp";
+const ASTRA_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-astra-pm-HFtSuwmFhd8RXqX7n7bRpw.webp";
+const CONSULT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-consulting-NxW47h5uQRtwgqAX4Dbu4R.webp";
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i: number = 0) => ({
-    opacity: 1, y: 0,
-    transition: { delay: i * 0.08, duration: 0.55 }
-  })
-};
+const fadeUp = { hidden: { opacity: 0, y: 32 }, show: { opacity: 1, y: 0, transition: { duration: 0.65, ease: "easeOut" as const } } };
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.12 } } };
 
-const services = [
-  { icon: Building2, title: "Administrative Services", desc: "Comprehensive administrative support and business process management for enterprise operations.", color: "text-blue-400", border: "border-blue-500/20", hover: "hover:border-blue-500/50" },
-  { icon: TrendingUp, title: "Business Development", desc: "Strategic growth consulting, market analysis, and business expansion services.", color: "text-cyan-400", border: "border-cyan-500/20", hover: "hover:border-cyan-500/50" },
-  { icon: Cpu, title: "IT Solutions", desc: "End-to-end IT infrastructure, software development, and digital transformation.", color: "text-emerald-400", border: "border-emerald-500/20", hover: "hover:border-emerald-500/50" },
-  { icon: Brain, title: "NEO AI Core", desc: "Hybrid AI orchestration engine — 80% Manus AI + 20% GPT-4 with 7 specialized modules.", color: "text-amber-400", border: "border-amber-500/20", hover: "hover:border-amber-500/50" },
-  { icon: Database, title: "Odoo ERP Integration", desc: "Full Odoo ERP system integration for finance, inventory, HR, and operations management.", color: "text-violet-400", border: "border-violet-500/20", hover: "hover:border-violet-500/50" },
-  { icon: UserCheck, title: "AI-Assisted CRM", desc: "Intelligent customer relationship management with predictive analytics and automation.", color: "text-sky-400", border: "border-sky-500/20", hover: "hover:border-sky-500/50" },
-  { icon: BarChart3, title: "KPI Dashboard", desc: "Real-time key performance indicators and analytics across all business units.", color: "text-orange-400", border: "border-orange-500/20", hover: "hover:border-orange-500/50" },
-  { icon: ShoppingCart, title: "Procurement Module", desc: "End-to-end procurement management with vendor evaluation and contract lifecycle.", color: "text-teal-400", border: "border-teal-500/20", hover: "hover:border-teal-500/50" },
-  { icon: FileCheck, title: "QMS / ISO 9001", desc: "Full Quality Management System ensuring ISO 9001 compliance and continuous improvement.", color: "text-green-400", border: "border-green-500/20", hover: "hover:border-green-500/50" },
-  { icon: Scale, title: "Legal Module", desc: "Contract management, legal document tracking, compliance monitoring, and risk assessment.", color: "text-rose-400", border: "border-rose-500/20", hover: "hover:border-rose-500/50" },
-  { icon: MessageSquare, title: "Inter-Corporate Comms", desc: "Secure internal communications, decision approvals, and cross-department workflows.", color: "text-indigo-400", border: "border-indigo-500/20", hover: "hover:border-indigo-500/50" },
-  { icon: Shield, title: "ASTRA AMG Governance", desc: "Audit, Management & Governance — policy enforcement, security, and full audit trails.", color: "text-red-400", border: "border-red-500/20", hover: "hover:border-red-500/50" },
+const IT_SERVICES = [
+  { icon: Cloud, title: "Cloud Infrastructure", desc: "AWS, Azure, and hybrid cloud architecture design, migration, and managed operations." },
+  { icon: Shield, title: "Cybersecurity", desc: "End-to-end security audits, penetration testing, SOC monitoring, and compliance frameworks." },
+  { icon: Network, title: "Network Solutions", desc: "Enterprise networking, SD-WAN, VPN infrastructure, and 24/7 NOC support." },
+  { icon: Code2, title: "Custom Software", desc: "Bespoke enterprise applications, API integrations, and digital transformation programs." },
+  { icon: Monitor, title: "IT Managed Services", desc: "Full-spectrum IT outsourcing — helpdesk, infrastructure, and proactive monitoring." },
+  { icon: Cpu, title: "AI & Automation", desc: "NEO AI-powered business automation, RPA, and intelligent process optimization." },
 ];
 
-const aiModules = [
-  { name: "Conversational AI", icon: "💬", desc: "Natural language interaction for all employees" },
-  { name: "Decision-Making AI", icon: "⚖️", desc: "Multi-criteria analysis for complex decisions" },
-  { name: "Critical Thinking AI", icon: "🔍", desc: "Risk analysis and assumption validation" },
-  { name: "Logic & Reasoning AI", icon: "🧮", desc: "Logical consistency and constraint solving" },
-  { name: "QMS AI", icon: "✅", desc: "ISO 9001 compliance and quality assurance" },
-  { name: "Accounting & Financial AI", icon: "📊", desc: "Financial analysis, reporting, and insights" },
-  { name: "Business Management AI", icon: "🏢", desc: "Operations, strategy, and administration" },
+const ASTRA_FEATURES = [
+  { icon: FolderKanban, title: "Project Lifecycle", desc: "Full project lifecycle management from initiation to closeout with PMBOK-aligned workflows." },
+  { icon: BarChart3, title: "Real-Time Analytics", desc: "Live dashboards for budget, schedule, resource, and risk performance indicators." },
+  { icon: Users2, title: "Resource Management", desc: "Intelligent resource allocation, capacity planning, and team performance tracking." },
+  { icon: Calendar, title: "Gantt & Scheduling", desc: "Interactive Gantt charts with critical path analysis and milestone tracking." },
+  { icon: CheckSquare, title: "Quality Assurance", desc: "Built-in ISO 9001 quality gates, inspection checklists, and non-conformance management." },
+  { icon: Layers, title: "ASTRA AMG Governance", desc: "Enterprise governance layer with audit trails, approval workflows, and compliance monitoring." },
 ];
 
-const stats = [
-  { value: "7", label: "AI Modules", sub: "Specialized Intelligence" },
-  { value: "125+", label: "API Procedures", sub: "Integrated Workflows" },
-  { value: "80/20", label: "Hybrid AI", sub: "Manus + GPT-4" },
-  { value: "<2s", label: "Response Time", sub: "Real-time Processing" },
+const CONSULT_SERVICES = [
+  { icon: Briefcase, title: "Business Development", desc: "Market entry strategy, growth planning, and business model innovation for regional expansion." },
+  { icon: TrendingUp, title: "Administrative Excellence", desc: "Organizational design, process optimization, and operational efficiency programs." },
+  { icon: Award, title: "ISO 9001 Certification", desc: "End-to-end ISO 9001:2015 implementation, gap analysis, and certification support." },
+  { icon: Globe, title: "International Trade", desc: "Import/export facilitation, trade compliance, and cross-border business advisory." },
+  { icon: Building2, title: "Corporate Governance", desc: "Board advisory, governance frameworks, and regulatory compliance consulting." },
+  { icon: Lightbulb, title: "Strategic Planning", desc: "C-suite advisory, strategic roadmaps, and transformation program management." },
 ];
 
-const phases = [
-  { phase: "Phase 1", weeks: "Weeks 1–4", title: "Foundation & Core Platform", color: "border-t-blue-500", dot: "bg-blue-500", items: ["Corporate website & branding", "Employee login & dashboard shell", "NEO AI chat interface (UI)", "Initial infrastructure setup"] },
-  { phase: "Phase 2", weeks: "Weeks 5–12", title: "Business Module Integration", color: "border-t-cyan-500", dot: "bg-cyan-500", items: ["HR + Odoo ERP integration", "CRM with AI assistance", "KPI dashboards & analytics", "Procurement & Legal modules"] },
-  { phase: "Phase 3", weeks: "Weeks 13–20", title: "NEO AI & ASTRA AMG", color: "border-t-emerald-500", dot: "bg-emerald-500", items: ["NEO AI Core integration", "7 specialized AI modules live", "ASTRA AMG governance layer", "Inter-corporate comms & approvals"] },
-  { phase: "Phase 4", weeks: "Weeks 21–24", title: "Testing & Deployment", color: "border-t-amber-500", dot: "bg-amber-500", items: ["Comprehensive QA testing", "Full audit & logs system", "Production deployment", "Employee training & handover"] },
+const STATS = [
+  { value: "15+", label: "Years Experience" },
+  { value: "200+", label: "Projects Delivered" },
+  { value: "50+", label: "Enterprise Clients" },
+  { value: "ISO 9001", label: "Certified Quality" },
+];
+
+const TESTIMONIALS = [
+  { name: "Ahmed Al-Rashidi", role: "CEO, Al-Rashidi Group", text: "Golden Team transformed our entire IT infrastructure and delivered ASTRA PM which now manages all our construction projects. Exceptional quality and professionalism." },
+  { name: "Sara Mohammed", role: "COO, Gulf Ventures", text: "Their business consultancy team helped us achieve ISO 9001 certification in record time. The strategic advisory was invaluable for our regional expansion." },
+  { name: "Khalid Al-Mansouri", role: "Director, Mansouri Holdings", text: "The NEO AI integration through their IT solutions division has automated 70% of our administrative processes. Truly transformative technology." },
 ];
 
 export default function Home() {
   const [, setLocation] = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", handler);
+    return () => window.removeEventListener("scroll", handler);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[#060B14] text-white overflow-x-hidden">
+    <div className="min-h-screen bg-[#05080F] text-white font-sans overflow-x-hidden">
+
       {/* ── Navigation ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5" style={{ background: "rgba(6,11,20,0.88)", backdropFilter: "blur(20px)" }}>
-        <div className="container flex items-center justify-between h-16">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center font-bold text-sm text-black">GT</div>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-[#05080F]/95 backdrop-blur-md border-b border-white/10 shadow-xl" : "bg-transparent"}`}>
+        <div className="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between py-4">
+          {/* Logo */}
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
+              <span className="text-[#05080F] font-bold text-lg font-display">GT</span>
+            </div>
             <div>
-              <div className="font-bold text-sm leading-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Golden Team</div>
-              <div className="text-[10px] text-white/40 leading-tight">Trading Services</div>
+              <div className="text-white font-bold text-sm leading-tight font-display">GOLDEN TEAM</div>
+              <div className="text-amber-400/70 text-[10px] tracking-widest uppercase">Trading Services</div>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-6 text-sm text-white/60">
-            <a href="#services" className="hover:text-white transition-colors">Services</a>
-            <a href="#neo-ai" className="hover:text-white transition-colors">NEO AI</a>
-            <a href="#roadmap" className="hover:text-white transition-colors">Roadmap</a>
-            <button onClick={() => setLocation("/neo-architecture")} className="hover:text-white transition-colors">Architecture</button>
-            <button onClick={() => setLocation("/project-plan")} className="hover:text-white transition-colors">Project Plan</button>
+
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center gap-8 text-sm">
+            {[
+              { label: "IT Solutions", href: "#it-solutions" },
+              { label: "ASTRA PM", href: "#astra-pm" },
+              { label: "Consultancy", href: "#consultancy" },
+              { label: "About", href: "#about" },
+              { label: "Contact", href: "#contact" },
+            ].map(({ label, href }) => (
+              <a key={label} href={href} className="text-white/60 hover:text-amber-400 transition-colors duration-200 tracking-wide">
+                {label}
+              </a>
+            ))}
           </div>
-          <Button onClick={() => setLocation("/login")} size="sm" className="bg-blue-600 hover:bg-blue-500 text-white border-0">
-            Employee Portal <ArrowRight className="ml-1 w-3 h-3" />
-          </Button>
+
+          <div className="hidden md:flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLocation("/login")}
+              className="border-amber-400/40 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400 bg-transparent text-xs tracking-widest uppercase"
+            >
+              Employee Portal
+            </Button>
+          </div>
+
+          {/* Mobile hamburger */}
+          <button className="md:hidden text-white/70 hover:text-white" onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileOpen && (
+          <div className="md:hidden bg-[#0A0F1E]/98 backdrop-blur-xl border-t border-white/10 px-6 py-6 flex flex-col gap-4">
+            {["IT Solutions", "ASTRA PM", "Consultancy", "About", "Contact"].map((item) => (
+              <a key={item} href={`#${item.toLowerCase().replace(" ", "-")}`} className="text-white/70 hover:text-amber-400 text-sm py-2 border-b border-white/5" onClick={() => setMobileOpen(false)}>
+                {item}
+              </a>
+            ))}
+            <Button onClick={() => setLocation("/login")} className="mt-2 bg-amber-500 hover:bg-amber-400 text-[#05080F] font-semibold">
+              Employee Portal
+            </Button>
+          </div>
+        )}
       </nav>
 
       {/* ── Hero ── */}
-      <section className="relative min-h-screen flex items-center pt-16">
-        <div className="absolute inset-0 overflow-hidden">
-          <img src={HERO_BG} alt="" className="w-full h-full object-cover opacity-30" />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(6,11,20,0.3) 0%, rgba(6,11,20,0.65) 60%, rgba(6,11,20,1) 100%)" }} />
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0">
+          <img src={HERO_BG} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(5,8,15,0.55) 0%, rgba(5,8,15,0.4) 40%, rgba(5,8,15,0.85) 80%, rgba(5,8,15,1) 100%)" }} />
+          {/* Gold shimmer overlay */}
+          <div className="absolute inset-0 opacity-20" style={{ background: "radial-gradient(ellipse at 20% 50%, rgba(251,191,36,0.15) 0%, transparent 60%)" }} />
         </div>
-        <div className="container relative z-10 py-24">
-          <div className="max-w-4xl">
-            <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
-              <Badge className="mb-6 bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1">
-                <Zap className="w-3 h-3 mr-1" /> Enterprise AI Platform — NEO AI Core + ASTRA AMG Governance
-              </Badge>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 text-center pt-24 pb-16">
+          <motion.div initial="hidden" animate="show" variants={stagger}>
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-400/30 bg-amber-400/10 text-amber-400 text-xs tracking-widest uppercase mb-8">
+              <Zap className="w-3 h-3" />
+              AI-Powered Enterprise Solutions
             </motion.div>
-            <motion.h1 initial="hidden" animate="visible" variants={fadeUp} custom={1}
-              className="text-5xl md:text-7xl font-bold leading-tight mb-6"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+
+            <motion.h1 variants={fadeUp} className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.05] mb-6">
               <span className="text-white">Golden Team</span>
               <br />
-              <span className="gradient-text-gold">Trading Services</span>
+              <span className="bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 bg-clip-text text-transparent">
+                Trading Services
+              </span>
             </motion.h1>
-            <motion.p initial="hidden" animate="visible" variants={fadeUp} custom={2}
-              className="text-xl text-white/60 max-w-2xl mb-8 leading-relaxed">
-              A unified enterprise platform combining Administrative Excellence, Business Development, IT Solutions, Odoo ERP, AI-assisted CRM, QMS, Legal, Procurement, and the NEO AI Core — all governed by ASTRA AMG.
+
+            <motion.p variants={fadeUp} className="text-white/60 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed mb-4">
+              Administrative & Business Development Services · IT Solutions · ASTRA PM Project Management
             </motion.p>
-            <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={3} className="flex flex-wrap gap-4">
-              <Button onClick={() => setLocation("/login")} size="lg" className="bg-blue-600 hover:bg-blue-500 text-white border-0 px-8">
-                Access Employee Portal <ArrowRight className="ml-2 w-4 h-4" />
+
+            <motion.p variants={fadeUp} className="text-white/40 text-base max-w-2xl mx-auto mb-12">
+              Empowering organizations with enterprise-grade technology, intelligent AI systems, and strategic consultancy to drive sustainable growth.
+            </motion.p>
+
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button
+                size="lg"
+                className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold text-base px-8 py-6 shadow-xl shadow-amber-500/30 transition-all duration-300"
+                onClick={() => document.getElementById("it-solutions")?.scrollIntoView({ behavior: "smooth" })}
+              >
+                Explore Our Services <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
-              <Button onClick={() => setLocation("/neo-architecture")} size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/5 px-8">
-                Explore NEO AI Architecture
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-white/20 text-white hover:bg-white/10 hover:border-white/40 bg-transparent text-base px-8 py-6"
+                onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
+              >
+                Get In Touch
               </Button>
             </motion.div>
-          </div>
-        </div>
-        {/* Stats bar */}
-        <div className="absolute bottom-0 left-0 right-0 border-t border-white/5" style={{ background: "rgba(6,11,20,0.92)", backdropFilter: "blur(20px)" }}>
-          <div className="container py-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {stats.map((s, i) => (
-                <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 + i * 0.1 }} className="text-center py-2">
-                  <div className="text-2xl font-bold gradient-text-blue" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{s.value}</div>
-                  <div className="text-xs font-semibold text-white/80">{s.label}</div>
-                  <div className="text-[10px] text-white/40">{s.sub}</div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
+          </motion.div>
+
+          {/* Scroll indicator */}
+          <motion.div
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/30 text-xs"
+            animate={{ y: [0, 8, 0] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+          >
+            <ChevronDown className="w-5 h-5" />
+          </motion.div>
         </div>
       </section>
 
-      {/* ── Services ── */}
-      <section id="services" className="py-24 relative">
-        <div className="absolute inset-0">
-          <img src={SERVICES_BG} alt="" className="w-full h-full object-cover opacity-8" style={{ opacity: 0.08 }} />
-          <div className="absolute inset-0 bg-[#060B14]/85" />
-        </div>
-        <div className="container relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-            <Badge className="mb-4 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Our Services & Modules</Badge>
-            <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              12 Integrated Enterprise Modules
-            </h2>
-            <p className="text-white/50 max-w-2xl mx-auto">
-              From administrative management to AI-powered business intelligence — every module your enterprise needs, unified in one platform.
-            </p>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {services.map((s, i) => (
-              <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i % 6}
-                className={`glass-card glass-card-hover p-6 border ${s.border} ${s.hover} transition-all duration-300 hover:shadow-lg`}>
-                <s.icon className={`w-7 h-7 ${s.color} mb-4`} />
-                <h3 className="text-base font-semibold text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{s.title}</h3>
-                <p className="text-white/45 text-sm leading-relaxed">{s.desc}</p>
-              </motion.div>
+      {/* ── Stats Bar ── */}
+      <section className="bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-amber-500/10 border-y border-amber-400/20 py-10">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {STATS.map(({ value, label }) => (
+              <div key={label} className="text-center">
+                <div className="font-display text-3xl md:text-4xl font-bold text-amber-400 mb-1">{value}</div>
+                <div className="text-white/50 text-sm tracking-wide">{label}</div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── NEO AI Section ── */}
-      <section id="neo-ai" className="py-24">
-        <div className="container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-              <Badge className="mb-4 bg-amber-500/10 text-amber-400 border border-amber-500/20">NEO AI Core</Badge>
-              <h2 className="text-4xl font-bold text-white mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                The Intelligence Engine Behind Your Enterprise
+      {/* ── IT Solutions ── */}
+      <section id="it-solutions" className="py-28 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <img src={IT_IMG} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#05080F] via-[#05080F]/80 to-[#05080F]" />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-6">
+          <motion.div
+            initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger}
+            className="grid lg:grid-cols-2 gap-16 items-center mb-20"
+          >
+            <motion.div variants={fadeUp}>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-400/30 bg-blue-400/10 text-blue-400 text-xs tracking-widest uppercase mb-6">
+                <Monitor className="w-3 h-3" /> IT Solutions
+              </div>
+              <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                Enterprise Technology<br />
+                <span className="text-blue-400">That Scales With You</span>
               </h2>
-              <p className="text-white/50 mb-8 leading-relaxed">
-                NEO (Next-generation Enterprise Orchestrator) is a proprietary hybrid AI combining Manus AI (80%) and GPT-4 (20%), featuring 7 specialized intelligence modules that orchestrate every aspect of your business operations — from accounting to governance.
+              <p className="text-white/60 text-lg leading-relaxed mb-8">
+                From cloud infrastructure and cybersecurity to custom software and AI-powered automation, Golden Team delivers end-to-end IT solutions that modernize your operations and protect your business.
               </p>
-              <div className="grid grid-cols-1 gap-2.5 mb-8">
-                {aiModules.map((m, i) => (
-                  <motion.div key={i}
-                    initial={{ opacity: 0, x: -16 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.06 }}
-                    className="flex items-center gap-3 p-3 glass-card border border-white/5 rounded-lg">
-                    <span className="text-lg">{m.icon}</span>
-                    <div>
-                      <div className="text-sm font-semibold text-white">{m.name}</div>
-                      <div className="text-xs text-white/40">{m.desc}</div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-              <div className="flex gap-4">
-                <Button onClick={() => setLocation("/neo-architecture")} className="bg-blue-600 hover:bg-blue-500 text-white border-0">
-                  View Full Architecture <ChevronRight className="ml-1 w-4 h-4" />
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button className="bg-blue-600 hover:bg-blue-500 text-white border-0 px-6">
+                  IT Solutions Overview <ChevronRight className="ml-1 w-4 h-4" />
                 </Button>
-                <Button onClick={() => setLocation("/login")} variant="outline" className="border-white/20 text-white hover:bg-white/5">
-                  Try NEO AI
+                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent px-6">
+                  Request Assessment
                 </Button>
               </div>
             </motion.div>
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.7 }}
-              className="relative flex justify-center">
-              <div className="relative w-80 h-80">
-                <div className="absolute inset-0 rounded-full neo-pulse" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)" }} />
-                <img src={NEO_CORE_IMG} alt="NEO AI Core" className="w-full h-full object-contain rounded-full" />
-              </div>
-              <div className="absolute top-6 right-0 glass-card border border-blue-500/20 px-3 py-2 text-xs rounded-lg">
-                <div className="text-blue-400 font-semibold">Manus AI</div>
-                <div className="text-white/40">80% Traffic</div>
-              </div>
-              <div className="absolute bottom-6 left-0 glass-card border border-cyan-500/20 px-3 py-2 text-xs rounded-lg">
-                <div className="text-cyan-400 font-semibold">GPT-4 Turbo</div>
-                <div className="text-white/40">20% Traffic</div>
-              </div>
+            <motion.div variants={fadeUp} className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/20 border border-white/10">
+              <img src={IT_IMG} alt="IT Solutions" className="w-full h-72 object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#05080F]/60 to-transparent" />
             </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Roadmap ── */}
-      <section id="roadmap" className="py-24" style={{ background: "rgba(13,27,62,0.25)" }}>
-        <div className="container">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-            <Badge className="mb-4 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Development Roadmap</Badge>
-            <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              24-Week Implementation Plan
-            </h2>
-            <p className="text-white/50 max-w-2xl mx-auto">
-              A phased approach ensuring smooth, manageable delivery from foundation to full AI-powered enterprise deployment.
-            </p>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {phases.map((p, i) => (
-              <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}
-                className={`glass-card p-6 border-t-2 ${p.color} border-l border-r border-b border-white/5`}>
-                <div className="flex items-center gap-2 mb-1">
-                  <div className={`w-2 h-2 rounded-full ${p.dot}`} />
-                  <span className="text-xs text-white/40">{p.weeks}</span>
+
+          <motion.div
+            initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {IT_SERVICES.map(({ icon: Icon, title, desc }) => (
+              <motion.div
+                key={title} variants={fadeUp}
+                className="group p-6 rounded-xl border border-white/8 bg-white/3 hover:bg-blue-500/8 hover:border-blue-400/30 transition-all duration-300 cursor-pointer"
+              >
+                <div className="w-12 h-12 rounded-xl bg-blue-500/15 border border-blue-400/20 flex items-center justify-center mb-4 group-hover:bg-blue-500/25 transition-colors">
+                  <Icon className="w-6 h-6 text-blue-400" />
                 </div>
-                <div className="text-xs font-semibold text-white/50 mb-1">{p.phase}</div>
-                <h3 className="text-sm font-bold text-white mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{p.title}</h3>
-                <ul className="space-y-2">
-                  {p.items.map((item, j) => (
-                    <li key={j} className="flex items-start gap-2 text-xs text-white/45">
-                      <CheckCircle className="w-3 h-3 mt-0.5 text-emerald-400 shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                <h3 className="font-display font-semibold text-white mb-2 text-lg">{title}</h3>
+                <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
               </motion.div>
             ))}
-          </div>
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mt-10">
-            <Button onClick={() => setLocation("/project-plan")} size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/5">
-              View Full Project Plan <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
           </motion.div>
         </div>
       </section>
 
-      {/* ── ASTRA PM Banner ── */}
-      <section className="py-16">
-        <div className="container">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
-            className="glass-card border border-amber-500/20 p-8 md:p-12 relative overflow-hidden rounded-2xl">
-            <div className="absolute top-0 right-0 w-72 h-72 rounded-full opacity-10 pointer-events-none" style={{ background: "radial-gradient(circle, #F59E0B, transparent)", transform: "translate(30%, -30%)" }} />
-            <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Star className="w-4 h-4 text-amber-400" />
-                  <span className="text-amber-400 text-sm font-semibold">Flagship Product</span>
+      {/* ── ASTRA PM ── */}
+      <section id="astra-pm" className="py-28 bg-gradient-to-b from-[#05080F] via-[#080D1A] to-[#05080F] relative overflow-hidden">
+        {/* Violet glow */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full opacity-10" style={{ background: "radial-gradient(circle, rgba(139,92,246,0.4) 0%, transparent 70%)" }} />
+        <div className="relative z-10 max-w-7xl mx-auto px-6">
+          <motion.div
+            initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger}
+            className="grid lg:grid-cols-2 gap-16 items-center mb-20"
+          >
+            <motion.div variants={fadeUp} className="order-2 lg:order-1 relative rounded-2xl overflow-hidden shadow-2xl shadow-violet-500/20 border border-white/10">
+              <img src={ASTRA_IMG} alt="ASTRA PM" className="w-full h-72 object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#05080F]/60 to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="flex items-center gap-2 bg-[#05080F]/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-violet-400/20">
+                  <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+                  <span className="text-violet-300 text-xs font-medium">ASTRA PM — Live Platform</span>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                  ASTRA PM — Project Management Platform
-                </h3>
-                <p className="text-white/50 max-w-xl text-sm leading-relaxed">
-                  Golden Team is the proud owner of ASTRA PM, an AI-powered next-generation project management platform for the AEC industry. Reducing timelines by 60% and costs by 40%.
-                </p>
               </div>
-              <div className="flex flex-col gap-2.5 shrink-0">
-                {["95+ Production-Ready Features", "34 Database Tables", "React 19 + tRPC Architecture"].map((f, i) => (
-                  <div key={i} className="flex items-center gap-2 text-sm text-white/60">
-                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" /> {f}
+            </motion.div>
+            <motion.div variants={fadeUp} className="order-1 lg:order-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-400/30 bg-violet-400/10 text-violet-400 text-xs tracking-widest uppercase mb-6">
+                <FolderKanban className="w-3 h-3" /> ASTRA PM
+              </div>
+              <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                Intelligent Project<br />
+                <span className="text-violet-400">Management Platform</span>
+              </h2>
+              <p className="text-white/60 text-lg leading-relaxed mb-6">
+                ASTRA PM is Golden Team's flagship project management platform — a comprehensive SaaS solution designed for enterprise project delivery. Built with PMBOK methodology, AI-powered insights, and the ASTRA AMG governance framework.
+              </p>
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                {[
+                  { label: "ISO 9001", sublabel: "Quality Gates" },
+                  { label: "NEO AI", sublabel: "Smart Insights" },
+                  { label: "ASTRA AMG", sublabel: "Governance" },
+                  { label: "Real-Time", sublabel: "Analytics" },
+                ].map(({ label, sublabel }) => (
+                  <div key={label} className="flex items-center gap-3 p-3 rounded-lg bg-white/4 border border-white/8">
+                    <div className="w-2 h-2 rounded-full bg-violet-400 flex-shrink-0" />
+                    <div>
+                      <div className="text-white text-sm font-semibold">{label}</div>
+                      <div className="text-white/40 text-xs">{sublabel}</div>
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button className="bg-violet-600 hover:bg-violet-500 text-white border-0 px-6">
+                  Explore ASTRA PM <ChevronRight className="ml-1 w-4 h-4" />
+                </Button>
+                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent px-6">
+                  Request Demo
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {ASTRA_FEATURES.map(({ icon: Icon, title, desc }) => (
+              <motion.div
+                key={title} variants={fadeUp}
+                className="group p-6 rounded-xl border border-white/8 bg-white/3 hover:bg-violet-500/8 hover:border-violet-400/30 transition-all duration-300"
+              >
+                <div className="w-12 h-12 rounded-xl bg-violet-500/15 border border-violet-400/20 flex items-center justify-center mb-4 group-hover:bg-violet-500/25 transition-colors">
+                  <Icon className="w-6 h-6 text-violet-400" />
+                </div>
+                <h3 className="font-display font-semibold text-white mb-2 text-lg">{title}</h3>
+                <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── Consultancy ── */}
+      <section id="consultancy" className="py-28 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-15">
+          <img src={CONSULT_IMG} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#05080F] via-[#05080F]/70 to-[#05080F]" />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-6">
+          <motion.div
+            initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger}
+            className="grid lg:grid-cols-2 gap-16 items-center mb-20"
+          >
+            <motion.div variants={fadeUp}>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 text-amber-400 text-xs tracking-widest uppercase mb-6">
+                <Briefcase className="w-3 h-3" /> Business Consultancy
+              </div>
+              <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                Strategic Advisory for<br />
+                <span className="text-amber-400">Sustainable Growth</span>
+              </h2>
+              <p className="text-white/60 text-lg leading-relaxed mb-8">
+                Our consultancy practice combines deep regional expertise with international best practices to help organizations navigate complexity, optimize operations, and achieve their strategic ambitions.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold px-6">
+                  Consultancy Services <ChevronRight className="ml-1 w-4 h-4" />
+                </Button>
+                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent px-6">
+                  Schedule Consultation
+                </Button>
+              </div>
+            </motion.div>
+            <motion.div variants={fadeUp} className="relative rounded-2xl overflow-hidden shadow-2xl shadow-amber-500/10 border border-white/10">
+              <img src={CONSULT_IMG} alt="Business Consultancy" className="w-full h-72 object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#05080F]/60 to-transparent" />
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
+            className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {CONSULT_SERVICES.map(({ icon: Icon, title, desc }) => (
+              <motion.div
+                key={title} variants={fadeUp}
+                className="group p-6 rounded-xl border border-white/8 bg-white/3 hover:bg-amber-500/8 hover:border-amber-400/30 transition-all duration-300"
+              >
+                <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-400/20 flex items-center justify-center mb-4 group-hover:bg-amber-500/25 transition-colors">
+                  <Icon className="w-6 h-6 text-amber-400" />
+                </div>
+                <h3 className="font-display font-semibold text-white mb-2 text-lg">{title}</h3>
+                <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── About / Why Golden Team ── */}
+      <section id="about" className="py-28 bg-gradient-to-b from-[#05080F] to-[#080D1A]">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-16">
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/20 bg-white/5 text-white/60 text-xs tracking-widest uppercase mb-6">
+              Why Golden Team
+            </motion.div>
+            <motion.h2 variants={fadeUp} className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
+              One Partner for Your<br /><span className="text-amber-400">Entire Enterprise Journey</span>
+            </motion.h2>
+            <motion.p variants={fadeUp} className="text-white/50 text-lg max-w-3xl mx-auto">
+              Golden Team uniquely combines IT infrastructure, AI-powered platforms, and strategic consultancy under one roof — delivering integrated solutions that create real business value.
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
+            className="grid md:grid-cols-3 gap-8 mb-20"
+          >
+            {[
+              { icon: "🏆", title: "Proven Excellence", desc: "15+ years delivering enterprise solutions across the GCC region with measurable outcomes and client satisfaction." },
+              { icon: "🤖", title: "AI-First Approach", desc: "NEO AI Core integration across all services ensures intelligent automation and data-driven decision making." },
+              { icon: "🛡️", title: "ISO 9001 Quality", desc: "Every engagement is governed by our ISO 9001:2015 certified quality management system for consistent excellence." },
+            ].map(({ icon, title, desc }) => (
+              <motion.div key={title} variants={fadeUp} className="text-center p-8 rounded-2xl border border-white/8 bg-white/3">
+                <div className="text-5xl mb-4">{icon}</div>
+                <h3 className="font-display text-xl font-bold text-white mb-3">{title}</h3>
+                <p className="text-white/50 leading-relaxed">{desc}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Testimonials */}
+          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger} className="grid md:grid-cols-3 gap-6">
+            {TESTIMONIALS.map(({ name, role, text }) => (
+              <motion.div key={name} variants={fadeUp} className="p-6 rounded-xl border border-white/8 bg-white/3">
+                <div className="flex gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}
+                </div>
+                <p className="text-white/60 text-sm leading-relaxed mb-6 italic">"{text}"</p>
+                <div>
+                  <div className="text-white font-semibold text-sm">{name}</div>
+                  <div className="text-white/40 text-xs">{role}</div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── CTA Banner ── */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-500/15 via-amber-400/8 to-amber-500/15 border-y border-amber-400/20" />
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+          <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}>
+            <motion.h2 variants={fadeUp} className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
+              Ready to Transform<br /><span className="text-amber-400">Your Enterprise?</span>
+            </motion.h2>
+            <motion.p variants={fadeUp} className="text-white/60 text-lg mb-10">
+              Let's discuss how Golden Team can accelerate your business with cutting-edge IT, intelligent AI, and strategic advisory.
+            </motion.p>
+            <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Button
+                size="lg"
+                className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold px-10 py-6 text-base shadow-xl shadow-amber-500/30"
+                onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
+              >
+                Start a Conversation <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-white/20 text-white hover:bg-white/10 bg-transparent px-10 py-6 text-base"
+                onClick={() => setLocation("/login")}
+              >
+                Employee Portal Login
+              </Button>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── Contact ── */}
+      <section id="contact" className="py-28 bg-[#080D1A]">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-16">
+            <motion.h2 variants={fadeUp} className="font-display text-4xl md:text-5xl font-bold text-white mb-4">
+              Get In Touch
+            </motion.h2>
+            <motion.p variants={fadeUp} className="text-white/50 text-lg">
+              Our team is ready to help you achieve your business goals.
+            </motion.p>
+          </motion.div>
+
+          <motion.div
+            initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
+            className="grid md:grid-cols-3 gap-8 mb-16"
+          >
+            {[
+              { icon: Phone, label: "Phone", value: "+966 XX XXX XXXX", sub: "Sun–Thu, 8am–6pm" },
+              { icon: Mail, label: "Email", value: "info@goldenteam.sa", sub: "Response within 24 hours" },
+              { icon: MapPin, label: "Office", value: "Riyadh, Saudi Arabia", sub: "GCC Region Coverage" },
+            ].map(({ icon: Icon, label, value, sub }) => (
+              <motion.div key={label} variants={fadeUp} className="text-center p-8 rounded-xl border border-white/8 bg-white/3">
+                <div className="w-14 h-14 rounded-full bg-amber-500/15 border border-amber-400/20 flex items-center justify-center mx-auto mb-4">
+                  <Icon className="w-6 h-6 text-amber-400" />
+                </div>
+                <div className="text-white/40 text-xs tracking-widest uppercase mb-2">{label}</div>
+                <div className="text-white font-semibold mb-1">{value}</div>
+                <div className="text-white/40 text-sm">{sub}</div>
+              </motion.div>
+            ))}
           </motion.div>
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-white/5 py-12">
-        <div className="container">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center font-bold text-sm text-black">GT</div>
-              <div>
-                <div className="font-bold text-sm text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Golden Team Trading Services</div>
-                <div className="text-xs text-white/30">Enterprise AI Platform · Powered by NEO AI Core</div>
+      <footer className="border-t border-white/8 bg-[#05080F] py-12">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid md:grid-cols-4 gap-10 mb-12">
+            <div className="md:col-span-2">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
+                  <span className="text-[#05080F] font-bold text-lg font-display">GT</span>
+                </div>
+                <div>
+                  <div className="text-white font-bold font-display">GOLDEN TEAM</div>
+                  <div className="text-amber-400/60 text-[10px] tracking-widest uppercase">Trading Services</div>
+                </div>
               </div>
+              <p className="text-white/40 text-sm leading-relaxed max-w-xs">
+                Administrative & Business Development Services · IT Solutions · ASTRA PM Project Management Platform
+              </p>
             </div>
-            <div className="text-xs text-white/20">© 2026 Golden Team Trading Services. All rights reserved.</div>
+            <div>
+              <div className="text-white/60 text-xs tracking-widest uppercase mb-4">Services</div>
+              {["IT Solutions", "ASTRA PM", "Business Consultancy", "ISO 9001 Advisory", "AI Integration"].map((s) => (
+                <div key={s} className="text-white/40 text-sm py-1 hover:text-white/70 cursor-pointer transition-colors">{s}</div>
+              ))}
+            </div>
+            <div>
+              <div className="text-white/60 text-xs tracking-widest uppercase mb-4">Company</div>
+              {["About Us", "Our Team", "Careers", "Contact", "Employee Portal"].map((s) => (
+                <div key={s} onClick={s === "Employee Portal" ? () => setLocation("/login") : undefined}
+                  className="text-white/40 text-sm py-1 hover:text-white/70 cursor-pointer transition-colors">{s}</div>
+              ))}
+            </div>
+          </div>
+          <div className="border-t border-white/8 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="text-white/30 text-sm">© 2026 Golden Team Trading Services. All rights reserved.</div>
+            <div className="text-white/30 text-sm">ISO 9001:2015 Certified · Powered by NEO AI</div>
           </div>
         </div>
       </footer>

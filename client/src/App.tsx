@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Portal from "./pages/Portal";
 import NEOArchitecture from "./pages/NEOArchitecture";
+import Architecture from "./pages/Architecture";
 import ProjectPlan from "./pages/ProjectPlan";
 import HRModule from "./pages/HRModule";
 import ERPModule from "./pages/ERPModule";
@@ -37,6 +38,7 @@ function Router() {
       <Route path="/portal/audit" component={AuditModule} />
       <Route path="/portal/governance" component={GovernanceModule} />
       <Route path="/neo-architecture" component={NEOArchitecture} />
+      <Route path="/architecture" component={Architecture} />
       <Route path="/project-plan" component={ProjectPlan} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
