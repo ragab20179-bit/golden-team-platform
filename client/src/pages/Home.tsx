@@ -22,6 +22,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { t } from "@/lib/i18n";
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-hero-clean-dubai_424dffdd.jpeg";
+const GT_LOGO_MAIN = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt_main_logo_4ff8866b.png";
 const IT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-it-solutions-kBJmggmFapCwtnocCUjwuj.webp";
 const ASTRA_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-astra-pm-HFtSuwmFhd8RXqX7n7bRpw.webp";
 const CONSULT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-consulting-NxW47h5uQRtwgqAX4Dbu4R.webp";
@@ -60,9 +61,11 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between py-4">
           {/* Logo */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
-              <span className="text-[#05080F] font-bold text-lg font-display">GT</span>
-            </div>
+            <img
+              src={GT_LOGO_MAIN}
+              alt="Golden Team"
+              className="h-12 w-auto object-contain"
+            />
             <div>
               <div className="text-white font-bold text-sm leading-tight font-display">
                 {isRTL ? "الفريق الذهبي" : "GOLDEN TEAM"}
@@ -546,9 +549,7 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-10 mb-12">
             <div className="md:col-span-2">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
-                  <span className="text-[#05080F] font-bold text-lg font-display">GT</span>
-                </div>
+                <img src={GT_LOGO_MAIN} alt="Golden Team" className="h-12 w-auto object-contain" />
                 <div>
                   <div className="text-white font-bold font-display">
                     {isRTL ? "الفريق الذهبي" : "GOLDEN TEAM"}

@@ -50,8 +50,11 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  /* Custom brand tokens */
-  --color-gold: #F59E0B;
+  /* Custom brand tokens — extracted from Golden Team letterhead & artwork */
+  --color-gold: #FFE196;          /* Primary gold — letterhead corner triangles */
+  --color-gold-deep: #F59E0B;     /* Deep gold — logo mark amber */
+  --color-brand-teal: #002D3C;    /* Primary dark teal — letterhead corners & logo border */
+  --color-brand-olive: #5A5A3C;   /* Secondary olive — letterhead accent triangles */
   --color-neo-blue: #3B82F6;
   --color-neo-cyan: #06B6D4;
   --color-neo-emerald: #10B981;
