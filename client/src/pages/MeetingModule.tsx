@@ -7,6 +7,7 @@
 import { useState } from "react";
 import PortalLayout from "@/components/PortalLayout";
 import NEOChatWindow from "@/components/NEOChatWindow";
+import UniversalFileUpload from "@/components/UniversalFileUpload";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -14,11 +15,13 @@ import {
   Video, Mic, MicOff, VideoOff, Users, Clock, FileText,
   Brain, Zap, Globe, BarChart2, CheckCircle2, AlertCircle,
   Calendar, Play, Square, Download, MessageSquare, Eye,
-  Activity, Star, ChevronRight, Plus, Search, Filter, MessageCircle
+  Activity, Star, ChevronRight, Plus, Search, Filter, MessageCircle,
+  Paperclip, ExternalLink, Trash2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { trpc } from "@/lib/trpc";
 
 const FADE = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
 
@@ -82,11 +85,21 @@ const MEETING_FLOW_STEPS = [
 export default function MeetingModule() {
   const [activeTab, setActiveTab] = useState<"upcoming" | "past" | "live">("upcoming");
   const [selectedMeeting, setSelectedMeeting] = useState<number | null>(null);
+  const [filesForMeeting, setFilesForMeeting] = useState<number | null>(null);
   const [liveActive, setLiveActive] = useState(false);
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const [showNEOChat, setShowNEOChat] = useState(false);
   const { lang, t } = useLanguage();
+
+  // Fetch files linked to the selected meeting
+  const { data: meetingFiles, refetch: refetchMeetingFiles } = trpc.vault.listByContext.useQuery(
+    { contextType: "meeting", contextId: String(filesForMeeting ?? 0) },
+    { enabled: filesForMeeting !== null }
+  );
+  const deleteFileMutation = trpc.vault.deleteFile.useMutation({
+    onSuccess: () => { refetchMeetingFiles(); toast.success(t("File removed", "تم حذف الملف")); },
+  });
   const [liveTranscript] = useState([
     { speaker: "Ahmed Al-Rashid", lang: "AR", text: "نبدأ بمراجعة أداء الربع الثاني...", time: "14:02" },
     { speaker: "NEO AI", lang: "EN", text: "Transcribing: 'Let us begin with the Q2 performance review...' — Sentiment: Neutral (82%)", time: "14:02", isNeo: true },
@@ -208,13 +221,75 @@ export default function MeetingModule() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
+                      <Button size="sm" variant="outline"
+                        className="border-white/10 text-white/50 hover:text-white text-xs h-8 bg-transparent"
+                        onClick={(e) => { e.stopPropagation(); setFilesForMeeting(filesForMeeting === meeting.id ? null : meeting.id); }}>
+                        <Paperclip className="w-3 h-3 mr-1" />
+                        {t("Files", "ملفات")}
+                        {meetingFiles && filesForMeeting === meeting.id && meetingFiles.length > 0 && (
+                          <span className="ml-1 bg-blue-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px]">{meetingFiles.length}</span>
+                        )}
+                      </Button>
                       <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8"
                         onClick={(e) => { e.stopPropagation(); setActiveTab("live"); setLiveActive(true); toast.success("Joining meeting with NEO AI..."); }}>
-                        <Play className="w-3 h-3 mr-1" /> Join
+                        <Play className="w-3 h-3 mr-1" /> {t("Join", "انضم")}
                       </Button>
                       <ChevronRight className={`w-4 h-4 text-white/30 transition-transform ${selectedMeeting === meeting.id ? "rotate-90" : ""}`} />
                     </div>
                   </div>
+                  {/* File Attachments Panel */}
+                  {filesForMeeting === meeting.id && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+                      className="mt-4 pt-4 border-t border-blue-500/20">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Paperclip className="w-4 h-4 text-blue-400" />
+                        <span className="text-sm font-semibold text-white">
+                          {t("Meeting Attachments", "مرفقات الاجتماع")}
+                        </span>
+                        <Badge className="text-[10px] border border-blue-500/30 bg-blue-500/10 text-blue-300">
+                          {t("Auto-parsed by NEO", "تحليل تلقائي بواسطة نيو")}
+                        </Badge>
+                      </div>
+
+                      {/* Existing attached files */}
+                      {meetingFiles && meetingFiles.length > 0 && (
+                        <div className="space-y-2 mb-4">
+                          {meetingFiles.map((file) => (
+                            <div key={file.id} className="flex items-center gap-3 p-2 rounded-lg bg-white/3 border border-white/5 group">
+                              <FileText className="w-4 h-4 text-blue-400 shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <div className="text-xs font-medium text-white truncate">{file.originalName}</div>
+                                {file.aiSummary && (
+                                  <div className="text-[10px] text-white/40 truncate mt-0.5">{file.aiSummary}</div>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <a href={file.s3Url} target="_blank" rel="noopener noreferrer">
+                                  <Button size="sm" variant="outline" className="h-6 w-6 p-0 border-white/10 bg-transparent">
+                                    <ExternalLink className="w-3 h-3" />
+                                  </Button>
+                                </a>
+                                <Button size="sm" variant="outline"
+                                  className="h-6 w-6 p-0 border-rose-500/20 text-rose-400 bg-transparent hover:bg-rose-500/10"
+                                  onClick={() => deleteFileMutation.mutate({ id: file.id })}>
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Upload new files */}
+                      <UniversalFileUpload
+                        context="meeting"
+                        contextId={meeting.id}
+                        onAllComplete={() => refetchMeetingFiles()}
+                        compact
+                      />
+                    </motion.div>
+                  )}
+
                   {selectedMeeting === meeting.id && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
                       className="mt-4 pt-4 border-t border-white/5">

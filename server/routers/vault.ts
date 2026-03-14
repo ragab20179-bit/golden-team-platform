@@ -45,10 +45,13 @@ export const vaultRouter = router({
         sizeBytes: z.number().int().min(0).max(16 * 1024 * 1024), // 16MB max
         base64Data: z.string(), // base64-encoded file content
         folder: z.enum(VAULT_FOLDERS).default("general"),
+        // Optional context linking
+        contextType: z.string().max(64).optional(), // e.g. "meeting", "project", "hr"
+        contextId: z.string().max(128).optional(),  // e.g. meeting ID
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { filename, mimeType, sizeBytes, base64Data, folder } = input;
+      const { filename, mimeType, sizeBytes, base64Data, folder, contextType, contextId } = input;
       const userId = ctx.user.id;
 
       // Decode base64 to buffer
@@ -71,6 +74,8 @@ export const vaultRouter = router({
         s3Key,
         s3Url,
         folder,
+        contextType: contextType ?? null,
+        contextId: contextId ?? null,
       });
 
       // Write buffer to temp file for the new filePath-based parser
@@ -173,6 +178,57 @@ export const vaultRouter = router({
   getFolders: protectedProcedure.query(async () => {
     return VAULT_FOLDERS;
   }),
+
+  /**
+   * List files linked to a specific context (meeting, project, hr record, etc.)
+   */
+  listByContext: protectedProcedure
+    .input(
+      z.object({
+        contextType: z.string().min(1).max(64),
+        contextId: z.string().min(1).max(128),
+      })
+    )
+    .query(async ({ input }) => {
+      const { listVaultFilesByContext } = await import("../db/vault");
+      return listVaultFilesByContext(input.contextType, input.contextId);
+    }),
+
+  /**
+   * Re-analyze a file with GPT-4 Vision (for images and DWG/DXF files).
+   * Triggers a fresh AI analysis using the stored S3 URL.
+   */
+  reanalyzeFile: protectedProcedure
+    .input(z.object({ id: z.number().int() }))
+    .mutation(async ({ input }) => {
+      const file = await getVaultFileById(input.id);
+      if (!file) throw new TRPCError({ code: "NOT_FOUND", message: "File not found" });
+
+      const isVisualFile = [
+        "image/png", "image/jpeg", "image/webp", "image/tiff",
+        "application/dxf", "image/vnd.dxf",
+      ].includes(file.mimeType) || file.originalName.toLowerCase().endsWith(".dwg");
+
+      if (!isVisualFile) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Re-analysis is only available for images and DWG/DXF files",
+        });
+      }
+
+      // Write a placeholder temp file (Vision uses the URL directly)
+      const tmpDir = "/tmp/vault-reanalyze";
+      if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+      const tmpPath = `${tmpDir}/${file.id}-reanalyze${file.originalName.slice(file.originalName.lastIndexOf("."))}`;
+      fs.writeFileSync(tmpPath, ""); // empty placeholder — parseImage uses the URL
+
+      // Trigger fresh parse with the stored S3 URL for Vision
+      parseAndSummarize(file.id, tmpPath, file.mimeType, file.originalName, file.s3Url)
+        .finally(() => { try { fs.unlinkSync(tmpPath); } catch { /* ignore */ } })
+        .catch((err) => console.error("[Vault] Re-analyze error:", err));
+
+      return { success: true, message: "Re-analysis started. Results will update shortly." };
+    }),
 });
 
 /**

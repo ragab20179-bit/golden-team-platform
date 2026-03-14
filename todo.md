@@ -83,3 +83,25 @@
 
 ## Last Updated
 2026-03-15 17:09 UTC — Phase 6 complete, universal upload system ported from Khobar repo
+
+## Phase 7 — Contextual Uploads, Bulk Import, Vision Re-analysis (COMPLETE)
+- [x] Add contextType + contextId columns to vault_files schema and push migration
+- [x] Update vault.uploadFile procedure to accept and store context fields
+- [x] Add vault.listByContext tRPC procedure to fetch files per meeting/project
+- [x] Update universalUpload.finalize to write to vault_files with context linking
+- [x] Add file attachments panel to MeetingModule with UniversalFileUpload (context=meeting)
+- [x] Create BulkImportDialog component — 4-step wizard (upload → column map → preview → import)
+- [x] Create ModuleBulkImport.tsx — HRBulkImport, KPIBulkImport, ProcurementBulkImport wrappers
+- [x] Add bulkImportHR, bulkImportKPI, bulkImportProcurement procedures to modules router
+- [x] Add hrEmployees, kpiTargets, procurementItems tables to schema and push migration
+- [x] Wire HRBulkImport into HRModule with Import button
+- [x] Wire KPIBulkImport into KPIModule with Import KPI Targets button
+- [x] Wire ProcurementBulkImport into ProcurementModule with Import button
+- [x] Add reanalyzeMutation to DriveVault with Re-analyze with AI button (Wand2 icon)
+- [x] Add no-summary prompt card in preview dialog when aiSummary is null
+- [x] Background poll (5s) after re-analysis trigger to refresh summary
+- [x] Write 22 vitest tests for modules router and contextual upload
+- [x] 70 total tests passing (5 test files)
+
+## Last Updated
+2026-03-15 17:45 UTC — Phase 7 complete, all three features delivered

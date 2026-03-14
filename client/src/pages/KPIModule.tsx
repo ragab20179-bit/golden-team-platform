@@ -2,11 +2,14 @@
  * KPI Dashboard — لوحة مؤشرات الأداء الرئيسية
  * Bilingual: Arabic / English
  */
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Upload } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import PortalLayout from "@/components/PortalLayout";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis } from "recharts";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { KPIBulkImport } from "@/components/ModuleBulkImport";
 
 const monthlyData = [
   { month: "Oct", monthAr: "أكت",    revenue: 1800, target: 2000, satisfaction: 91 },
@@ -37,6 +40,7 @@ const kpis = [
 
 export default function KPIModule() {
   const { t, isRTL } = useLanguage();
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   return (
     <PortalLayout
@@ -46,6 +50,12 @@ export default function KPIModule() {
       badgeColor="bg-amber-500/10 text-amber-400 border-amber-500/20"
     >
       <div className="p-6 space-y-6" dir={isRTL ? "rtl" : "ltr"}>
+        {/* Import Button */}
+        <div className="flex justify-end">
+          <Button size="sm" onClick={() => setBulkOpen(true)} variant="outline" className="border-white/20 text-white/70 hover:bg-white/10 bg-transparent h-8 text-xs">
+            <Upload className={`w-3 h-3 ${isRTL ? "ml-1" : "mr-1"}`} /> {t("Import KPI Targets", "استيراد مؤشرات الأداء")}
+          </Button>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {kpis.map((k, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
@@ -95,6 +105,8 @@ export default function KPIModule() {
           </div>
         </div>
       </div>
+
+      <KPIBulkImport open={bulkOpen} onClose={() => setBulkOpen(false)} />
     </PortalLayout>
   );
 }

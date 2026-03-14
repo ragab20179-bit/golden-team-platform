@@ -82,3 +82,20 @@ export async function countVaultFiles(folder?: string): Promise<number> {
   const rows = await listVaultFiles({ folder, limit: 9999 });
   return rows.length;
 }
+
+/**
+ * List all files linked to a specific context (e.g. meeting ID, project ID).
+ */
+export async function listVaultFilesByContext(
+  contextType: string,
+  contextId: string
+): Promise<VaultFile[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(vaultFiles)
+    .where(and(eq(vaultFiles.contextType, contextType), eq(vaultFiles.contextId, contextId)))
+    .orderBy(desc(vaultFiles.createdAt))
+    .limit(100);
+}

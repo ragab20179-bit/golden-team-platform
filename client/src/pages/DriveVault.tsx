@@ -7,7 +7,7 @@ import { useState } from "react";
 import {
   FolderOpen, Search, Download, Trash2, FileText, FileSpreadsheet,
   File, Image, Eye, Sparkles, Clock, User, ChevronRight, HardDrive,
-  Filter, RefreshCw,
+  Filter, RefreshCw, Wand2, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -122,6 +122,20 @@ export default function DriveVault() {
     onSuccess: () => {
       utils.vault.listFiles.invalidate();
       toast.success(t("File deleted", "تم حذف الملف"));
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const reanalyzeMutation = trpc.vault.reanalyzeFile.useMutation({
+    onSuccess: () => {
+      // Re-analysis runs in background — invalidate list so updated summary appears when ready
+      utils.vault.listFiles.invalidate();
+      toast.info(t(
+        "NEO AI re-analysis started. The summary will update in a few seconds.",
+        "بدأت NEO إعادة التحليل. سيتحدث الملخص خلال ثوانٍ."
+      ));
+      // Poll once after 5 seconds to pick up the new summary
+      setTimeout(() => utils.vault.listFiles.invalidate(), 5000);
     },
     onError: (err) => toast.error(err.message),
   });
@@ -432,6 +446,16 @@ export default function DriveVault() {
                 </div>
               )}
 
+              {/* No AI summary yet — prompt re-analysis */}
+              {!previewFile.aiSummary && (
+                <div className="p-4 rounded-xl bg-white/3 border border-white/10 flex items-center gap-3">
+                  <Sparkles className="w-4 h-4 text-white/30 shrink-0" />
+                  <p className="text-white/40 text-sm flex-1">
+                    {t("No AI summary yet. Click \"Re-analyze\" to generate one.", "لا يوجد ملخص ذكاء اصطناعي بعد. اضغط على إعادة التحليل لإنشاء ملخص.")}
+                  </p>
+                </div>
+              )}
+
               {/* Actions */}
               <div className="flex gap-3 pt-2">
                 <Button
@@ -440,6 +464,17 @@ export default function DriveVault() {
                 >
                   <Download className="w-4 h-4 mr-2" />
                   {t("Download File", "تحميل الملف")}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => reanalyzeMutation.mutate({ id: previewFile.id })}
+                  disabled={reanalyzeMutation.isPending}
+                  className="border-violet-400/30 text-violet-400 hover:bg-violet-400/10 bg-transparent"
+                  title={t("Re-analyze with NEO AI", "إعادة التحليل بـ NEO")}
+                >
+                  {reanalyzeMutation.isPending
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : <Wand2 className="w-4 h-4" />}
                 </Button>
                 {(user?.role === "admin" || previewFile.uploadedBy === user?.id) && (
                   <Button

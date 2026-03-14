@@ -5,6 +5,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { vaultRouter } from "./routers/vault";
 import { universalUploadRouter } from "./routers/universalUpload";
+import { modulesRouter } from "./routers/modules";
 import {
   insertAstraDecision,
   getAstraDecisions,
@@ -129,5 +130,8 @@ export const appRouter = router({
 
   // ─── Universal Chunked Upload — All modules ────────────────────────────────
   universalUpload: universalUploadRouter,
+
+  // ─── Module Data — HR, KPI, Procurement bulk import + list ─────────────────
+  modules: modulesRouter,
 });
 export type AppRouter = typeof appRouter;

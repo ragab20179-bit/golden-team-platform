@@ -2,13 +2,15 @@
  * Procurement Module — إدارة المشتريات
  * Bilingual: Arabic / English
  */
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ProcurementBulkImport } from "@/components/ModuleBulkImport";
 
 const pos = [
   { id: "PO-2026-041", vendor: "Tech Supply Arabia",  vendorAr: "تك سبلاي العربية",    items: "IT Equipment",      itemsAr: "معدات تقنية المعلومات",  amount: "SAR 145,000", amountAr: "145,000 ريال", status: "Pending Approval", statusAr: "بانتظار الموافقة", date: "Mar 12", dateAr: "12 مارس" },
@@ -37,6 +39,7 @@ const topVendors = [
 
 export default function ProcurementModule() {
   const { t, isRTL } = useLanguage();
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   return (
     <PortalLayout
@@ -66,9 +69,14 @@ export default function ProcurementModule() {
             <h2 className="text-sm font-semibold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               {t("Purchase Orders", "أوامر الشراء")}
             </h2>
-            <Button size="sm" onClick={() => toast.info(t("Create PO — full build", "إنشاء أمر شراء — قيد التطوير"))} className="h-7 text-[11px] bg-orange-600 hover:bg-orange-500 text-white border-0">
-              <Plus className={`w-3 h-3 ${isRTL ? "ml-1" : "mr-1"}`} /> {t("New PO", "أمر شراء جديد")}
-            </Button>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={() => setBulkOpen(true)} variant="outline" className="border-white/20 text-white/70 hover:bg-white/10 bg-transparent h-7 text-[11px]">
+                <Upload className={`w-3 h-3 ${isRTL ? "ml-1" : "mr-1"}`} /> {t("Import", "استيراد")}
+              </Button>
+              <Button size="sm" onClick={() => toast.info(t("Create PO — full build", "إنشاء أمر شراء — قيد التطوير"))} className="h-7 text-[11px] bg-orange-600 hover:bg-orange-500 text-white border-0">
+                <Plus className={`w-3 h-3 ${isRTL ? "ml-1" : "mr-1"}`} /> {t("New PO", "أمر شراء جديد")}
+              </Button>
+            </div>
           </div>
           <div className="space-y-3">
             {pos.map((p, i) => (
@@ -134,6 +142,8 @@ export default function ProcurementModule() {
           </div>
         </div>
       </div>
+
+      <ProcurementBulkImport open={bulkOpen} onClose={() => setBulkOpen(false)} />
     </PortalLayout>
   );
 }

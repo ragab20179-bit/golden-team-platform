@@ -1,0 +1,60 @@
+CREATE TABLE `hr_employees` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`employeeId` varchar(32),
+	`fullName` varchar(128) NOT NULL,
+	`fullNameAr` varchar(128),
+	`jobTitle` varchar(128),
+	`department` varchar(64),
+	`email` varchar(320),
+	`phone` varchar(32),
+	`nationality` varchar(64),
+	`contractType` enum('full_time','part_time','contract','intern') DEFAULT 'full_time',
+	`startDate` varchar(32),
+	`salary` bigint,
+	`status` enum('active','inactive','on_leave') NOT NULL DEFAULT 'active',
+	`notes` text,
+	`importedBy` int,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `hr_employees_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `kpi_targets` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`kpiCode` varchar(32),
+	`name` varchar(128) NOT NULL,
+	`nameAr` varchar(128),
+	`category` varchar(64),
+	`unit` varchar(32),
+	`targetValue` varchar(32),
+	`actualValue` varchar(32),
+	`period` varchar(32),
+	`owner` varchar(128),
+	`status` enum('on_track','at_risk','off_track','achieved') NOT NULL DEFAULT 'on_track',
+	`notes` text,
+	`importedBy` int,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `kpi_targets_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `procurement_items` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`poNumber` varchar(32),
+	`itemName` varchar(128) NOT NULL,
+	`itemNameAr` varchar(128),
+	`supplier` varchar(128),
+	`category` varchar(64),
+	`quantity` varchar(32),
+	`unit` varchar(32),
+	`unitPrice` bigint,
+	`totalPrice` bigint,
+	`currency` varchar(8) DEFAULT 'SAR',
+	`deliveryDate` varchar(32),
+	`status` enum('pending','approved','ordered','received','cancelled') NOT NULL DEFAULT 'pending',
+	`notes` text,
+	`importedBy` int,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `procurement_items_id` PRIMARY KEY(`id`)
+);

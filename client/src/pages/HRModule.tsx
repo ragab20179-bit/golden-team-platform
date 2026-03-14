@@ -4,12 +4,13 @@
  */
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Users, UserPlus, Clock, DollarSign, Award, CheckCircle, AlertCircle } from "lucide-react";
+import { Users, UserPlus, Clock, DollarSign, Award, CheckCircle, AlertCircle, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { HRBulkImport } from "@/components/ModuleBulkImport";
 
 const employees = [
   { name: "Ahmed Al-Rashidi",  nameAr: "أحمد الراشدي",   role: "Senior IT Engineer",    roleAr: "مهندس تقنية معلومات أول",  dept: "IT Solutions",  deptAr: "حلول تقنية المعلومات", status: "Active",   statusAr: "نشط",   avatar: "AA" },
@@ -37,6 +38,7 @@ const deptColors: Record<string, string> = {
 
 export default function HRModule() {
   const { t, isRTL } = useLanguage();
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   return (
     <PortalLayout
@@ -70,9 +72,14 @@ export default function HRModule() {
               <h2 className="text-sm font-semibold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 {t("Employee Directory", "دليل الموظفين")}
               </h2>
-              <Button size="sm" onClick={() => toast.info(t("Add employee — coming in full build", "إضافة موظف — قيد التطوير"))} className="bg-blue-600 hover:bg-blue-500 text-white border-0 h-8 text-xs">
-                <UserPlus className={`w-3 h-3 ${isRTL ? "ml-1" : "mr-1"}`} /> {t("Add Employee", "إضافة موظف")}
-              </Button>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={() => setBulkOpen(true)} variant="outline" className="border-white/20 text-white/70 hover:bg-white/10 bg-transparent h-8 text-xs">
+                  <Upload className={`w-3 h-3 ${isRTL ? "ml-1" : "mr-1"}`} /> {t("Import", "استيراد")}
+                </Button>
+                <Button size="sm" onClick={() => toast.info(t("Add employee — coming in full build", "إضافة موظف — قيد التطوير"))} className="bg-blue-600 hover:bg-blue-500 text-white border-0 h-8 text-xs">
+                  <UserPlus className={`w-3 h-3 ${isRTL ? "ml-1" : "mr-1"}`} /> {t("Add Employee", "إضافة موظف")}
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               {employees.map((e, i) => (
@@ -154,6 +161,9 @@ export default function HRModule() {
           </div>
         </div>
       </div>
+
+      {/* Bulk Import Dialog */}
+      <HRBulkImport open={bulkOpen} onClose={() => setBulkOpen(false)} />
     </PortalLayout>
   );
 }

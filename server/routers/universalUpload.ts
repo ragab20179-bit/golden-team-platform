@@ -21,6 +21,7 @@ import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../_core/trpc.js";
 import { storagePut } from "../storage.js";
 import { parseFile, detectCategory, type FileCategory } from "../fileParser.js";
+import { insertVaultFile, updateVaultFileParsed } from "../db/vault.js";
 
 // ─── Session Store ────────────────────────────────────────────────────────────
 
@@ -47,6 +48,8 @@ interface UploadSession {
   // Optional context tagging
   context?: "meeting" | "project" | "knowledge" | "vault" | "global";
   contextId?: number;
+  // Set after finalize — DB record ID in vault_files
+  vaultFileId?: number;
 }
 
 const sessions = new Map<string, UploadSession>();
@@ -230,11 +233,34 @@ export const universalUploadRouter = router({
       session.fileUrl = fileUrl;
       session.fileKey = fileKey;
 
+      // Write to vault_files DB with context linking
+      const vaultFileId = await insertVaultFile({
+        uploadedBy: ctx.user.id,
+        filename: safeFileName,
+        originalName: session.fileName,
+        mimeType: session.mimeType,
+        sizeBytes: session.fileSize,
+        s3Key: fileKey,
+        s3Url: fileUrl,
+        folder: session.context === "meeting" ? "meetings"
+              : session.context === "project" ? "technical"
+              : "general",
+        contextType: session.context ?? null,
+        contextId: session.contextId ? String(session.contextId) : null,
+      });
+      session.vaultFileId = vaultFileId;
+
       // Parse file async — don't block response
       parseFile(assembledPath, session.fileName, session.mimeType, fileUrl)
-        .then((result) => {
+        .then(async (result) => {
           session.parsedResult = result as any;
           session.status = "complete";
+          // Update vault_files with parsed content
+          await updateVaultFileParsed(vaultFileId, {
+            parsedText: result.extractedText || undefined,
+            parsedMeta: { category: result.category, pageCount: result.pageCount, headers: result.headers },
+            aiSummary: result.summary || undefined,
+          }).catch(() => { /* non-critical */ });
           // Cleanup temp files
           const sessionDir = path.join(TEMP_DIR, input.uploadId);
           if (fs.existsSync(sessionDir)) {
