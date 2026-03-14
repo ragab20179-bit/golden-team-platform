@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
+import ParticleNetwork from "@/components/ParticleNetwork";
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-hero-clean-dubai_424dffdd.jpeg";
 const IT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-it-solutions-kBJmggmFapCwtnocCUjwuj.webp";
@@ -159,6 +160,14 @@ export default function Home() {
           <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(5,8,15,0.55) 0%, rgba(5,8,15,0.4) 40%, rgba(5,8,15,0.85) 80%, rgba(5,8,15,1) 100%)" }} />
           {/* Gold shimmer overlay */}
           <div className="absolute inset-0 opacity-20" style={{ background: "radial-gradient(ellipse at 20% 50%, rgba(251,191,36,0.15) 0%, transparent 60%)" }} />
+          {/* Particle network overlay */}
+          <ParticleNetwork
+            particleCount={80}
+            connectionDistance={150}
+            particleColor="rgba(251, 191, 36,"
+            lineColor="rgba(251, 191, 36,"
+            speed={0.35}
+          />
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 text-center pt-24 pb-16">

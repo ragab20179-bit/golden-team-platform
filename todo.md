@@ -36,3 +36,4 @@
 
 ## Bug Fixes
 - [x] Fix duplicated main title on landing page hero section (replaced bg image + updated h1 tagline)
+- [x] Add animated particle network canvas overlay to hero section
