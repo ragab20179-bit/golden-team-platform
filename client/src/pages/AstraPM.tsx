@@ -167,64 +167,72 @@ const DIAGRAMS = [
   },
 ];
 
-const CATEGORIES = ["All", "Technical", "Process", "Integration", "Features", "Business"];
+const CATEGORIES_EN = ["All", "Technical", "Process", "Integration", "Features", "Business"];
+const CATEGORIES_AR = ["الكل", "تقني", "عمليات", "تكامل", "ميزات", "أعمال"];
 
 const FEATURES = [
-  { icon: BarChart3, title: "Intelligent Project Dashboard", desc: "Real-time project health, milestone tracking, and predictive completion analytics powered by NEO AI." },
-  { icon: Calendar, title: "AI-Assisted Scheduling", desc: "Smart Gantt charts with automatic resource leveling, conflict detection, and schedule optimization." },
-  { icon: Users, title: "Resource Management", desc: "Capacity planning, skill-based assignment, and utilization tracking across your entire project portfolio." },
-  { icon: Brain, title: "NEO AI Meeting Assistant", desc: "Automated meeting transcription, action item extraction, and bilingual Arabic/English meeting summaries." },
-  { icon: FileText, title: "Document Management", desc: "Centralized document repository with version control, approval workflows, and ISO 9001 compliance tracking." },
-  { icon: Shield, title: "ASTRA AMG Governance", desc: "Built-in governance framework with authority matrices, approval chains, and audit trails for every decision." },
-  { icon: TrendingUp, title: "KPI & Performance Analytics", desc: "Customizable KPI dashboards with drill-down analytics and automated performance reports for stakeholders." },
-  { icon: Bell, title: "Smart Notifications", desc: "Context-aware alerts for deadlines, approvals, risks, and escalations delivered to the right person at the right time." },
+  { icon: BarChart3, titleEn: "Intelligent Project Dashboard", titleAr: "لوحة المشروع الذكية", descEn: "Real-time project health, milestone tracking, and predictive completion analytics powered by NEO AI.", descAr: "صحة المشروع في الوقت الفعلي، تتبع المعالم، وتحليلات الإكمال التنبؤية بواسطة NEO AI." },
+  { icon: Calendar, titleEn: "AI-Assisted Scheduling", titleAr: "جدولة زمنية بمساعدة الذكاء الاصطناعي", descEn: "Smart Gantt charts with automatic resource leveling, conflict detection, and schedule optimization.", descAr: "مخططات غانت ذكية مع تسوية الموارد التلقائية وكشف التعارضات وتحسين الجدول." },
+  { icon: Users, titleEn: "Resource Management", titleAr: "إدارة الموارد", descEn: "Capacity planning, skill-based assignment, and utilization tracking across your entire project portfolio.", descAr: "تخطيط الطاقة والتعيين بناءً على المهارات وتتبع الاستخدام عبر محفظة مشاريعك كاملة." },
+  { icon: Brain, titleEn: "NEO AI Meeting Assistant", titleAr: "مساعد NEO AI للاجتماعات", descEn: "Automated meeting transcription, action item extraction, and bilingual Arabic/English meeting summaries.", descAr: "تدوين آلي للاجتماعات، استخراج بنود العمل، وملخصات ثنائية اللغة عربية/إنجليزية." },
+  { icon: FileText, titleEn: "Document Management", titleAr: "إدارة الوثائق", descEn: "Centralized document repository with version control, approval workflows, and ISO 9001 compliance tracking.", descAr: "مستودع وثائق مركزي مع التحكم في الإصدارات وسير الموافقة وتتبع امتثال ISO 9001." },
+  { icon: Shield, titleEn: "ASTRA AMG Governance", titleAr: "حوكمة ASTRA AMG", descEn: "Built-in governance framework with authority matrices, approval chains, and audit trails for every decision.", descAr: "إطار حوكمة مدمج بمصفوفات الصلاحيات وسلاسل الموافقة ومسارات التدقيق لكل قرار." },
+  { icon: TrendingUp, titleEn: "KPI & Performance Analytics", titleAr: "تحليلات الأداء ومؤشرات الأداء", descEn: "Customizable KPI dashboards with drill-down analytics and automated performance reports for stakeholders.", descAr: "لوحات مؤشرات أداء قابلة للتخصيص مع تحليلات تفصيلية وتقارير أداء آلية." },
+  { icon: Bell, titleEn: "Smart Notifications", titleAr: "إشعارات ذكية", descEn: "Context-aware alerts for deadlines, approvals, risks, and escalations delivered to the right person at the right time.", descAr: "تنبيهات سياقية للمواعيد والموافقات والمخاطر والتصعيدات تصل للشخص المناسب في الوقت المناسب." },
 ];
 
 const MODULES = [
   {
-    title: "Project Planning & Control",
+    titleEn: "Project Planning & Control", titleAr: "تخطيط المشروع والتحكم",
     color: "violet",
-    items: ["Work breakdown structure (WBS)", "Critical path analysis", "Baseline vs. actual tracking", "Change request management", "Risk register & mitigation"]
+    itemsEn: ["Work breakdown structure (WBS)", "Critical path analysis", "Baseline vs. actual tracking", "Change request management", "Risk register & mitigation"],
+    itemsAr: ["هيكل تفصيل العمل (WBS)", "تحليل المسار الحرج", "تتبع الخط الأساسي مقابل الفعلي", "إدارة طلبات التغيير", "سجل المخاطر والتخفيف"]
   },
   {
-    title: "Procurement & Contracts",
+    titleEn: "Procurement & Contracts", titleAr: "المشتريات والعقود",
     color: "blue",
-    items: ["Vendor RFQ & evaluation", "Contract lifecycle management", "PO approval workflows", "Supplier performance tracking", "NEO AI procurement assistant"]
+    itemsEn: ["Vendor RFQ & evaluation", "Contract lifecycle management", "PO approval workflows", "Supplier performance tracking", "NEO AI procurement assistant"],
+    itemsAr: ["طلب عروض أسعار وتقييم الموردين", "إدارة دورة حياة العقد", "سير موافقة أوامر الشراء", "تتبع أداء الموردين", "مساعد NEO AI للمشتريات"]
   },
   {
-    title: "Quality Management",
+    titleEn: "Quality Management", titleAr: "إدارة الجودة",
     color: "emerald",
-    items: ["ISO 9001 compliance checklists", "Non-conformance reporting", "Inspection & test plans", "Corrective action tracking", "Quality audit scheduling"]
+    itemsEn: ["ISO 9001 compliance checklists", "Non-conformance reporting", "Inspection & test plans", "Corrective action tracking", "Quality audit scheduling"],
+    itemsAr: ["قوائم امتثال ISO 9001", "تقارير عدم المطابقة", "خطط الفحص والاختبار", "تتبع الإجراءات التصحيحية", "جدولة تدقيقات الجودة"]
   },
   {
-    title: "Financial Control",
+    titleEn: "Financial Control", titleAr: "التحكم المالي",
     color: "amber",
-    items: ["Budget planning & tracking", "Earned value management (EVM)", "Cost forecasting & variance", "Invoice approval workflows", "Financial AI insights"]
+    itemsEn: ["Budget planning & tracking", "Earned value management (EVM)", "Cost forecasting & variance", "Invoice approval workflows", "Financial AI insights"],
+    itemsAr: ["تخطيط الميزانية وتتبعها", "إدارة القيمة المكتسبة (EVM)", "توقع التكاليف والتباين", "سير موافقة الفواتير", "رؤى مالية بالذكاء الاصطناعي"]
   },
 ];
 
 const NEO_CAPABILITIES = [
-  { icon: MessageSquare, title: "Conversational Project Control", desc: "Describe what you need in plain language — NEO AI creates tasks, updates schedules, and notifies team members automatically." },
-  { icon: Brain, title: "Predictive Risk Intelligence", desc: "NEO analyzes project patterns to predict schedule slippage, cost overruns, and resource conflicts before they occur." },
-  { icon: Video, title: "Meeting Intelligence", desc: "Every meeting is automatically transcribed, summarized, and converted into action items assigned to the right team members." },
-  { icon: FileText, title: "Automated Reporting", desc: "Weekly status reports, executive dashboards, and stakeholder presentations generated automatically from live project data." },
+  { icon: MessageSquare, titleEn: "Conversational Project Control", titleAr: "التحكم بالمشروع بالمحادثة", descEn: "Describe what you need in plain language — NEO AI creates tasks, updates schedules, and notifies team members automatically.", descAr: "صف ما تحتاجه بلغة بسيطة — NEO AI ينشئ المهام ويحدّث الجداول ويخطر أعضاء الفريق تلقائياً." },
+  { icon: Brain, titleEn: "Predictive Risk Intelligence", titleAr: "ذكاء المخاطر التنبؤي", descEn: "NEO analyzes project patterns to predict schedule slippage, cost overruns, and resource conflicts before they occur.", descAr: "NEO يحلل أنماط المشروع للتنبؤ بالتأخيرات وتجاوز التكاليف وتعارضات الموارد قبل حدوثها." },
+  { icon: Video, titleEn: "Meeting Intelligence", titleAr: "ذكاء الاجتماعات", descEn: "Every meeting is automatically transcribed, summarized, and converted into action items assigned to the right team members.", descAr: "كل اجتماع يُدوّن ويُلخّص ويتحوّل تلقائياً إلى بنود عمل مسندة للأشخاص المناسبين." },
+  { icon: FileText, titleEn: "Automated Reporting", titleAr: "تقارير آلية", descEn: "Weekly status reports, executive dashboards, and stakeholder presentations generated automatically from live project data.", descAr: "تقارير حالة أسبوعية ولوحات تنفيذية وعروض تقديمية للمساهمين تُولد تلقائياً من بيانات المشروع الحية." },
 ];
 
 const PRICING = [
   {
-    name: "Starter", price: "SAR 2,500", period: "/month", color: "white",
-    desc: "For small teams and single projects",
-    features: ["Up to 10 users", "5 active projects", "Basic Gantt & scheduling", "Document management", "Email support"]
+    nameEn: "Starter", nameAr: "المبتدئ", price: "SAR 2,500", periodEn: "/month", periodAr: "/شهرياً", color: "white",
+    descEn: "For small teams and single projects", descAr: "للفرق الصغيرة والمشاريع الفردية",
+    featuresEn: ["Up to 10 users", "5 active projects", "Basic Gantt & scheduling", "Document management", "Email support"],
+    featuresAr: ["حتى 10 مستخدمين", "5 مشاريع نشطة", "غانت وجدولة زمنية أساسية", "إدارة الوثائق", "دعم بالبريد الإلكتروني"]
   },
   {
-    name: "Professional", price: "SAR 6,500", period: "/month", color: "violet", popular: true,
-    desc: "For growing organizations with multiple projects",
-    features: ["Up to 50 users", "Unlimited projects", "NEO AI Meeting Assistant", "Full procurement module", "KPI dashboards", "Priority support"]
+    nameEn: "Professional", nameAr: "المحترف", price: "SAR 6,500", periodEn: "/month", periodAr: "/شهرياً", color: "violet", popular: true,
+    descEn: "For growing organizations with multiple projects", descAr: "للمنظمات النامية ذات المشاريع المتعددة",
+    featuresEn: ["Up to 50 users", "Unlimited projects", "NEO AI Meeting Assistant", "Full procurement module", "KPI dashboards", "Priority support"],
+    featuresAr: ["حتى 50 مستخدماً", "مشاريع غير محدودة", "مساعد NEO AI للاجتماعات", "وحدة المشتريات الكاملة", "لوحات مؤشرات الأداء", "دعم ذو أولوية"]
   },
   {
-    name: "Enterprise", price: "Custom", period: "", color: "amber",
-    desc: "For large enterprises requiring full customization",
-    features: ["Unlimited users", "Full NEO AI Core integration", "ASTRA AMG governance", "Custom integrations", "Dedicated success manager", "SLA guarantee"]
+    nameEn: "Enterprise", nameAr: "المؤسسي", price: "Custom", periodEn: "", periodAr: "", color: "amber",
+    descEn: "For large enterprises requiring full customization", descAr: "للمؤسسات الكبيرة التي تتطلب تخصيصاً كاملاً",
+    featuresEn: ["Unlimited users", "Full NEO AI Core integration", "ASTRA AMG governance", "Custom integrations", "Dedicated success manager", "SLA guarantee"],
+    featuresAr: ["مستخدمون غير محدودين", "تكامل NEO AI Core الكامل", "حوكمة ASTRA AMG", "تكاملات مخصصة", "مدير نجاح مخصص", "ضمان SLA"]
   },
 ];
 
@@ -241,13 +249,17 @@ const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 
 export default function AstraPM() {
   const [, navigate] = useLocation();
-  const { t } = useLanguage();
-  const [activeCategory, setActiveCategory] = useState("All");
+  const { t, lang } = useLanguage();
+  const CATEGORIES = lang === "ar" ? CATEGORIES_AR : CATEGORIES_EN;
+  // activeCategoryIndex tracks position in CATEGORIES array, language-agnostic
+  const [activeCategoryIdx, setActiveCategoryIdx] = useState(0);
   const [lightboxDiagram, setLightboxDiagram] = useState<typeof DIAGRAMS[0] | null>(null);
 
-  const filteredDiagrams = activeCategory === "All"
+  // Map category index back to English for filtering (DIAGRAMS use English category names)
+  const activeCategoryEn = CATEGORIES_EN[activeCategoryIdx];
+  const filteredDiagrams = activeCategoryEn === "All"
     ? DIAGRAMS
-    : DIAGRAMS.filter(d => d.category === activeCategory);
+    : DIAGRAMS.filter(d => d.category === activeCategoryEn);
 
   return (
     <div className="min-h-screen bg-[#05080F] text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -260,7 +272,7 @@ export default function AstraPM() {
             </div>
             <div>
               <div className="text-white font-bold text-sm tracking-wide" style={{ fontFamily: "'Playfair Display', serif" }}>GOLDEN TEAM</div>
-              <div className="text-amber-400/60 text-[9px] tracking-widest uppercase">Trading Services</div>
+              <div className="text-amber-400/60 text-[9px] tracking-widest uppercase">{t("Trading Services", "خدمات تجارية")}</div>
             </div>
           </button>
           <div className="hidden md:flex items-center gap-8">
@@ -360,14 +372,14 @@ export default function AstraPM() {
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.05 }} variants={stagger}
             className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {FEATURES.map(({ icon: Icon, title, desc }) => (
-              <motion.div key={title} variants={fadeUp}
+            {FEATURES.map((feat) => (
+              <motion.div key={feat.titleEn} variants={fadeUp}
                 className="group p-6 rounded-2xl border border-white/8 bg-white/2 hover:bg-violet-500/5 hover:border-violet-500/25 transition-all duration-300">
                 <div className="w-12 h-12 rounded-xl bg-violet-500/15 border border-violet-500/20 flex items-center justify-center mb-4 group-hover:bg-violet-500/25 transition-colors">
-                  <Icon className="w-6 h-6 text-violet-400" />
+                  <feat.icon className="w-6 h-6 text-violet-400" />
                 </div>
-                <h3 className="font-semibold text-white text-sm mb-2">{title}</h3>
-                <p className="text-white/40 text-xs leading-relaxed">{desc}</p>
+                <h3 className="font-semibold text-white text-sm mb-2">{t(feat.titleEn, feat.titleAr)}</h3>
+                <p className="text-white/40 text-xs leading-relaxed">{t(feat.descEn, feat.descAr)}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -394,12 +406,12 @@ export default function AstraPM() {
 
             {/* Category Filter */}
             <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-2">
-              {CATEGORIES.map((cat) => (
+              {CATEGORIES.map((cat, idx) => (
                 <button
                   key={cat}
-                  onClick={() => setActiveCategory(cat)}
+                  onClick={() => setActiveCategoryIdx(idx)}
                   className={`px-4 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all duration-200 border ${
-                    activeCategory === cat
+                    activeCategoryIdx === idx
                       ? "bg-violet-600 border-violet-500 text-white"
                       : "border-white/15 text-white/50 hover:border-violet-400/40 hover:text-violet-300 bg-transparent"
                   }`}
@@ -593,14 +605,16 @@ export default function AstraPM() {
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
             className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {MODULES.map(({ title, color, items }) => {
-              const c = colorMap[color];
+            {MODULES.map((mod) => {
+              const c = colorMap[mod.color];
+              const modTitle = t(mod.titleEn, mod.titleAr);
+              const modItems = lang === "ar" ? mod.itemsAr : mod.itemsEn;
               return (
-                <motion.div key={title} variants={fadeUp}
+                <motion.div key={mod.titleEn} variants={fadeUp}
                   className={`p-6 rounded-2xl border ${c.border} bg-white/2`}>
-                  <Badge className={`${c.badge} text-xs mb-4 border`}>{title}</Badge>
+                  <Badge className={`${c.badge} text-xs mb-4 border`}>{modTitle}</Badge>
                   <div className="space-y-2">
-                    {items.map((item) => (
+                    {modItems.map((item: string) => (
                       <div key={item} className="flex items-start gap-2 text-xs text-white/50">
                         <CheckCircle className="w-3 h-3 mt-0.5 shrink-0 text-white/30" />
                         {item}
@@ -633,14 +647,14 @@ export default function AstraPM() {
                 )}
               </p>
               <div className="space-y-4">
-                {NEO_CAPABILITIES.map(({ icon: Icon, title, desc }) => (
-                  <div key={title} className="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2">
+                {NEO_CAPABILITIES.map((cap) => (
+                  <div key={cap.titleEn} className="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2">
                     <div className="w-10 h-10 rounded-lg bg-violet-500/15 flex items-center justify-center shrink-0">
-                      <Icon className="w-5 h-5 text-violet-400" />
+                      <cap.icon className="w-5 h-5 text-violet-400" />
                     </div>
                     <div>
-                      <div className="text-white font-semibold text-sm mb-1">{title}</div>
-                      <div className="text-white/40 text-xs leading-relaxed">{desc}</div>
+                      <div className="text-white font-semibold text-sm mb-1">{t(cap.titleEn, cap.titleAr)}</div>
+                      <div className="text-white/40 text-xs leading-relaxed">{t(cap.descEn, cap.descAr)}</div>
                     </div>
                   </div>
                 ))}
@@ -692,26 +706,30 @@ export default function AstraPM() {
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
             className="grid md:grid-cols-3 gap-8">
-            {PRICING.map(({ name, price, period, color, popular, desc, features }) => {
-              const c = colorMap[color];
+            {PRICING.map((plan) => {
+              const c = colorMap[plan.color];
+              const planName = t(plan.nameEn, plan.nameAr);
+              const planPeriod = t(plan.periodEn, plan.periodAr);
+              const planDesc = t(plan.descEn, plan.descAr);
+              const planFeatures = lang === "ar" ? plan.featuresAr : plan.featuresEn;
               return (
-                <motion.div key={name} variants={fadeUp}
-                  className={`relative p-8 rounded-2xl border ${c.border} bg-white/2 ${popular ? "scale-105 shadow-2xl shadow-violet-500/15" : ""}`}>
-                  {popular && (
+                <motion.div key={plan.nameEn} variants={fadeUp}
+                  className={`relative p-8 rounded-2xl border ${c.border} bg-white/2 ${plan.popular ? "scale-105 shadow-2xl shadow-violet-500/15" : ""}`}>
+                  {plan.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                       <Badge className="bg-violet-600 text-white border-0 text-xs px-4">{t("Most Popular", "الأكثر شيوعًا")}</Badge>
                     </div>
                   )}
                   <div className="mb-6">
-                    <div className="text-white/60 text-xs tracking-widest uppercase mb-2">{name}</div>
+                    <div className="text-white/60 text-xs tracking-widest uppercase mb-2">{planName}</div>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>{price}</span>
-                      <span className="text-white/40 text-sm">{period}</span>
+                      <span className="text-4xl font-bold text-white" style={{ fontFamily: "'Playfair Display', serif" }}>{plan.price}</span>
+                      <span className="text-white/40 text-sm">{planPeriod}</span>
                     </div>
-                    <div className="text-white/40 text-sm mt-2">{desc}</div>
+                    <div className="text-white/40 text-sm mt-2">{planDesc}</div>
                   </div>
                   <div className="space-y-3 mb-8">
-                    {features.map((f) => (
+                    {planFeatures.map((f: string) => (
                       <div key={f} className="flex items-center gap-2 text-sm text-white/60">
                         <CheckCircle className="w-4 h-4 text-violet-400 shrink-0" />
                         {f}
@@ -719,7 +737,7 @@ export default function AstraPM() {
                     ))}
                   </div>
                   <Button onClick={() => navigate("/contact")} className={`w-full ${c.btn}`}>
-                    {name === "Enterprise" ? t("Contact Sales", "تواصل مع المبيعات") : t("Start Free Trial", "ابدأ التجربة المجانية")}
+                    {plan.nameEn === "Enterprise" ? t("Contact Sales", "تواصل مع المبيعات") : t("Start Free Trial", "ابدأ التجربة المجانية")}
                   </Button>
                 </motion.div>
               );

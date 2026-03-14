@@ -22,58 +22,76 @@ const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 
 const SERVICES = [
   {
-    icon: TrendingUp, color: "amber", title: "Business Development Strategy",
-    desc: "We help organizations identify growth opportunities, develop market entry strategies, and build sustainable competitive advantages across the GCC and MENA region.",
-    deliverables: ["Market opportunity assessment", "Competitive landscape analysis", "Growth strategy roadmap", "Business model innovation", "Strategic partnership facilitation"]
+    icon: TrendingUp, color: "amber",
+    titleEn: "Business Development Strategy", titleAr: "استراتيجية تطوير الأعمال",
+    descEn: "We help organizations identify growth opportunities, develop market entry strategies, and build sustainable competitive advantages across the GCC and MENA region.",
+    descAr: "نساعد المنظمات على تحديد فرص النمو وتطوير استراتيجيات دخول الأسواق وبناء مزايا تنافسية مستدامة في منطقة الخليج والشرق الأوسط.",
+    deliverablesEn: ["Market opportunity assessment", "Competitive landscape analysis", "Growth strategy roadmap", "Business model innovation", "Strategic partnership facilitation"],
+    deliverablesAr: ["تقييم فرص السوق", "تحليل المشهد التنافسي", "خارطة طريق استراتيجية النمو", "ابتكار نماذج الأعمال", "تيسير الشراكات الاستراتيجية"]
   },
   {
-    icon: Target, color: "blue", title: "Organizational Excellence",
-    desc: "Transforming organizational structures, processes, and culture to achieve peak operational performance aligned with your strategic objectives.",
-    deliverables: ["Organizational design & restructuring", "Process reengineering (BPR)", "Performance management systems", "Change management programs", "Leadership development"]
+    icon: Target, color: "blue",
+    titleEn: "Organizational Excellence", titleAr: "التميز المؤسسي",
+    descEn: "Transforming organizational structures, processes, and culture to achieve peak operational performance aligned with your strategic objectives.",
+    descAr: "تحويل الهياكل التنظيمية والعمليات والثقافة لتحقيق أعلى مستويات الأداء التشغيلي المتوافق مع أهدافك الاستراتيجية.",
+    deliverablesEn: ["Organizational design & restructuring", "Process reengineering (BPR)", "Performance management systems", "Change management programs", "Leadership development"],
+    deliverablesAr: ["تصميم وإعادة هيكلة المنظمة", "إعادة هندسة العمليات (BPR)", "أنظمة إدارة الأداء", "برامج إدارة التغيير", "تطوير القيادة"]
   },
   {
-    icon: Shield, color: "emerald", title: "ISO 9001 & Quality Advisory",
-    desc: "End-to-end ISO 9001:2015 implementation, certification support, and quality management system optimization for sustainable compliance.",
-    deliverables: ["Gap analysis & readiness assessment", "QMS documentation development", "Internal auditor training", "Certification audit support", "Continuous improvement programs"]
+    icon: Shield, color: "emerald",
+    titleEn: "ISO 9001 & Quality Advisory", titleAr: "استشارات ISO 9001 والجودة",
+    descEn: "End-to-end ISO 9001:2015 implementation, certification support, and quality management system optimization for sustainable compliance.",
+    descAr: "تطبيق شامل لمعيار ISO 9001:2015 ودعم الاعتماد وتحسين نظام إدارة الجودة لضمان الامتثال المستدام.",
+    deliverablesEn: ["Gap analysis & readiness assessment", "QMS documentation development", "Internal auditor training", "Certification audit support", "Continuous improvement programs"],
+    deliverablesAr: ["تحليل الفجوات وتقييم الجاهزية", "تطوير وثائق نظام إدارة الجودة", "تدريب المدققين الداخليين", "دعم تدقيق الاعتماد", "برامج التحسين المستمر"]
   },
   {
-    icon: BarChart3, color: "violet", title: "Digital Transformation",
-    desc: "Strategic guidance on technology adoption, AI integration, and digital operating model design to future-proof your organization.",
-    deliverables: ["Digital maturity assessment", "Technology roadmap development", "AI & automation strategy", "Data governance framework", "Change enablement & adoption"]
+    icon: BarChart3, color: "violet",
+    titleEn: "Digital Transformation", titleAr: "التحول الرقمي",
+    descEn: "Strategic guidance on technology adoption, AI integration, and digital operating model design to future-proof your organization.",
+    descAr: "توجيه استراتيجي حول تبني التقنية وتكامل الذكاء الاصطناعي وتصميم نموذج التشغيل الرقمي لمستقبل مؤسستك.",
+    deliverablesEn: ["Digital maturity assessment", "Technology roadmap development", "AI & automation strategy", "Data governance framework", "Change enablement & adoption"],
+    deliverablesAr: ["تقييم النضج الرقمي", "تطوير خارطة طريق التقنية", "استراتيجية الذكاء الاصطناعي والأتمتة", "إطار حوكمة البيانات", "تمكين التغيير والتبني"]
   },
   {
-    icon: Briefcase, color: "red", title: "Administrative Modernization",
-    desc: "Streamlining administrative functions through process automation, policy development, and governance framework implementation.",
-    deliverables: ["Administrative process audit", "Policy & procedure development", "Delegation of authority matrix", "Document management systems", "Compliance framework design"]
+    icon: Briefcase, color: "red",
+    titleEn: "Administrative Modernization", titleAr: "تحديث الإدارة",
+    descEn: "Streamlining administrative functions through process automation, policy development, and governance framework implementation.",
+    descAr: "تبسيط الوظائف الإدارية من خلال أتمتة العمليات وتطوير السياسات وتطبيق أطر الحوكمة.",
+    deliverablesEn: ["Administrative process audit", "Policy & procedure development", "Delegation of authority matrix", "Document management systems", "Compliance framework design"],
+    deliverablesAr: ["تدقيق العمليات الإدارية", "تطوير السياسات والإجراءات", "مصفوفة تفويض الصلاحيات", "أنظمة إدارة الوثائق", "تصميم إطار الامتثال"]
   },
   {
-    icon: Globe, color: "cyan", title: "GCC Market Entry",
-    desc: "Comprehensive support for organizations entering Saudi Arabia, UAE, and wider GCC markets — from regulatory compliance to local partnership development.",
-    deliverables: ["Regulatory compliance advisory", "Entity setup & licensing", "Local partner identification", "Cultural adaptation strategy", "Government relations support"]
+    icon: Globe, color: "cyan",
+    titleEn: "GCC Market Entry", titleAr: "الدخول إلى أسواق الخليج",
+    descEn: "Comprehensive support for organizations entering Saudi Arabia, UAE, and wider GCC markets — from regulatory compliance to local partnership development.",
+    descAr: "دعم شامل للمنظمات الراغبة في دخول أسواق المملكة العربية السعودية والإمارات ودول الخليج — من الامتثال التنظيمي إلى بناء الشراكات المحلية.",
+    deliverablesEn: ["Regulatory compliance advisory", "Entity setup & licensing", "Local partner identification", "Cultural adaptation strategy", "Government relations support"],
+    deliverablesAr: ["استشارات الامتثال التنظيمي", "إعداد الكيان والترخيص", "تحديد الشركاء المحليين", "استراتيجية التكيف الثقافي", "دعم العلاقات الحكومية"]
   },
 ];
 
 const METHODOLOGY = [
-  { phase: "Diagnose", icon: "🔍", desc: "Deep-dive assessment of your current state, challenges, and aspirations through stakeholder interviews, data analysis, and benchmarking." },
-  { phase: "Design", icon: "📐", desc: "Co-creation of tailored solutions with your team — ensuring buy-in, feasibility, and alignment with your organizational culture and constraints." },
-  { phase: "Deploy", icon: "🚀", desc: "Structured implementation with clear milestones, accountability frameworks, and progress tracking to ensure execution excellence." },
-  { phase: "Sustain", icon: "♻️", desc: "Capability building, knowledge transfer, and ongoing advisory support to ensure lasting impact beyond the engagement." },
+  { phaseEn: "Diagnose", phaseAr: "التشخيص", icon: "🔍", descEn: "Deep-dive assessment of your current state, challenges, and aspirations through stakeholder interviews, data analysis, and benchmarking.", descAr: "تقييم معمّق لوضعك الحالي وتحدياتك وطموحاتك من خلال مقابلات أصحاب المصلحة وتحليل البيانات والمقارنة المرجعية." },
+  { phaseEn: "Design", phaseAr: "التصميم", icon: "📐", descEn: "Co-creation of tailored solutions with your team — ensuring buy-in, feasibility, and alignment with your organizational culture and constraints.", descAr: "الإبداع المشترك لحلول مخصصة مع فريقك — لضمان القبول والجدوى والتوافق مع ثقافتك المؤسسية وقيودك." },
+  { phaseEn: "Deploy", phaseAr: "التنفيذ", icon: "🚀", descEn: "Structured implementation with clear milestones, accountability frameworks, and progress tracking to ensure execution excellence.", descAr: "تنفيذ منظم بمعالم واضحة وأطر مساءلة وتتبع للتقدم لضمان التميز في التنفيذ." },
+  { phaseEn: "Sustain", phaseAr: "الاستدامة", icon: "♻️", descEn: "Capability building, knowledge transfer, and ongoing advisory support to ensure lasting impact beyond the engagement.", descAr: "بناء القدرات ونقل المعرفة والدعم الاستشاري المستمر لضمان أثر دائم يتجاوز نطاق التعامل." },
 ];
 
 const SECTORS = [
-  { icon: Building, label: "Government & Public Sector" },
-  { icon: Factory, label: "Manufacturing & Industry" },
-  { icon: Landmark, label: "Financial Services" },
-  { icon: HeartPulse, label: "Healthcare" },
-  { icon: Truck, label: "Logistics & Supply Chain" },
-  { icon: Globe, label: "Technology & Telecoms" },
+  { icon: Building, labelEn: "Government & Public Sector", labelAr: "الحكومة والقطاع العام" },
+  { icon: Factory, labelEn: "Manufacturing & Industry", labelAr: "التصنيع والصناعة" },
+  { icon: Landmark, labelEn: "Financial Services", labelAr: "الخدمات المالية" },
+  { icon: HeartPulse, labelEn: "Healthcare", labelAr: "الرعاية الصحية" },
+  { icon: Truck, labelEn: "Logistics & Supply Chain", labelAr: "اللوجستيات وسلسلة الإمداد" },
+  { icon: Globe, labelEn: "Technology & Telecoms", labelAr: "التقنية والاتصالات" },
 ];
 
 const OUTCOMES = [
-  { value: "40%", label: "Average Process Efficiency Gain" },
-  { value: "18mo", label: "Typical ISO 9001 Certification Timeline" },
-  { value: "95%", label: "Client Satisfaction Score" },
-  { value: "60+", label: "Engagements Delivered" },
+  { value: "40%", labelEn: "Average Process Efficiency Gain", labelAr: "متوسط تحسين كفاءة العمليات" },
+  { value: "18mo", labelEn: "Typical ISO 9001 Certification Timeline", labelAr: "الجدول الزمني المعتاد لشهادة ISO 9001" },
+  { value: "95%", labelEn: "Client Satisfaction Score", labelAr: "معدل رضا العملاء" },
+  { value: "60+", labelEn: "Engagements Delivered", labelAr: "تعامل مُنجز" },
 ];
 
 const colorMap: Record<string, string> = {
@@ -87,7 +105,7 @@ const colorMap: Record<string, string> = {
 
 export default function Consultancy() {
   const [, navigate] = useLocation();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   return (
     <div className="min-h-screen bg-[#05080F] text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -100,7 +118,7 @@ export default function Consultancy() {
             </div>
             <div>
               <div className="text-white font-bold text-sm tracking-wide" style={{ fontFamily: "'Playfair Display', serif" }}>GOLDEN TEAM</div>
-              <div className="text-amber-400/60 text-[9px] tracking-widest uppercase">Trading Services</div>
+              <div className="text-amber-400/60 text-[9px] tracking-widest uppercase">{t("Trading Services", "خدمات تجارية")}</div>
             </div>
           </button>
           <div className="hidden md:flex items-center gap-8">
@@ -167,10 +185,10 @@ export default function Consultancy() {
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}
             className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {OUTCOMES.map(({ value, label }) => (
-              <motion.div key={label} variants={fadeUp}>
+            {OUTCOMES.map(({ value, labelEn, labelAr }) => (
+              <motion.div key={labelEn} variants={fadeUp}>
                 <div className="text-3xl font-bold text-amber-400 mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>{value}</div>
-                <div className="text-white/50 text-sm">{label}</div>
+                <div className="text-white/50 text-sm">{t(labelEn, labelAr)}</div>
               </motion.div>
             ))}
           </motion.div>
@@ -190,19 +208,20 @@ export default function Consultancy() {
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.05 }} variants={stagger}
             className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {SERVICES.map(({ icon: Icon, color, title, desc, deliverables }) => {
+            {SERVICES.map(({ icon: Icon, color, titleEn, titleAr, descEn, descAr, deliverablesEn, deliverablesAr }) => {
               const c = colorMap[color].split(" ");
+              const deliverables = lang === "ar" ? deliverablesAr : deliverablesEn;
               return (
-                <motion.div key={title} variants={fadeUp}
+                <motion.div key={titleEn} variants={fadeUp}
                   className="group p-7 rounded-2xl border border-white/8 bg-white/2 hover:bg-amber-500/3 hover:border-amber-400/20 transition-all duration-300">
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${c[0]} ${c[1]} flex items-center justify-center mb-5`}>
                     <Icon className="w-6 h-6 text-white" />
                   </div>
-                  <h3 className="font-semibold text-white text-lg mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>{title}</h3>
-                  <p className="text-white/50 text-sm leading-relaxed mb-5">{desc}</p>
+                  <h3 className="font-semibold text-white text-lg mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>{t(titleEn, titleAr)}</h3>
+                  <p className="text-white/50 text-sm leading-relaxed mb-5">{t(descEn, descAr)}</p>
                   <div className="space-y-1.5">
-                    {deliverables.map((d) => (
-                      <div key={d} className="flex items-center gap-2 text-xs text-white/40">
+                    {deliverables.map((d, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-white/40">
                         <CheckCircle className={`w-3 h-3 shrink-0 ${c[2]}`} />
                         {d}
                       </div>
@@ -228,15 +247,15 @@ export default function Consultancy() {
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
             className="grid md:grid-cols-4 gap-6">
-            {METHODOLOGY.map(({ phase, icon, desc }, i) => (
-              <motion.div key={phase} variants={fadeUp}
+            {METHODOLOGY.map(({ phaseEn, phaseAr, icon, descEn, descAr }, i) => (
+              <motion.div key={phaseEn} variants={fadeUp}
                 className="relative p-6 rounded-2xl border border-white/8 bg-white/2 text-center">
                 {i < METHODOLOGY.length - 1 && (
                   <div className="hidden md:block absolute top-10 left-[70%] w-full h-px bg-gradient-to-r from-amber-400/30 to-transparent z-10" />
                 )}
                 <div className="text-4xl mb-4">{icon}</div>
-                <div className="text-amber-400 font-bold text-lg mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>{phase}</div>
-                <p className="text-white/40 text-xs leading-relaxed">{desc}</p>
+                <div className="text-amber-400 font-bold text-lg mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>{t(phaseEn, phaseAr)}</div>
+                <p className="text-white/40 text-xs leading-relaxed">{t(descEn, descAr)}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -253,13 +272,13 @@ export default function Consultancy() {
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
             className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {SECTORS.map(({ icon: Icon, label }) => (
-              <motion.div key={label} variants={fadeUp}
+            {SECTORS.map(({ icon: Icon, labelEn, labelAr }) => (
+              <motion.div key={labelEn} variants={fadeUp}
                 className="group p-5 rounded-xl border border-white/8 bg-white/2 hover:bg-amber-500/5 hover:border-amber-400/20 transition-all text-center">
                 <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center mx-auto mb-3 group-hover:bg-amber-500/20 transition-colors">
                   <Icon className="w-6 h-6 text-amber-400" />
                 </div>
-                <div className="text-white/60 text-xs leading-tight">{label}</div>
+                <div className="text-white/60 text-xs leading-tight">{t(labelEn, labelAr)}</div>
               </motion.div>
             ))}
           </motion.div>

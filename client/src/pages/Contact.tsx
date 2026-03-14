@@ -23,28 +23,28 @@ const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 
 const CONTACT_CARDS = [
   {
-    icon: Phone, title: "Call Us", color: "amber",
+    icon: Phone, titleEn: "Call Us", titleAr: "اتصل بنا", color: "amber",
     lines: ["+966 11 XXX XXXX", "+966 55 XXX XXXX"],
-    sub: "Sunday – Thursday, 8:00 AM – 5:00 PM AST"
+    subEn: "Sunday – Thursday, 8:00 AM – 5:00 PM AST", subAr: "الأحد – الخميس، 8:00 ص – 5:00 م"
   },
   {
-    icon: Mail, title: "Email Us", color: "blue",
+    icon: Mail, titleEn: "Email Us", titleAr: "راسلنا", color: "blue",
     lines: ["info@goldenteam.sa", "support@goldenteam.sa"],
-    sub: "We respond within 4 business hours"
+    subEn: "We respond within 4 business hours", subAr: "نرد خلال 4 ساعات عمل"
   },
   {
-    icon: MapPin, title: "Visit Us", color: "emerald",
-    lines: ["King Fahd Road, Al Olaya", "Riyadh 12211, Saudi Arabia"],
-    sub: "Headquarters — Riyadh"
+    icon: MapPin, titleEn: "Visit Us", titleAr: "زرنا", color: "emerald",
+    lines: ["طريق الملك فهد، العليا", "الرياض 12211، المملكة العربية السعودية"],
+    subEn: "Headquarters — Riyadh", subAr: "المقر الرئيسي — الرياض"
   },
   {
-    icon: Clock, title: "Business Hours", color: "violet",
-    lines: ["Sun – Thu: 8:00 AM – 5:00 PM", "Fri – Sat: Closed"],
-    sub: "AST (UTC+3)"
+    icon: Clock, titleEn: "Business Hours", titleAr: "ساعات العمل", color: "violet",
+    lines: ["الأحد – الخميس: 8:00 ص – 5:00 م", "الجمعة – السبت: مغلق"],
+    subEn: "AST (UTC+3)", subAr: "توقيت السعودية (UTC+3)"
   },
 ];
 
-const SERVICES_OPTIONS = [
+const SERVICES_OPTIONS_EN = [
   "IT Infrastructure & Data Centers",
   "Cloud Solutions & Migration",
   "Cybersecurity & Compliance",
@@ -59,6 +59,21 @@ const SERVICES_OPTIONS = [
   "GCC Market Entry",
   "Other / General Inquiry",
 ];
+const SERVICES_OPTIONS_AR = [
+  "بنية تقنية المعلومات ومراكز البيانات",
+  "حلول السحابة والترحيل",
+  "الأمن السيبراني والامتثال",
+  "تصميم الشبكات وإدارتها",
+  "تطوير البرمجيات والتكامل",
+  "الذكاء الاصطناعي والأتمتة (NEO AI Core)",
+  "ASTRA PM — إدارة المشاريع",
+  "استشارات ISO 9001 والجودة",
+  "استراتيجية تطوير الأعمال",
+  "التميز المؤسسي",
+  "التحول الرقمي",
+  "الدخول إلى أسواق الخليج",
+  "أخرى / استفسار عام",
+];
 
 const colorMap: Record<string, string> = {
   amber: "from-amber-500 to-amber-600 bg-amber-500/10 text-amber-400",
@@ -69,7 +84,8 @@ const colorMap: Record<string, string> = {
 
 export default function Contact() {
   const [, navigate] = useLocation();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const SERVICES_OPTIONS = lang === "ar" ? SERVICES_OPTIONS_AR : SERVICES_OPTIONS_EN;
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -80,14 +96,14 @@ export default function Contact() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.firstName || !form.email || !form.service || !form.message) {
-      toast.error("Please fill in all required fields.");
+      toast.error(t("Please fill in all required fields.", "يرجى ملء جميع الحقول المطلوبة."));
       return;
     }
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
       setSubmitted(true);
-      toast.success("Your inquiry has been received. We will contact you within 4 business hours.");
+      toast.success(t("Your inquiry has been received. We will contact you within 4 business hours.", "تم استلام استفسارك. سنتواصل معك خلال 4 ساعات عمل."));
     }, 1500);
   };
 
@@ -102,7 +118,7 @@ export default function Contact() {
             </div>
             <div>
               <div className="text-white font-bold text-sm tracking-wide" style={{ fontFamily: "'Playfair Display', serif" }}>GOLDEN TEAM</div>
-              <div className="text-amber-400/60 text-[9px] tracking-widest uppercase">Trading Services</div>
+              <div className="text-amber-400/60 text-[9px] tracking-widest uppercase">{t("Trading Services", "خدمات تجارية")}</div>
             </div>
           </button>
           <div className="hidden md:flex items-center gap-8">
@@ -155,19 +171,19 @@ export default function Contact() {
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {CONTACT_CARDS.map(({ icon: Icon, title, color, lines, sub }) => {
+            {CONTACT_CARDS.map(({ icon: Icon, titleEn, titleAr, color, lines, subEn, subAr }) => {
               const c = colorMap[color].split(" ");
               return (
-                <motion.div key={title} variants={fadeUp}
+                <motion.div key={titleEn} variants={fadeUp}
                   className="p-6 rounded-2xl border border-white/8 bg-white/2 text-center">
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${c[0]} ${c[1]} flex items-center justify-center mx-auto mb-4`}>
                     <Icon className="w-6 h-6 text-white" />
                   </div>
-                  <div className="text-white font-semibold text-sm mb-3">{title}</div>
+                  <div className="text-white font-semibold text-sm mb-3">{t(titleEn, titleAr)}</div>
                   {lines.map((line) => (
                     <div key={line} className="text-white/70 text-sm">{line}</div>
                   ))}
-                  <div className="text-white/30 text-xs mt-2">{sub}</div>
+                  <div className="text-white/30 text-xs mt-2">{t(subEn, subAr)}</div>
                 </motion.div>
               );
             })}
