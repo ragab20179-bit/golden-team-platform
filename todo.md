@@ -113,4 +113,4 @@
 - [x] Integrate diagrams into ASTRA PM page with bilingual captions, category filter, and lightbox viewer
 
 ## Last Updated
-2026-03-15 18:20 UTC — Phase 8 complete, ASTRA PM vault diagrams integrated
+2026-03-15 18:45 UTC — Phase 8 revised: replaced old placeholder URLs with actual latest diagrams from ASTRA PM VAULT (system_architecture_hybrid_4k, neo_ai_architecture_hybrid_4k, all 12 corrected 4K diagrams). Total: 14 diagrams from vault, 12 shown in gallery + 2 new entries (NEO AI Architecture, Competitive Advantage, Revenue Model).
