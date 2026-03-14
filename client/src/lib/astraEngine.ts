@@ -236,6 +236,32 @@ export const GT_POLICY_PACK: PolicyPack = {
     },
 
     // ── Domain 7: Governance ───────────────────────────────────────────────
+    // DEMO DENY SCENARIOS — fail-closed behaviour demonstration
+    demo: {
+      actions: {
+        // Board-only: any role below board gets DENY
+        board_contract_approval: {
+          allow_roles: ["board"],
+          requires: ["legal_review", "dual_approval"],
+        },
+        // CEO + Board only: strategic M&A decision
+        ma_decision: {
+          allow_roles: ["ceo", "board"],
+          requires: ["dual_approval", "legal_review", "justification"],
+        },
+        // Requires dual_approval — staff/manager always DENY (missing requirement)
+        critical_system_shutdown: {
+          allow_roles: ["it_manager", "director", "ceo", "board"],
+          requires: ["dual_approval", "justification", "change_request_id"],
+        },
+        // Open to all — always ALLOW for comparison
+        view_dashboard: {
+          allow_roles: ["staff", "manager", "director", "cfo", "ceo", "board", "hr_manager", "finance_manager", "it_manager", "qms_manager", "legal_counsel", "system"],
+          requires: [],
+        },
+      },
+    },
+
     governance: {
       actions: {
         escalate_decision: {
@@ -568,6 +594,19 @@ export const DOMAIN_REGISTRY: DomainInfo[] = [
       { key: "approve_access", label: "Approve System Access", allowRoles: ["it_manager", "director", "ceo", "system"], requires: [] },
       { key: "deploy_change", label: "Deploy Change", allowRoles: ["it_manager", "director", "ceo", "system"], requires: ["change_request_id", "dual_approval"] },
       { key: "revoke_access", label: "Revoke Access", allowRoles: ["it_manager", "hr_manager", "director", "ceo"], requires: ["justification"] },
+    ],
+  },
+  {
+    key: "demo",
+    label: "DENY Demo Scenarios",
+    labelAr: "سيناريوهات الرفض التجريبية",
+    icon: "🚫",
+    color: "text-red-500",
+    actions: [
+      { key: "board_contract_approval", label: "Board Contract Approval (Board only)", allowRoles: ["board"], requires: ["legal_review", "dual_approval"] },
+      { key: "ma_decision", label: "M&A Decision (CEO/Board only)", allowRoles: ["ceo", "board"], requires: ["dual_approval", "legal_review", "justification"] },
+      { key: "critical_system_shutdown", label: "Critical System Shutdown (requires dual approval)", allowRoles: ["it_manager", "director", "ceo", "board"], requires: ["dual_approval", "justification", "change_request_id"] },
+      { key: "view_dashboard", label: "View Dashboard (all roles — always ALLOW)", allowRoles: ["staff", "manager", "director", "cfo", "ceo", "board", "hr_manager", "finance_manager", "it_manager", "qms_manager", "legal_counsel", "system"], requires: [] },
     ],
   },
   {

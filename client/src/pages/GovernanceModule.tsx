@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 import PortalLayout from "@/components/PortalLayout";
+import { trpc } from "@/lib/trpc";
 import {
   astraAuthorityCheck,
   buildAstraRequest,
@@ -56,7 +57,7 @@ function OutcomeBadge({ outcome }: { outcome: AstraOutcome }) {
 
 const ROLES = ["staff", "manager", "director", "cfo", "ceo", "board", "hr_manager", "finance_manager", "it_manager", "qms_manager", "legal_counsel", "system"];
 
-function LiveCheckPanel() {
+function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => void }) {
   const [actorId, setActorId] = useState("user-001");
   const [actorRole, setActorRole] = useState("manager");
   const [domain, setDomain] = useState("procurement");
@@ -71,9 +72,12 @@ function LiveCheckPanel() {
   const domainInfo = DOMAIN_REGISTRY.find(d => d.key === domain);
   const actions = domainInfo?.actions || [];
 
-  const runCheck = () => {
+  // tRPC mutation to persist decision to DB
+  const persistDecision = trpc.astra.logDecision.useMutation();
+
+  const runCheck = async () => {
     setRunning(true);
-    setTimeout(() => {
+    setTimeout(async () => {
       const req = buildAstraRequest(actorId, actorRole, domain, action, {
         cost_center: costCenter,
         amount_sar: Number(amountSar),
@@ -83,6 +87,24 @@ function LiveCheckPanel() {
       const decision = astraAuthorityCheck(req);
       setLastDecision(decision);
       setRunning(false);
+
+      // Persist to DB (non-blocking)
+      persistDecision.mutate({
+        decisionId: decision.decision_id,
+        requestId: decision.request_id,
+        actorId: decision.actor_id,
+        actorRole: decision.actor_role,
+        domain: decision.domain,
+        action: decision.action,
+        outcome: decision.outcome,
+        reasonCode: decision.reason_code,
+        policyPackVersion: decision.policy_pack_version,
+        latencyMs: decision.latency_ms,
+        contextSnapshot: { cost_center: costCenter, amount_sar: Number(amountSar), consent, justification },
+      }, {
+        onSuccess: () => onDecisionPersisted?.(),
+      });
+
       if (decision.outcome === "ALLOW") toast.success("ASTRA: ALLOW — transaction authorized");
       else if (decision.outcome === "DENY") toast.error(`ASTRA: DENY — ${decision.reason_code}`);
       else if (decision.outcome === "ESCALATE") toast.warning("ASTRA: ESCALATE — escalated to senior authority");
@@ -231,12 +253,36 @@ function LiveCheckPanel() {
 
 // ─── Decision Log ──────────────────────────────────────────────────────────────
 
-function DecisionLog() {
-  const [log, setLog] = useState<AstraDecision[]>(() => getDecisionLog());
+function DecisionLog({ refreshTrigger }: { refreshTrigger?: number }) {
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const refresh = () => setLog(getDecisionLog());
-  const clear = () => { clearDecisionLog(); setLog([]); toast.success("Decision log cleared"); };
+  // Read from DB — real persistent audit trail
+  const { data: dbLog, refetch, isLoading } = trpc.astra.getDecisions.useQuery({ limit: 50 });
+  const clearDb = trpc.astra.clearLog.useMutation({ onSuccess: () => { refetch(); toast.success("Decision log cleared from DB"); } });
+
+  // Also keep in-memory log as fallback
+  const [memLog, setMemLog] = useState<AstraDecision[]>(() => getDecisionLog());
+
+  // Refresh when new decision is persisted
+  const prevTrigger = refreshTrigger;
+  if (refreshTrigger !== prevTrigger) { refetch(); setMemLog(getDecisionLog()); }
+
+  const log = dbLog && dbLog.length > 0 ? dbLog.map(d => ({
+    decision_id: d.decisionId,
+    request_id: d.requestId,
+    actor_id: d.actorId,
+    actor_role: d.actorRole,
+    domain: d.domain,
+    action: d.action,
+    outcome: d.outcome as AstraOutcome,
+    reason_code: d.reasonCode,
+    policy_pack_version: d.policyPackVersion,
+    latency_ms: d.latencyMs,
+    created_at: d.createdAt instanceof Date ? d.createdAt.toISOString() : String(d.createdAt),
+  })) : memLog;
+
+  const refresh = () => { refetch(); setMemLog(getDecisionLog()); };
+  const clear = () => { clearDecisionLog(); clearDb.mutate(); };
 
   return (
     <div className="glass-card border border-white/8 rounded-xl overflow-hidden" style={{ background: "rgba(9,14,26,0.7)" }}>
@@ -397,6 +443,7 @@ function PolicyPackViewer() {
 
 export default function GovernanceModule() {
   const [, navigate] = useLocation();
+  const [decisionRefreshTick, setDecisionRefreshTick] = useState(0);
 
   const stats = [
     { label: "Policy Pack Version", value: `v${GT_POLICY_PACK.version}`, color: "text-violet-400", icon: FileText },
@@ -481,10 +528,10 @@ export default function GovernanceModule() {
           {/* Left: Live Check + Decision Log */}
           <div className="space-y-5">
             <motion.div variants={FADE} initial="hidden" animate="show" transition={{ delay: 0.15 }}>
-              <LiveCheckPanel />
+              <LiveCheckPanel onDecisionPersisted={() => setDecisionRefreshTick(t => t + 1)} />
             </motion.div>
             <motion.div variants={FADE} initial="hidden" animate="show" transition={{ delay: 0.2 }}>
-              <DecisionLog />
+              <DecisionLog refreshTrigger={decisionRefreshTick} />
             </motion.div>
           </div>
 

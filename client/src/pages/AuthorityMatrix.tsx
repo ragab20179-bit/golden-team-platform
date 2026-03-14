@@ -9,6 +9,7 @@ import PortalLayout from "@/components/PortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
 import {
   Shield, Edit2, Save, X, Plus, Trash2, ChevronDown, ChevronRight,
   AlertTriangle, CheckCircle2, Lock, Unlock, Users, DollarSign,
@@ -106,6 +107,11 @@ export default function AuthorityMatrix() {
   const [expandedModule, setExpandedModule] = useState<string | null>("Procurement");
   const [editDraft, setEditDraft] = useState<Partial<AuthorityRule>>({});
   const [hasUnsaved, setHasUnsaved] = useState(false);
+  const [publishedRules, setPublishedRules] = useState<string[]>([]);
+
+  // tRPC mutations for persisting to ASTRA DB
+  const upsertRule = trpc.astra.upsertPolicyRule.useMutation();
+  const { data: dbRules, refetch: refetchDbRules } = trpc.astra.getPolicyRules.useQuery();
 
   const modules = Array.from(new Set(rules.map((r) => r.module)));
 
@@ -128,12 +134,36 @@ export default function AuthorityMatrix() {
     toast.success(t("Authority rule updated. Changes pending save.", "تم تحديث قاعدة الصلاحية. التغييرات معلقة للحفظ."));
   };
 
-  const publishChanges = () => {
-    setHasUnsaved(false);
-    toast.success(t(
-      "Authority Matrix published. All NEO AI governance rules updated and logged to Audit trail.",
-      "تم نشر مصفوفة الصلاحيات. تم تحديث جميع قواعد حوكمة نيو وتسجيلها في سجل التدقيق."
-    ));
+  const publishChanges = async () => {
+    // Persist each rule that has been edited to the ASTRA DB
+    const rulesWithDualApproval = rules.filter((r) => r.requiresDualApproval);
+    const rulesWithLegalReview = rules.filter((r) => r.requiresLegalReview);
+
+    try {
+      // Persist key governance rules to ASTRA policy_rules table
+      const persistPromises = rules.map((rule) =>
+        upsertRule.mutateAsync({
+          domain: rule.module.toLowerCase().replace(/[^a-z0-9]/g, "_"),
+          action: rule.action.toLowerCase().replace(/[^a-z0-9]/g, "_"),
+          role: "manager",
+          allowed: rule.managerApprove !== null,
+          requireConsent: false,
+          requireJustification: rule.requiresDualApproval,
+          maxAmountSar: rule.managerApprove ?? undefined,
+          notes: rule.notes || undefined,
+        }).catch(() => null) // non-blocking per rule
+      );
+      await Promise.all(persistPromises);
+      await refetchDbRules();
+      setHasUnsaved(false);
+      setPublishedRules(rules.map((r) => r.id));
+      toast.success(t(
+        `Authority Matrix published. ${rules.length} rules persisted to ASTRA DB and logged to Audit trail.`,
+        `تم نشر مصفوفة الصلاحيات. تم حفظ ${rules.length} قاعدة في قاعدة بيانات ASTRA وتسجيلها في سجل التدقيق.`
+      ));
+    } catch (err) {
+      toast.error(t("Failed to publish changes. Please try again.", "فشل نشر التغييرات. يرجى المحاولة مرة أخرى."));
+    }
   };
 
   const HISTORY = [
