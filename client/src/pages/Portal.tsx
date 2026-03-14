@@ -36,6 +36,7 @@ import {
   buildAstraRequest,
   type AstraDecision,
 } from "@/lib/astraEngine";
+import { trpc } from "@/lib/trpc";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface ChatMessage {
@@ -139,6 +140,7 @@ export default function Portal() {
   const [isTyping, setIsTyping] = useState(false);
   const [activeTransaction, setActiveTransaction] = useState<TransactionState | null>(null);
   const [lastAstraDecision, setLastAstraDecision] = useState<AstraDecision | null>(null);
+  const logDecisionMutation = trpc.astra.logDecision.useMutation();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -298,6 +300,21 @@ export default function Portal() {
           );
           const astraDecision = astraAuthorityCheck(astraReq);
           setLastAstraDecision(astraDecision);
+
+          // ── Persist to DB (fire-and-forget) ────────────────────────────
+          logDecisionMutation.mutate({
+            decisionId: astraDecision.decision_id,
+            requestId: astraDecision.request_id,
+            actorId: astraDecision.actor_id,
+            actorRole: astraDecision.actor_role,
+            domain: astraDecision.domain,
+            action: astraDecision.action,
+            outcome: astraDecision.outcome,
+            reasonCode: astraDecision.reason_code,
+            policyPackVersion: astraDecision.policy_pack_version,
+            latencyMs: astraDecision.latency_ms,
+            contextSnapshot: astraReq.context as Record<string, unknown>,
+          });
           // ── End ASTRA Call ─────────────────────────────────────────────
 
           const outcomeIcon = astraDecision.outcome === "ALLOW" ? "✅" : astraDecision.outcome === "ESCALATE" ? "⬆️" : "🔐";

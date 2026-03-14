@@ -24,12 +24,12 @@
 - [x] Fix pnpm version conflict in CI
 - [x] All 5 CI jobs passing on main
 
-## Pending / Future
-- [ ] Wire Authority Matrix role editor (currently shows "coming soon" toast)
-- [ ] Add rule builder UI (currently shows "coming soon" toast)
-- [ ] Persist ASTRA decisions from NEO Stage 4 (Portal.tsx) to DB
-- [ ] Drive Vault update after this implementation
-- [ ] Add vitest tests for ASTRA tRPC procedures
+## Phase 3 — Pre-Launch Implementation (COMPLETE)
+- [x] Wire NEO Stage 4 (Portal.tsx) to persist ASTRA decisions to astra_decisions DB table
+- [x] Build Authority Matrix role editor dialog (Add/Edit role wired to upsertPolicyRule tRPC)
+- [x] Add vitest tests for all 6 ASTRA tRPC procedures (18 tests, all passing)
+- [x] Update Drive Vault with ASTRA AMG Phase 1 and Phase 2 documentation (GT-GOV-002)
+- [x] Add rule builder UI (Rule Builder dialog live in Authority Matrix)
 
 ## Last Updated
-2026-03-14 17:00 UTC — ASTRA AMG Phase 2 complete
+2026-03-14 18:30 UTC — Phase 3 complete, all pre-launch items done

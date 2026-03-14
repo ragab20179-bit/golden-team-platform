@@ -113,6 +113,86 @@ export default function AuthorityMatrix() {
   const upsertRule = trpc.astra.upsertPolicyRule.useMutation();
   const { data: dbRules, refetch: refetchDbRules } = trpc.astra.getPolicyRules.useQuery();
 
+  // ── Role Editor Dialog ──────────────────────────────────────────────────────
+  const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  const [roleDialogMode, setRoleDialogMode] = useState<"add" | "edit">("add");
+  const [roleDraft, setRoleDraft] = useState<Partial<Role>>({});
+
+  const openAddRole = () => {
+    setRoleDraft({ title: "", titleAr: "", level: 1, color: "text-blue-400", permissions: [] });
+    setRoleDialogMode("add");
+    setRoleDialogOpen(true);
+  };
+
+  const openEditRole = (role: Role) => {
+    setRoleDraft({ ...role });
+    setRoleDialogMode("edit");
+    setRoleDialogOpen(true);
+  };
+
+  const saveRole = () => {
+    if (!roleDraft.title || !roleDraft.level) return;
+    const newRole: Role = {
+      id: roleDraft.id || roleDraft.title.toLowerCase().replace(/\s+/g, "-"),
+      title: roleDraft.title,
+      titleAr: roleDraft.titleAr || roleDraft.title,
+      level: roleDraft.level,
+      color: roleDraft.color || "text-blue-400",
+      permissions: roleDraft.permissions || [],
+    };
+    if (roleDialogMode === "add") {
+      setRoles(prev => [...prev, newRole]);
+      toast.success(t("Role added successfully", "تمت إضافة الدور بنجاح"));
+    } else {
+      setRoles(prev => prev.map(r => r.id === newRole.id ? newRole : r));
+      toast.success(t("Role updated successfully", "تم تحديث الدور بنجاح"));
+    }
+    setHasUnsaved(true);
+    setRoleDialogOpen(false);
+  };
+
+  // ── Rule Builder Dialog ─────────────────────────────────────────────────────
+  const [ruleDialogOpen, setRuleDialogOpen] = useState(false);
+  const [ruleDialogModule, setRuleDialogModule] = useState("");
+  const [ruleDraft, setRuleDraft] = useState<Partial<AuthorityRule>>({});
+
+  const openAddRule = (module: string) => {
+    setRuleDialogModule(module);
+    setRuleDraft({
+      id: `${module.toLowerCase()}-${Date.now()}`,
+      module,
+      action: "",
+      selfApprove: null,
+      managerApprove: null,
+      directorApprove: null,
+      ceoApprove: null,
+      boardApprove: null,
+      requiresDualApproval: false,
+      requiresLegalReview: false,
+      notes: "",
+    });
+    setRuleDialogOpen(true);
+  };
+
+  const saveNewRule = () => {
+    if (!ruleDraft.action) return;
+    const newRule = ruleDraft as AuthorityRule;
+    setRules(prev => [...prev, newRule]);
+    setHasUnsaved(true);
+    setRuleDialogOpen(false);
+    toast.success(t("Rule added. Click Publish Changes to save to ASTRA DB.", "تمت إضافة القاعدة. انقر على نشر التغييرات للحفظ."));
+  };
+
+  const ROLE_COLORS = [
+    { label: "Blue", value: "text-blue-400" },
+    { label: "Cyan", value: "text-cyan-400" },
+    { label: "Violet", value: "text-violet-400" },
+    { label: "Amber", value: "text-amber-400" },
+    { label: "Emerald", value: "text-emerald-400" },
+    { label: "Rose", value: "text-rose-400" },
+    { label: "Orange", value: "text-orange-400" },
+  ];
+
   const modules = Array.from(new Set(rules.map((r) => r.module)));
 
   const startEdit = (rule: AuthorityRule) => {
@@ -363,7 +443,7 @@ export default function AuthorityMatrix() {
                         {/* Add Rule */}
                         <div className="px-4 py-3 border-t border-white/3">
                           <button
-                            onClick={() => toast.info(t("Rule builder coming in next release", "منشئ القواعد قادم في الإصدار القادم"))}
+                            onClick={() => openAddRule(mod)}
                             className="flex items-center gap-2 text-xs text-white/30 hover:text-white/60 transition-colors">
                             <Plus className="w-3.5 h-3.5" />
                             {t("Add Rule", "إضافة قاعدة")}
@@ -396,7 +476,7 @@ export default function AuthorityMatrix() {
                       <span className="text-[10px] text-white/30 ml-1">{t("Level", "المستوى")} {role.level}</span>
                     </div>
                   </div>
-                  <button onClick={() => toast.info(t("Role editor coming soon", "محرر الأدوار قادم قريباً"))}
+                  <button onClick={() => openEditRole(role)}
                     className="w-7 h-7 rounded bg-white/3 border border-white/8 flex items-center justify-center text-white/30 hover:text-white hover:bg-white/8 transition-colors">
                     <Edit2 className="w-3 h-3" />
                   </button>
@@ -413,6 +493,16 @@ export default function AuthorityMatrix() {
               </motion.div>
             ))}
           </motion.div>
+        )}
+
+        {/* ── Add Role Button (Roles Tab) ── */}
+        {activeTab === "roles" && (
+          <div className="flex justify-end mt-4">
+            <Button onClick={openAddRole} size="sm" className="bg-violet-600 hover:bg-violet-500 text-white border-0 flex items-center gap-2">
+              <Plus className="w-3.5 h-3.5" />
+              {t("Add Role", "إضافة دور")}
+            </Button>
+          </div>
         )}
 
         {/* ── HISTORY TAB ── */}
@@ -449,6 +539,205 @@ export default function AuthorityMatrix() {
         )}
 
       </div>
+
+      {/* ── ROLE EDITOR DIALOG ────────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {roleDialogOpen && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setRoleDialogOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-lg glass-card rounded-2xl border border-white/10 p-6 shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-violet-500/15 border border-violet-400/20 flex items-center justify-center">
+                    <Users className="w-4 h-4 text-violet-400" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                      {roleDialogMode === "add" ? t("Add New Role", "إضافة دور جديد") : t("Edit Role", "تعديل الدور")}
+                    </div>
+                    <div className="text-[11px] text-white/40">{t("Changes take effect after Publish", "تسري التغييرات بعد النشر")}</div>
+                  </div>
+                </div>
+                <button onClick={() => setRoleDialogOpen(false)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] text-white/40 uppercase tracking-wider mb-1.5 block">{t("Title (EN)", "المسمى (إنجليزي)")}</label>
+                    <input
+                      value={roleDraft.title || ""}
+                      onChange={e => setRoleDraft(d => ({ ...d, title: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-violet-400/50"
+                      placeholder="e.g. Senior Manager"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-white/40 uppercase tracking-wider mb-1.5 block">{t("Title (AR)", "المسمى (عربي)")}</label>
+                    <input
+                      value={roleDraft.titleAr || ""}
+                      onChange={e => setRoleDraft(d => ({ ...d, titleAr: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-violet-400/50"
+                      placeholder="مثال: مدير أول"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] text-white/40 uppercase tracking-wider mb-1.5 block">{t("Authority Level (1–5)", "مستوى الصلاحية (1–5)")}</label>
+                    <select
+                      value={roleDraft.level || 1}
+                      onChange={e => setRoleDraft(d => ({ ...d, level: Number(e.target.value) }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-400/50"
+                    >
+                      {[1,2,3,4,5].map(l => <option key={l} value={l} className="bg-[#0A0F1E]">{l} — {["Staff","Manager","Director","CEO","Board"][l-1]}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[11px] text-white/40 uppercase tracking-wider mb-1.5 block">{t("Color", "اللون")}</label>
+                    <div className="flex gap-2 flex-wrap pt-1">
+                      {ROLE_COLORS.map(c => (
+                        <button key={c.value} onClick={() => setRoleDraft(d => ({ ...d, color: c.value }))}
+                          className={`w-6 h-6 rounded-full border-2 transition-all ${c.value.replace("text-","bg-")} ${roleDraft.color === c.value ? "border-white scale-110" : "border-transparent opacity-60"}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-white/40 uppercase tracking-wider mb-1.5 block">{t("Permissions (comma-separated)", "الصلاحيات (مفصولة بفاصلة)")}</label>
+                  <input
+                    value={(roleDraft.permissions || []).join(", ")}
+                    onChange={e => setRoleDraft(d => ({ ...d, permissions: e.target.value.split(",").map(p => p.trim()).filter(Boolean) }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-violet-400/50"
+                    placeholder="view_data, approve_requests, create_po"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <Button onClick={saveRole} disabled={!roleDraft.title} className="flex-1 bg-violet-600 hover:bg-violet-500 text-white border-0">
+                    <Save className="w-3.5 h-3.5 mr-2" />
+                    {roleDialogMode === "add" ? t("Add Role", "إضافة الدور") : t("Save Changes", "حفظ التغييرات")}
+                  </Button>
+                  <Button onClick={() => setRoleDialogOpen(false)} variant="outline" className="border-white/10 text-white/60 hover:bg-white/5 bg-transparent">
+                    {t("Cancel", "إلغاء")}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── RULE BUILDER DIALOG ───────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {ruleDialogOpen && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setRuleDialogOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="w-full max-w-xl glass-card rounded-2xl border border-white/10 p-6 shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-400/20 flex items-center justify-center">
+                    <Shield className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                      {t("Add Authority Rule", "إضافة قاعدة صلاحية")}
+                    </div>
+                    <div className="text-[11px] text-white/40">{t("Module", "الوحدة")}: <span className="text-blue-400">{ruleDialogModule}</span></div>
+                  </div>
+                </div>
+                <button onClick={() => setRuleDialogOpen(false)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[11px] text-white/40 uppercase tracking-wider mb-1.5 block">{t("Action Name", "اسم الإجراء")}</label>
+                  <input
+                    value={ruleDraft.action || ""}
+                    onChange={e => setRuleDraft(d => ({ ...d, action: e.target.value }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-blue-400/50"
+                    placeholder={t("e.g. Approve Contract", "مثال: اعتماد عقد")}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {(["selfApprove","managerApprove","directorApprove","ceoApprove","boardApprove"] as const).map(field => (
+                    <div key={field}>
+                      <label className="text-[11px] text-white/40 uppercase tracking-wider mb-1.5 block">
+                        {field.replace("Approve","").replace("self","Self").replace("manager","Manager").replace("director","Director").replace("ceo","CEO").replace("board","Board")} SAR
+                      </label>
+                      <input
+                        type="number"
+                        value={ruleDraft[field] ?? ""}
+                        onChange={e => setRuleDraft(d => ({ ...d, [field]: e.target.value ? Number(e.target.value) : null }))}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-blue-400/50"
+                        placeholder={t("None", "لا ينطبق")}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-6">
+                  <label className="flex items-center gap-2 text-xs text-white/60 cursor-pointer">
+                    <input type="checkbox" checked={!!ruleDraft.requiresDualApproval}
+                      onChange={e => setRuleDraft(d => ({ ...d, requiresDualApproval: e.target.checked }))}
+                      className="w-4 h-4 rounded accent-violet-500" />
+                    {t("Dual Approval", "موافقة مزدوجة")}
+                  </label>
+                  <label className="flex items-center gap-2 text-xs text-white/60 cursor-pointer">
+                    <input type="checkbox" checked={!!ruleDraft.requiresLegalReview}
+                      onChange={e => setRuleDraft(d => ({ ...d, requiresLegalReview: e.target.checked }))}
+                      className="w-4 h-4 rounded accent-violet-500" />
+                    {t("Legal Review", "مراجعة قانونية")}
+                  </label>
+                </div>
+
+                <div>
+                  <label className="text-[11px] text-white/40 uppercase tracking-wider mb-1.5 block">{t("Notes", "ملاحظات")}</label>
+                  <input
+                    value={ruleDraft.notes || ""}
+                    onChange={e => setRuleDraft(d => ({ ...d, notes: e.target.value }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-blue-400/50"
+                    placeholder={t("Optional justification or context", "مبرر اختياري")}
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <Button onClick={saveNewRule} disabled={!ruleDraft.action} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white border-0">
+                    <Plus className="w-3.5 h-3.5 mr-2" />
+                    {t("Add Rule", "إضافة القاعدة")}
+                  </Button>
+                  <Button onClick={() => setRuleDialogOpen(false)} variant="outline" className="border-white/10 text-white/60 hover:bg-white/5 bg-transparent">
+                    {t("Cancel", "إلغاء")}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </PortalLayout>
   );
 }
