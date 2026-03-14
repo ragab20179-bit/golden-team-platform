@@ -4,6 +4,7 @@
  * Shows: Full platform layers, data flows, module interconnections, tech stack
  */
 import { useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import {
@@ -135,6 +136,7 @@ const STATS = [
 
 export default function Architecture() {
   const [, setLocation] = useLocation();
+  const { t } = useLanguage();
   const [expandedLayer, setExpandedLayer] = useState<string | null>("presentation");
   const [activeTab, setActiveTab] = useState<"layers" | "flow" | "stack">("layers");
 
@@ -144,16 +146,16 @@ export default function Architecture() {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 h-14 flex items-center px-6"
         style={{ background: "rgba(6,11,20,0.92)", backdropFilter: "blur(20px)" }}>
         <button onClick={() => setLocation("/")} className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-sm mr-6">
-          <ChevronLeft className="w-4 h-4" /> Back
+          <ChevronLeft className="w-4 h-4" /> {t("Back", "رجوع")}
         </button>
         <div className="flex items-center gap-2">
           <Layers className="w-4 h-4 text-blue-400" />
-          <span className="font-bold text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Platform Architecture</span>
+          <span className="font-bold text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{t("Platform Architecture", "هيكل المنصة")}</span>
         </div>
         <div className="ml-auto flex items-center gap-3">
           <Badge className="bg-violet-500/10 text-violet-400 border border-violet-500/20 text-[10px]">v1.0 — Phase 1</Badge>
           <Button onClick={() => setLocation("/login")} size="sm" className="bg-blue-600 hover:bg-blue-500 text-white border-0 h-8 text-xs">
-            Access Portal <ArrowRight className="ml-1 w-3 h-3" />
+            {t("Access Portal", "دخول البوابة")} <ArrowRight className="ml-1 w-3 h-3" />
           </Button>
         </div>
       </nav>
@@ -166,12 +168,12 @@ export default function Architecture() {
           }} />
           <div className="container py-12 relative">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <Badge className="mb-4 bg-blue-500/10 text-blue-400 border border-blue-500/20">System Architecture</Badge>
+              <Badge className="mb-4 bg-blue-500/10 text-blue-400 border border-blue-500/20">{t("System Architecture", "هيكل النظام")}</Badge>
               <h1 className="text-4xl font-bold text-white mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                Golden Team Enterprise Platform
+                {t("Golden Team Enterprise Platform", "منصة الفريق الذهبي المؤسسية")}
               </h1>
               <p className="text-white/50 max-w-2xl mb-8">
-                A 5-layer architecture combining a React frontend, 12 enterprise modules, NEO AI Core with 7 specialized AI modules, ASTRA AMG governance, and a cloud-native data infrastructure.
+                {t("A 5-layer architecture combining a React frontend, 12 enterprise modules, NEO AI Core with 7 specialized AI modules, ASTRA AMG governance, and a cloud-native data infrastructure.", "هيكل من 5 طبقات يجمع واجهة React وأمامية، و12 وحدة مؤسسية، ونواة NEO AI بـ7 وحدات ذكاء اصطناعي متخصصة، وحوكمة ASTRA AMG، وبنية تحتية سحابية للبيانات.")}
               </p>
               {/* Stats */}
               <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
@@ -194,7 +196,7 @@ export default function Architecture() {
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize
                   ${activeTab === tab ? "bg-blue-600 text-white" : "text-white/40 hover:text-white hover:bg-white/5"}`}>
-                {tab === "layers" ? "Architecture Layers" : tab === "flow" ? "Data Flow" : "Tech Stack"}
+                {tab === "layers" ? t("Architecture Layers", "طبقات الهيكل") : tab === "flow" ? t("Data Flow", "تدفق البيانات") : t("Tech Stack", "التقنيات المستخدمة")}
               </button>
             ))}
           </div>

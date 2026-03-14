@@ -4,6 +4,7 @@
  */
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import { Brain, Eye, EyeOff, ArrowRight, Shield, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ const PORTAL_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23m
 
 export default function Login() {
   const [, setLocation] = useLocation();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -22,11 +24,11 @@ export default function Login() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) { toast.error("Please enter your credentials"); return; }
+    if (!email || !password) { toast.error(t("Please enter your credentials", "يرجى إدخال بيانات الدخول")); return; }
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      toast.success("Welcome back! Redirecting to portal...");
+      toast.success(t("Welcome back! Redirecting to portal...", "مرحباً بعودتك! جارٍ التوجيه إلى البوابة..."));
       setTimeout(() => setLocation("/portal"), 800);
     }, 1200);
   };
@@ -48,7 +50,7 @@ export default function Login() {
         <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
           onClick={() => setLocation("/")}
           className="flex items-center gap-2 text-white/40 hover:text-white text-sm mb-8 transition-colors">
-          ← Back to Golden Team
+          ← {t("Back to Golden Team", "العودة إلى الصفحة الرئيسية")}
         </motion.button>
 
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
@@ -59,20 +61,20 @@ export default function Login() {
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mx-auto mb-4 neo-pulse">
               <Brain className="w-7 h-7 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Employee Portal</h1>
-            <p className="text-white/40 text-sm">Golden Team Trading Services</p>
+            <h1 className="text-2xl font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{t("Employee Portal", "بوابة الموظفين")}</h1>
+            <p className="text-white/40 text-sm">{t("Golden Team Trading Services", "شركة الفريق الذهبي للخدمات التجارية")}</p>
           </div>
 
           {/* NEO AI status */}
           <div className="flex items-center justify-center gap-2 mb-6 p-2.5 rounded-lg border border-emerald-500/20" style={{ background: "rgba(16,185,129,0.05)" }}>
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs text-emerald-400 font-medium">NEO AI Core — Online & Ready</span>
+            <span className="text-xs text-emerald-400 font-medium">{t("NEO AI Core — Online & Ready", "نواة NEO AI — متصلة وجاهزة")}</span>
           </div>
 
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <Label className="text-white/60 text-xs mb-1.5 block">Employee Email</Label>
+              <Label className="text-white/60 text-xs mb-1.5 block">{t("Employee Email", "البريد الإلكتروني للموظف")}</Label>
               <Input
                 type="email"
                 placeholder="employee@goldenteam.com"
@@ -82,7 +84,7 @@ export default function Login() {
               />
             </div>
             <div>
-              <Label className="text-white/60 text-xs mb-1.5 block">Password</Label>
+              <Label className="text-white/60 text-xs mb-1.5 block">{t("Password", "كلمة المرور")}</Label>
               <div className="relative">
                 <Input
                   type={showPass ? "text" : "password"}
@@ -98,10 +100,10 @@ export default function Login() {
               </div>
             </div>
             <Button type="submit" disabled={loading} className="w-full h-11 bg-blue-600 hover:bg-blue-500 text-white border-0 font-semibold">
-              {loading ? (
-                <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Authenticating...</span>
+                {loading ? (
+                <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> {t("Authenticating...", "جارٍ التحقق...")}</span>
               ) : (
-                <span className="flex items-center gap-2">Access Portal <ArrowRight className="w-4 h-4" /></span>
+                <span className="flex items-center gap-2">{t("Access Portal", "دخول البوابة")} <ArrowRight className="w-4 h-4" /></span>
               )}
             </Button>
           </form>
@@ -110,7 +112,7 @@ export default function Login() {
           <div className="mt-4 pt-4 border-t border-white/5">
             <button onClick={() => { setEmail("demo@goldenteam.com"); setPassword("demo1234"); }}
               className="w-full text-xs text-white/30 hover:text-white/60 transition-colors py-1">
-              Use demo credentials
+              {t("Use demo credentials", "استخدام بيانات تجريبية")}
             </button>
           </div>
         </motion.div>
@@ -119,7 +121,7 @@ export default function Login() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
           className="flex items-center justify-center gap-2 mt-6 text-xs text-white/25">
           <Shield className="w-3 h-3" />
-          Secured by ASTRA AMG Governance · JWT + OAuth
+          {t("Secured by ASTRA AMG Governance · JWT + OAuth", "محمي بحوكمة ASTRA AMG · JWT + OAuth")}
           <Lock className="w-3 h-3" />
         </motion.div>
       </div>

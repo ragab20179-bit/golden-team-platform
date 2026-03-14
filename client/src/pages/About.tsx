@@ -6,6 +6,7 @@
  */
 import { motion } from "framer-motion";
 import { useLocation } from "wouter";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   Award, Shield, Globe, Users, Target, Lightbulb, Heart,
   ArrowRight, ChevronRight, CheckCircle, Star, TrendingUp, Zap
@@ -17,13 +18,13 @@ const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrA
 const fadeUp = { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } } };
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 
-const VALUES = [
-  { icon: Shield, title: "Integrity First", desc: "Every engagement is governed by transparency, honesty, and ethical conduct. We build trust through consistent delivery and open communication." },
-  { icon: Target, title: "Results-Driven", desc: "We measure our success by your outcomes. Every project has clear KPIs, and we hold ourselves accountable to delivering measurable value." },
-  { icon: Lightbulb, title: "Innovation-Led", desc: "We continuously invest in emerging technologies — particularly AI — to ensure our clients always have access to cutting-edge solutions." },
-  { icon: Globe, title: "GCC-Rooted", desc: "Deep regional expertise, cultural understanding, and established government relationships across Saudi Arabia, UAE, and the wider GCC." },
-  { icon: Users, title: "Partnership Mindset", desc: "We work as an extension of your team, not as external vendors. Long-term relationships and client success are our primary metrics." },
-  { icon: Heart, title: "People-Centered", desc: "Technology serves people, not the other way around. We design solutions that empower employees and improve the human experience at work." },
+const VALUES_EN = [
+  { icon: Shield, titleEn: "Integrity First", titleAr: "النزاهة أولاً", descEn: "Every engagement is governed by transparency, honesty, and ethical conduct. We build trust through consistent delivery and open communication.", descAr: "كل تعامل يحكمه الشفافية والأمانة والسلوك الأخلاقي. نبني الثقة عبر التسليم المتسق والتواصل المفتوح." },
+  { icon: Target, titleEn: "Results-Driven", titleAr: "موجّه بالنتائج", descEn: "We measure our success by your outcomes. Every project has clear KPIs, and we hold ourselves accountable to delivering measurable value.", descAr: "نقيس نجاحنا بنتائجك. لكل مشروع مؤشرات أداء واضحة ونتحمل المسؤولية عن تحقيق قيمة ملموسة." },
+  { icon: Lightbulb, titleEn: "Innovation-Led", titleAr: "ريادة الابتكار", descEn: "We continuously invest in emerging technologies — particularly AI — to ensure our clients always have access to cutting-edge solutions.", descAr: "نستثمر باستمرار في التقنيات الناشئة — لا سيما الذكاء الاصطناعي — لضمان حصول عملائنا دائماً على حلول متطورة." },
+  { icon: Globe, titleEn: "GCC-Rooted", titleAr: "جذور خليجية", descEn: "Deep regional expertise, cultural understanding, and established government relationships across Saudi Arabia, UAE, and the wider GCC.", descAr: "خبرة إقليمية عميقة وفهم ثقافي وعلاقات حكومية راسخة عبر السعودية والإمارات ودول الخليج." },
+  { icon: Users, titleEn: "Partnership Mindset", titleAr: "عقلية الشراكة", descEn: "We work as an extension of your team, not as external vendors. Long-term relationships and client success are our primary metrics.", descAr: "نعمل كامتداد لفريقك، لا كموردين خارجيين. العلاقات طويلة الأمد ونجاح العميل هما مقياسانا الأساسيان." },
+  { icon: Heart, titleEn: "People-Centered", titleAr: "محورية الإنسان", descEn: "Technology serves people, not the other way around. We design solutions that empower employees and improve the human experience at work.", descAr: "التقنية في خدمة الإنسان لا العكس. نصمم حلولاً تمكّن الموظفين وتحسّن تجربة العمل." },
 ];
 
 const MILESTONES = [
@@ -54,6 +55,8 @@ const STATS = [
 
 export default function About() {
   const [, navigate] = useLocation();
+  const { t, lang } = useLanguage();
+  const VALUES = VALUES_EN.map(v => ({ icon: v.icon, title: lang === "ar" ? v.titleAr : v.titleEn, desc: lang === "ar" ? v.descAr : v.descEn }));
 
   return (
     <div className="min-h-screen bg-[#05080F] text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -101,18 +104,18 @@ export default function About() {
         <div className="relative max-w-7xl mx-auto px-6 py-24">
           <motion.div initial="hidden" animate="show" variants={stagger}>
             <motion.div variants={fadeUp} className="flex items-center gap-2 mb-6">
-              <button onClick={() => navigate("/")} className="text-white/40 hover:text-white/70 text-sm transition-colors">Home</button>
+              <button onClick={() => navigate("/")} className="text-white/40 hover:text-white/70 text-sm transition-colors">{t("Home", "الرئيسية")}</button>
               <ChevronRight className="w-3 h-3 text-white/30" />
-              <span className="text-amber-400 text-sm">About Us</span>
+              <span className="text-amber-400 text-sm">{t("About Us", "من نحن")}</span>
             </motion.div>
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 text-amber-300 text-xs tracking-widest uppercase mb-6">
-              <Star className="w-3 h-3" /> Our Story
+              <Star className="w-3 h-3" /> {t("Our Story", "قصتنا")}
             </motion.div>
             <motion.h1 variants={fadeUp} className="text-5xl md:text-6xl font-bold mb-6 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Fifteen Years of<br /><span className="text-amber-400">Building the Future</span><br />of GCC Enterprise
+              {t("Fifteen Years of", "خمسة عشر عاماً من")}<br /><span className="text-amber-400">{t("Building the Future", "بناء مستقبل")}</span><br />{t("of GCC Enterprise", "مؤسسات الخليج")}
             </motion.h1>
             <motion.p variants={fadeUp} className="text-white/60 text-xl max-w-2xl leading-relaxed">
-              Golden Team Trading Services was founded with a singular mission: to help GCC organizations harness the power of technology and strategic thinking to achieve their full potential.
+              {t("Golden Team Trading Services was founded with a singular mission: to help GCC organizations harness the power of technology and strategic thinking to achieve their full potential.", "تأسست شركة الفريق الذهبي بمهمة واحدة: مساعدة منظمات الخليج على تسخير قوة التكنولوجيا والتفكير الاستراتيجي لتحقيق كامل إمكاناتها.")}
             </motion.p>
           </motion.div>
         </div>
@@ -140,7 +143,7 @@ export default function About() {
             className="grid lg:grid-cols-2 gap-16 items-center">
             <motion.div variants={fadeUp}>
               <h2 className="text-4xl font-bold mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Who We Are
+                {t("Who We Are", "من نحن")}
               </h2>
               <div className="space-y-4 text-white/60 leading-relaxed">
                 <p>
@@ -186,10 +189,10 @@ export default function About() {
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-14">
             <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Our Core Values
+              {t("Our Core Values", "قيمنا الجوهرية")}
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 max-w-2xl mx-auto">
-              Six principles that guide every decision, every engagement, and every interaction.
+              {t("Six principles that guide every decision, every engagement, and every interaction.", "ستة مبادئ توجّه كل قرار وكل تعامل وكل تفاعل.")}
             </motion.p>
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.05 }} variants={stagger}
@@ -213,7 +216,7 @@ export default function About() {
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-16">
             <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Our Journey
+              {t("Our Journey", "مسيرتنا")}
             </motion.h2>
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.05 }} variants={stagger}
@@ -246,10 +249,10 @@ export default function About() {
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-14">
             <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Leadership Team
+              {t("Leadership Team", "فريق القيادة")}
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 max-w-2xl mx-auto">
-              Experienced leaders with deep GCC expertise and a shared commitment to client success.
+              {t("Experienced leaders with deep GCC expertise and a shared commitment to client success.", "قادة متمرسون بخبرة خليجية عميقة والتزام مشترك بنجاح العميل.")}
             </motion.p>
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.05 }} variants={stagger}
@@ -276,19 +279,19 @@ export default function About() {
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}>
             <motion.h2 variants={fadeUp} className="text-4xl font-bold mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Ready to Work<br /><span className="text-amber-400">With Golden Team?</span>
+              {t("Ready to Work", "هل أنت مستعد")}<br /><span className="text-amber-400">{t("With Golden Team?", "للعمل مع الفريق الذهبي؟")}</span>
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 text-lg mb-10">
-              Let us show you how our integrated approach to IT, project management, and consultancy can transform your organization.
+              {t("Let us show you how our integrated approach to IT, project management, and consultancy can transform your organization.", "دعنا نريك كيف يمكن لنهجنا المتكامل في تقنية المعلومات وإدارة المشاريع والاستشارة أن يحوّل منظمتك.")}
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap gap-4 justify-center">
               <Button onClick={() => navigate("/contact")}
                 className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold px-10 py-4 text-sm tracking-wide">
-                Get In Touch <ArrowRight className="w-4 h-4 ml-2" />
+                {t("Get In Touch", "تواصل معنا")} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
               <Button onClick={() => navigate("/it-solutions")} variant="outline"
                 className="border-white/20 text-white hover:bg-white/10 bg-transparent px-10 py-4 text-sm">
-                Explore Our Services
+                {t("Explore Our Services", "اكتشف خدماتنا")}
               </Button>
             </motion.div>
           </motion.div>

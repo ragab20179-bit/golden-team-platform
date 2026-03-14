@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { t } from "@/lib/i18n";
 import NEOTransactionFlow from "@/components/NEOTransactionFlow";
 import {
   detectIntent,
@@ -135,6 +137,9 @@ function renderContent(text: string) {
 
 export default function Portal() {
   const [, setLocation] = useLocation();
+  const { lang, isRTL } = useLanguage();
+  const P = t("portal", lang);
+  const G = t("global", lang);
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -402,7 +407,7 @@ export default function Portal() {
   };
 
   return (
-    <PortalLayout title="Employee Dashboard" subtitle="NEO AI Core — Active" badge="Online" badgeColor="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+    <PortalLayout title={isRTL ? "لوحة الموظفين" : "Employee Dashboard"} subtitle={isRTL ? "محرك NEO الذكي — نشط" : "NEO AI Core — Active"} badge={isRTL ? "متصل" : "Online"} badgeColor="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
       <div className="flex h-full overflow-hidden">
 
         {/* ── Left Panel — KPIs + Modules (45%) ── */}
@@ -410,7 +415,7 @@ export default function Portal() {
 
           {/* KPI Cards */}
           <div>
-            <div className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-2">Live KPIs</div>
+            <div className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-2">{isRTL ? "مؤشرات الأداء الحية" : "Live KPIs"}</div>
             <div className="grid grid-cols-2 gap-2">
               {kpiCards.map((k, i) => (
                 <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
@@ -428,7 +433,7 @@ export default function Portal() {
 
           {/* Quick Module Access */}
           <div>
-            <div className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-2">Enterprise Modules</div>
+            <div className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-2">{isRTL ? "وحدات المنظومة" : "Enterprise Modules"}</div>
             <div className="grid grid-cols-2 gap-1.5">
               {quickModules.map((m, i) => (
                 <button key={i} onClick={() => setLocation(m.path)}
@@ -444,14 +449,14 @@ export default function Portal() {
           {/* Active Transaction Status */}
           {activeTransaction && (
             <div>
-              <div className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-2">Active Transaction</div>
+              <div className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-2">{isRTL ? "معاملة نشطة" : "Active Transaction"}</div>
               <NEOTransactionFlow transaction={activeTransaction} />
             </div>
           )}
 
           {/* Recent Activity */}
           <div>
-            <div className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-2">Recent Activity</div>
+            <div className="text-xs font-semibold text-white/30 uppercase tracking-widest mb-2">{isRTL ? "النشاط الأخير" : "Recent Activity"}</div>
             <div className="space-y-1.5">
               {[
                 { icon: Activity, text: "Odoo ERP synced successfully", time: "2 min ago", color: "text-emerald-400" },
@@ -474,7 +479,7 @@ export default function Portal() {
           <div className="mt-auto p-3 rounded-xl border border-blue-500/15" style={{ background: "rgba(59,130,246,0.04)" }}>
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-              <span className="text-xs font-semibold text-blue-400">NEO AI Status</span>
+              <span className="text-xs font-semibold text-blue-400">{isRTL ? "حالة محرك NEO" : "NEO AI Status"}</span>
               <span className="ml-auto w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             </div>
             <div className="grid grid-cols-2 gap-1 text-[10px] text-white/40">
@@ -498,15 +503,15 @@ export default function Portal() {
                 <Bot className="w-4 h-4 text-white" />
               </div>
               <div>
-                <div className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>NEO AI Core</div>
-                <div className="text-[10px] text-white/40">Hybrid: 80% Manus + 20% GPT-4 · ASTRA AMG Governed</div>
+                <div className="text-sm font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{isRTL ? "محرك NEO الذكي" : "NEO AI Core"}</div>
+                <div className="text-[10px] text-white/40">{isRTL ? "هجين: 80% Manus + 20% GPT-4 · محكوم بـ ASTRA AMG" : "Hybrid: 80% Manus + 20% GPT-4 · ASTRA AMG Governed"}</div>
               </div>
               <Badge className="text-[9px] border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 ml-1">ONLINE</Badge>
             </div>
             <div className="flex items-center gap-2">
               {activeTransaction && (
                 <Badge className="text-[9px] border bg-amber-500/10 text-amber-400 border-amber-500/20 animate-pulse">
-                  Transaction Active
+                  {isRTL ? "معاملة نشطة" : "Transaction Active"}
                 </Badge>
               )}
               <button onClick={() => { setMessages(INITIAL_MESSAGES); setActiveTransaction(null); toast.success("Chat cleared"); }}
@@ -602,9 +607,8 @@ export default function Portal() {
                 onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
                 className="flex-1 bg-white/3 border border-white/8 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-blue-500/40 focus:bg-white/5 transition-all"
                 placeholder={activeTransaction
-                  ? `Reply to NEO — ${TRANSACTION_DEFINITIONS[activeTransaction.type].title}...`
-                  : "Ask NEO anything — or say \"Create a PO for SAR 30,000\"..."}
-              />
+                  ? (isRTL ? `الرد على NEO — ${TRANSACTION_DEFINITIONS[activeTransaction.type].title}...` : `Reply to NEO — ${TRANSACTION_DEFINITIONS[activeTransaction.type].title}...`)
+                  : (isRTL ? 'اسأل NEO أي شيء — أو قل "أنشئ أمر شراء بـ 30,000 ريال"...' : 'Ask NEO anything — or say "Create a PO for SAR 30,000"...')}              />
               <Button onClick={() => sendMessage()}
                 disabled={!input.trim()}
                 className="px-4 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-30 transition-all">
@@ -612,7 +616,7 @@ export default function Portal() {
               </Button>
             </div>
             <p className="text-[10px] text-white/20 text-center mt-2">
-              NEO AI is governed by ASTRA AMG · All actions are logged and audited
+              {isRTL ? "محرك NEO محكوم بـ ASTRA AMG · جميع الإجراءات مسجلة ومدققة" : "NEO AI is governed by ASTRA AMG · All actions are logged and audited"}
             </p>
           </div>
         </div>

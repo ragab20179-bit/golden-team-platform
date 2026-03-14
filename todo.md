@@ -37,3 +37,16 @@
 ## Bug Fixes
 - [x] Fix duplicated main title on landing page hero section (replaced bg image + updated h1 tagline)
 - [x] Add animated particle network canvas overlay to hero section
+
+## Phase 4 — Full Bilingual Arabic/English
+- [x] Build i18n translation system with Arabic/English context, RTL support, and language switcher
+- [x] Translate public landing page (all sections, nav, hero, services, stats, testimonials, footer)
+- [x] Translate employee portal and all portal pages (sidebar, NEO engine, dashboard, modules)
+- [x] Translate ASTRA AMG governance module, Authority Matrix, and all governance UI
+- [x] Add language switcher to nav and portal sidebar with RTL layout toggle
+- [x] Translate all service pages: IT Solutions, ASTRA PM, Consultancy, About, Contact
+- [x] Translate all module pages: HR, ERP, CRM, KPI, Procurement, QMS, Legal, Comms, Audit, Governance, NEO Core
+- [x] Semantic Arabic trade language (not literal translation) throughout
+
+## Last Updated
+2026-03-14 21:00 UTC — Phase 4 complete, full bilingual Arabic/English deployed

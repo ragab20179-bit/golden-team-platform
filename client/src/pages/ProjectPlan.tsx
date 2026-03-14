@@ -3,6 +3,7 @@
  * Design: "Neural Depth"
  */
 import { motion } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useLocation } from "wouter";
 import { ChevronLeft, CheckCircle, Clock, Circle, ArrowRight, FileText, Brain, Shield, Database, Users, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -84,21 +85,22 @@ const modules = [
 
 export default function ProjectPlan() {
   const [, setLocation] = useLocation();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-[#060B14] text-white">
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 h-14 flex items-center px-6" style={{ background: "rgba(6,11,20,0.9)", backdropFilter: "blur(20px)" }}>
         <button onClick={() => setLocation("/")} className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-sm mr-6">
-          <ChevronLeft className="w-4 h-4" /> Back
+          <ChevronLeft className="w-4 h-4" /> {t("Back", "رجوع")}
         </button>
         <div className="flex items-center gap-2">
           <FileText className="w-4 h-4 text-emerald-400" />
-          <span className="font-semibold text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Project Plan</span>
+          <span className="font-semibold text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{t("Project Plan", "خطة المشروع")}</span>
         </div>
         <div className="ml-auto">
           <Button onClick={() => setLocation("/login")} size="sm" className="bg-blue-600 hover:bg-blue-500 text-white border-0 h-8 text-xs">
-            Access Portal <ArrowRight className="ml-1 w-3 h-3" />
+            {t("Access Portal", "دخول البوابة")} <ArrowRight className="ml-1 w-3 h-3" />
           </Button>
         </div>
       </nav>
@@ -106,18 +108,18 @@ export default function ProjectPlan() {
       <div className="pt-14 container py-12 space-y-16">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-          <Badge className="mb-4 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">24-Week Implementation Plan</Badge>
+          <Badge className="mb-4 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{t("24-Week Implementation Plan", "خطة تنفيذ 24 أسبوعاً")}</Badge>
           <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            Golden Team Enterprise Platform
+            {t("Golden Team Enterprise Platform", "منصة الفريق الذهبي المؤسسية")}
           </h1>
           <p className="text-white/50 max-w-2xl mx-auto">
-            A comprehensive enterprise platform combining 12 integrated modules, NEO AI Core, and ASTRA AMG governance — built for Golden Team Trading Services.
+            {t("A comprehensive enterprise platform combining 12 integrated modules, NEO AI Core, and ASTRA AMG governance — built for Golden Team Trading Services.", "منصة مؤسسية شاملة تجمع 12 وحدة متكاملة ونواة NEO AI وحوكمة ASTRA AMG — مبنية لشركة الفريق الذهبي للخدمات التجارية.")}
           </p>
         </motion.div>
 
         {/* Module Overview */}
         <div>
-          <h2 className="text-xl font-bold text-white mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Platform Modules</h2>
+          <h2 className="text-xl font-bold text-white mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{t("Platform Modules", "وحدات المنصة")}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {modules.map((m, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}
@@ -134,7 +136,7 @@ export default function ProjectPlan() {
 
         {/* Phase Timeline */}
         <div>
-          <h2 className="text-xl font-bold text-white mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Implementation Phases</h2>
+          <h2 className="text-xl font-bold text-white mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{t("Implementation Phases", "مراحل التنفيذ")}</h2>
           <div className="space-y-6">
             {phases.map((p, i) => (
               <motion.div key={i} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
@@ -169,7 +171,7 @@ export default function ProjectPlan() {
 
         {/* Tech Stack */}
         <div>
-          <h2 className="text-xl font-bold text-white mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Technology Stack</h2>
+          <h2 className="text-xl font-bold text-white mb-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{t("Technology Stack", "التقنيات المستخدمة")}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {techStack.map((t, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }}
@@ -188,7 +190,7 @@ export default function ProjectPlan() {
         {/* CTA */}
         <div className="text-center pb-8">
           <Button onClick={() => setLocation("/login")} size="lg" className="bg-blue-600 hover:bg-blue-500 text-white border-0 px-10">
-            Access Employee Portal <ArrowRight className="ml-2 w-4 h-4" />
+            {t("Access Employee Portal", "دخول بوابة الموظفين")} <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
         </div>
       </div>

@@ -5,6 +5,7 @@
  * Layout: Hero → features → modules → NEO AI integration → pricing → CTA
  */
 import { motion } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useLocation } from "wouter";
 import {
   BarChart3, Calendar, Users, FileText, Brain, CheckCircle,
@@ -88,6 +89,7 @@ const colorMap: Record<string, { badge: string; border: string; btn: string }> =
 
 export default function AstraPM() {
   const [, navigate] = useLocation();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-[#05080F] text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -105,12 +107,12 @@ export default function AstraPM() {
           </button>
           <div className="hidden md:flex items-center gap-8">
             {[
-              { label: "Home", path: "/" },
-              { label: "IT Solutions", path: "/it-solutions" },
-              { label: "ASTRA PM", path: "/astra-pm" },
-              { label: "Consultancy", path: "/consultancy" },
-              { label: "About", path: "/about" },
-              { label: "Contact", path: "/contact" },
+              { label: t("Home", "الرئيسية"), path: "/" },
+              { label: t("IT Solutions", "حلول تقنية المعلومات"), path: "/it-solutions" },
+              { label: t("ASTRA PM", "ASTRA لإدارة المشاريع"), path: "/astra-pm" },
+              { label: t("Consultancy", "الاستشارات"), path: "/consultancy" },
+              { label: t("About", "من نحن"), path: "/about" },
+              { label: t("Contact", "تواصل معنا"), path: "/contact" },
             ].map(({ label, path }) => (
               <button key={label} onClick={() => navigate(path)}
                 className={`text-sm tracking-wide transition-colors ${path === "/astra-pm" ? "text-violet-400 font-semibold" : "text-white/60 hover:text-amber-400"}`}>
@@ -140,23 +142,23 @@ export default function AstraPM() {
               <span className="text-violet-400 text-sm">ASTRA PM</span>
             </motion.div>
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-400/30 bg-violet-500/10 text-violet-300 text-xs tracking-widest uppercase mb-6">
-              <Layers className="w-3 h-3" /> AI-Powered Project Management
+              <Layers className="w-3 h-3" /> {t("AI-Powered Project Management", "إدارة مشاريع مدعومة بالذكاء الاصطناعي")}
             </motion.div>
             <motion.h1 variants={fadeUp} className="text-5xl md:text-6xl font-bold mb-6 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-              ASTRA PM<br /><span className="text-violet-400">Intelligent Project</span><br />
-              <span className="text-amber-400">Management Platform</span>
+              ASTRA PM<br /><span className="text-violet-400">{t("Intelligent Project", "منصة إدارة مشاريع")}</span><br />
+              <span className="text-amber-400">{t("Management Platform", "ذكية ومتكاملة")}</span>
             </motion.h1>
             <motion.p variants={fadeUp} className="text-white/60 text-xl max-w-2xl mb-10 leading-relaxed">
-              The enterprise project management platform built for the GCC — combining AI-powered intelligence, ISO 9001 governance, and bilingual Arabic/English support in one unified platform.
+              {t("The enterprise project management platform built for the GCC — combining AI-powered intelligence, ISO 9001 governance, and bilingual Arabic/English support in one unified platform.", "منصة إدارة مشاريع مؤسسية مبنية لدول الخليج — تجمع ذكاء اصطناعيًا وحوكمة ISO 9001 ودعمًا ثنائي اللغة في منصة موحدة.")}
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap gap-4">
               <Button onClick={() => navigate("/contact")}
                 className="bg-violet-600 hover:bg-violet-500 text-white font-bold px-8 py-3 text-sm tracking-wide">
-                Request a Demo <ArrowRight className="w-4 h-4 ml-2" />
+                {t("Request a Demo", "طلب عرض تجريبي")} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
               <Button onClick={() => navigate("/contact")} variant="outline"
                 className="border-white/20 text-white hover:bg-white/10 bg-transparent px-8 py-3 text-sm">
-                View Pricing
+                {t("View Pricing", "عرض الأسعار")}
               </Button>
             </motion.div>
             <motion.div variants={fadeUp} className="flex flex-wrap gap-6 mt-8">
@@ -175,10 +177,10 @@ export default function AstraPM() {
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-16">
             <motion.h2 variants={fadeUp} className="text-4xl md:text-5xl font-bold mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Built for Enterprise<br /><span className="text-violet-400">Project Excellence</span>
+              {t("Built for Enterprise", "مبنية للمؤسسات")}<br /><span className="text-violet-400">{t("Project Excellence", "تميز إدارة المشاريع")}</span>
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 text-lg max-w-3xl mx-auto">
-              Every feature is designed to reduce administrative overhead, improve visibility, and enable data-driven project decisions.
+              {t("Every feature is designed to reduce administrative overhead, improve visibility, and enable data-driven project decisions.", "كل ميزة مصممة لتقليل العبء الإداري وتحسين الرؤية وتمكين القرارات المستندة إلى البيانات.")}
             </motion.p>
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.05 }} variants={stagger}
@@ -202,10 +204,10 @@ export default function AstraPM() {
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-14">
             <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Four Integrated Modules
+              {t("Four Integrated Modules", "أربع وحدات متكاملة")}
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 max-w-2xl mx-auto">
-              ASTRA PM covers the full project lifecycle — from planning through procurement, quality, and financial control.
+              {t("ASTRA PM covers the full project lifecycle — from planning through procurement, quality, and financial control.", "يغطي ASTRA PM دورة حياة المشروع كاملة — من التخطيط حتى المشتريات والجودة والضبط المالي.")}
             </motion.p>
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
@@ -241,11 +243,11 @@ export default function AstraPM() {
                 <Brain className="w-3 h-3" /> NEO AI Integration
               </div>
               <h2 className="text-4xl font-bold mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Your AI Project<br /><span className="text-violet-400">Intelligence Layer</span>
-              </h2>
-              <p className="text-white/50 text-lg mb-8 leading-relaxed">
-                ASTRA PM is the first GCC project management platform with a native AI orchestration layer. NEO AI doesn't just assist — it actively manages, predicts, and executes project tasks on your behalf.
-              </p>
+              {t("Your AI Project", "طبقة الذكاء")}<br /><span className="text-violet-400">{t("Intelligence Layer", "الاصطناعي لمشاريعك")}</span>
+            </h2>
+            <p className="text-white/50 text-lg mb-8 leading-relaxed">
+              {t("ASTRA PM is the first GCC project management platform with a native AI orchestration layer. NEO AI doesn't just assist — it actively manages, predicts, and executes project tasks on your behalf.", "ASTRA PM هي أول منصة إدارة مشاريع خليجية بطبقة تنسيق ذكاء اصطناعي مدمجة. NEO AI لا يكتفي بالمساعدة — بل يدير ويتوقع وينفذ مهام المشروع نيابةً عنك.")}
+            </p>
               <div className="space-y-4">
                 {NEO_CAPABILITIES.map(({ icon: Icon, title, desc }) => (
                   <div key={title} className="flex items-start gap-4 p-4 rounded-xl border border-white/5 bg-white/2">
@@ -283,10 +285,10 @@ export default function AstraPM() {
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-16">
             <motion.h2 variants={fadeUp} className="text-4xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Transparent Pricing
+              {t("Transparent Pricing", "أسعار شفافة")}
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 max-w-2xl mx-auto">
-              Choose the plan that fits your organization. All plans include a 30-day free trial with no credit card required.
+              {t("Choose the plan that fits your organization. All plans include a 30-day free trial with no credit card required.", "اختر الخطة المناسبة لمنظمتك. جميع الخطط تشمل تجربة مجانية لمدة 30 يومًا دون بطاقة ائتمان.")}
             </motion.p>
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
@@ -318,7 +320,7 @@ export default function AstraPM() {
                     ))}
                   </div>
                   <Button onClick={() => navigate("/contact")} className={`w-full ${c.btn}`}>
-                    {name === "Enterprise" ? "Contact Sales" : "Start Free Trial"}
+                    {name === "Enterprise" ? t("Contact Sales", "تواصل مع المبيعات") : t("Start Free Trial", "ابدأ التجربة المجانية")}
                   </Button>
                 </motion.div>
               );
@@ -332,19 +334,19 @@ export default function AstraPM() {
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}>
             <motion.h2 variants={fadeUp} className="text-4xl font-bold mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-              See ASTRA PM in Action
+              {t("See ASTRA PM in Action", "شاهد ASTRA PM عملياً")}
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 text-lg mb-10">
-              Book a personalized 30-minute demo with our product team and see how ASTRA PM transforms project delivery.
+              {t("Book a personalized 30-minute demo with our product team and see how ASTRA PM transforms project delivery.", "احجز عرضًا تجريبيًا شخصيًا لمدة 30 دقيقة مع فريق المنتج واكتشف كيف يحوّل ASTRA PM تسليم المشاريع.")}
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap gap-4 justify-center">
               <Button onClick={() => navigate("/contact")}
                 className="bg-violet-600 hover:bg-violet-500 text-white font-bold px-10 py-4 text-sm">
-                Book a Demo <ArrowRight className="w-4 h-4 ml-2" />
+                {t("Book a Demo", "احجز عرضًا تجريبيًا")} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
               <Button onClick={() => navigate("/contact")} variant="outline"
                 className="border-white/20 text-white hover:bg-white/10 bg-transparent px-10 py-4 text-sm">
-                Download Brochure
+                {t("Download Brochure", "تحميل الكتيب")}
               </Button>
             </motion.div>
           </motion.div>
@@ -354,16 +356,16 @@ export default function AstraPM() {
       {/* ── Footer ── */}
       <footer className="border-t border-white/8 bg-[#05080F] py-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-white/30 text-sm">© 2026 Golden Team Trading Services. All rights reserved.</div>
+          <div className="text-white/30 text-sm">{t("© 2026 Golden Team Trading Services. All rights reserved.", "© 2026 شركة الفريق الذهبي للخدمات التجارية. جميع الحقوق محفوظة.")}</div>
           <div className="flex gap-6">
             {["/", "/it-solutions", "/astra-pm", "/consultancy", "/about", "/contact"].map((path, i) => (
               <button key={path} onClick={() => navigate(path)}
                 className="text-white/30 hover:text-white/60 text-sm transition-colors">
-                {["Home", "IT Solutions", "ASTRA PM", "Consultancy", "About", "Contact"][i]}
+                {[t("Home","الرئيسية"), t("IT Solutions","حلول تقنية المعلومات"), t("ASTRA PM","ASTRA لإدارة المشاريع"), t("Consultancy","الاستشارات"), t("About","من نحن"), t("Contact","تواصل معنا")][i]}
               </button>
             ))}
           </div>
-          <div className="text-white/30 text-sm">ISO 9001:2015 · Powered by NEO AI</div>
+          <div className="text-white/30 text-sm">{t("ISO 9001:2015 · Powered by NEO AI", "ISO 9001:2015 · مدعوم بـ NEO AI")}</div>
         </div>
       </footer>
     </div>

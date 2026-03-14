@@ -3,6 +3,7 @@
  * Design: "Prestige Dark" — Deep navy/charcoal, gold accents, Space Grotesk + Playfair Display
  * This is the CLIENT-FACING company website. The Employee Portal is a completely separate world.
  * Three main service pillars: IT Solutions | ASTRA PM | Business Consultancy
+ * Bilingual: Arabic / English — semantic trade language (not literal)
  */
 
 import { motion } from "framer-motion";
@@ -12,11 +13,13 @@ import {
   ArrowRight, ChevronRight, Monitor, Cpu, Shield, Cloud, Network, Code2,
   FolderKanban, BarChart3, Users2, Calendar, CheckSquare, Layers,
   Briefcase, TrendingUp, Award, Globe, Building2, Lightbulb,
-  Phone, Mail, MapPin, Star, ChevronDown, Menu, X, Zap
+  Phone, Mail, MapPin, Star, ChevronDown, Menu, X, Zap, Languages
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import ParticleNetwork from "@/components/ParticleNetwork";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { t } from "@/lib/i18n";
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-hero-clean-dubai_424dffdd.jpeg";
 const IT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-it-solutions-kBJmggmFapCwtnocCUjwuj.webp";
@@ -26,55 +29,19 @@ const CONSULT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J2
 const fadeUp = { hidden: { opacity: 0, y: 32 }, show: { opacity: 1, y: 0, transition: { duration: 0.65, ease: "easeOut" as const } } };
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.12 } } };
 
-const IT_SERVICES = [
-  { icon: Cloud, title: "Cloud Infrastructure", desc: "AWS, Azure, and hybrid cloud architecture design, migration, and managed operations." },
-  { icon: Shield, title: "Cybersecurity", desc: "End-to-end security audits, penetration testing, SOC monitoring, and compliance frameworks." },
-  { icon: Network, title: "Network Solutions", desc: "Enterprise networking, SD-WAN, VPN infrastructure, and 24/7 NOC support." },
-  { icon: Code2, title: "Custom Software", desc: "Bespoke enterprise applications, API integrations, and digital transformation programs." },
-  { icon: Monitor, title: "IT Managed Services", desc: "Full-spectrum IT outsourcing — helpdesk, infrastructure, and proactive monitoring." },
-  { icon: Cpu, title: "AI & Automation", desc: "NEO AI-powered business automation, RPA, and intelligent process optimization." },
-];
-
-const ASTRA_FEATURES = [
-  { icon: FolderKanban, title: "Project Lifecycle", desc: "Full project lifecycle management from initiation to closeout with PMBOK-aligned workflows." },
-  { icon: BarChart3, title: "Real-Time Analytics", desc: "Live dashboards for budget, schedule, resource, and risk performance indicators." },
-  { icon: Users2, title: "Resource Management", desc: "Intelligent resource allocation, capacity planning, and team performance tracking." },
-  { icon: Calendar, title: "Gantt & Scheduling", desc: "Interactive Gantt charts with critical path analysis and milestone tracking." },
-  { icon: CheckSquare, title: "Quality Assurance", desc: "Built-in ISO 9001 quality gates, inspection checklists, and non-conformance management." },
-  { icon: Layers, title: "ASTRA AMG Governance", desc: "Enterprise governance layer with audit trails, approval workflows, and compliance monitoring." },
-];
-
-const CONSULT_SERVICES = [
-  { icon: Briefcase, title: "Business Development", desc: "Market entry strategy, growth planning, and business model innovation for regional expansion." },
-  { icon: TrendingUp, title: "Administrative Excellence", desc: "Organizational design, process optimization, and operational efficiency programs." },
-  { icon: Award, title: "ISO 9001 Certification", desc: "End-to-end ISO 9001:2015 implementation, gap analysis, and certification support." },
-  { icon: Globe, title: "International Trade", desc: "Import/export facilitation, trade compliance, and cross-border business advisory." },
-  { icon: Building2, title: "Corporate Governance", desc: "Board advisory, governance frameworks, and regulatory compliance consulting." },
-  { icon: Lightbulb, title: "Strategic Planning", desc: "C-suite advisory, strategic roadmaps, and transformation program management." },
-];
-
-const STATS = [
-  { value: "15+", label: "Years Experience" },
-  { value: "200+", label: "Projects Delivered" },
-  { value: "50+", label: "Enterprise Clients" },
-  { value: "ISO 9001", label: "Certified Quality" },
-];
-
-const TESTIMONIALS = [
-  { name: "Ahmed Al-Rashidi", role: "CEO, Al-Rashidi Group", text: "Golden Team transformed our entire IT infrastructure and delivered ASTRA PM which now manages all our construction projects. Exceptional quality and professionalism." },
-  { name: "Sara Mohammed", role: "COO, Gulf Ventures", text: "Their business consultancy team helped us achieve ISO 9001 certification in record time. The strategic advisory was invaluable for our regional expansion." },
-  { name: "Khalid Al-Mansouri", role: "Director, Mansouri Holdings", text: "The NEO AI integration through their IT solutions division has automated 70% of our administrative processes. Truly transformative technology." },
-];
+const IT_ICONS = [Cloud, Shield, Network, Code2, Monitor, Cpu];
+const ASTRA_ICONS = [FolderKanban, BarChart3, Users2, Calendar, CheckSquare, Layers];
+const CONSULT_ICONS = [Briefcase, TrendingUp, Award, Globe, Building2, Lightbulb];
 
 export default function Home() {
-  // The userAuth hooks provides authentication state
-  // To implement login/logout functionality, simply call logout() or redirect to getLoginUrl()
-  // Auth state available if needed
   useAuth();
-
+  const { lang, toggleLang, isRTL } = useLanguage();
   const [, setLocation] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const L = t("landing", lang);
+  const G = t("global", lang);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 60);
@@ -83,7 +50,10 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#05080F] text-white font-sans overflow-x-hidden">
+    <div
+      className="min-h-screen bg-[#05080F] text-white font-sans overflow-x-hidden"
+      dir={isRTL ? "rtl" : "ltr"}
+    >
 
       {/* ── Navigation ── */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-[#05080F]/95 backdrop-blur-md border-b border-white/10 shadow-xl" : "bg-transparent"}`}>
@@ -94,59 +64,85 @@ export default function Home() {
               <span className="text-[#05080F] font-bold text-lg font-display">GT</span>
             </div>
             <div>
-              <div className="text-white font-bold text-sm leading-tight font-display">GOLDEN TEAM</div>
-              <div className="text-amber-400/70 text-[10px] tracking-widest uppercase">Trading Services</div>
+              <div className="text-white font-bold text-sm leading-tight font-display">
+                {isRTL ? "الفريق الذهبي" : "GOLDEN TEAM"}
+              </div>
+              <div className="text-amber-400/70 text-[10px] tracking-widest uppercase">
+                {isRTL ? "للخدمات التجارية" : "Trading Services"}
+              </div>
             </div>
           </div>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8 text-sm">
             {[
-              { label: "IT Solutions", path: "/it-solutions" },
-              { label: "ASTRA PM", path: "/astra-pm" },
-              { label: "Consultancy", path: "/consultancy" },
-              { label: "About", path: "/about" },
-              { label: "Contact", path: "/contact" },
+              { label: L.nav.itSolutions, path: "/it-solutions" },
+              { label: L.nav.astraPm, path: "/astra-pm" },
+              { label: L.nav.consultancy, path: "/consultancy" },
+              { label: L.nav.about, path: "/about" },
+              { label: L.nav.contact, path: "/contact" },
             ].map(({ label, path }) => (
-              <button key={label} onClick={() => setLocation(path)} className="text-white/60 hover:text-amber-400 transition-colors duration-200 tracking-wide">
+              <button key={path} onClick={() => setLocation(path)} className="text-white/60 hover:text-amber-400 transition-colors duration-200 tracking-wide">
                 {label}
               </button>
             ))}
           </div>
 
           <div className="hidden md:flex items-center gap-3">
+            {/* Language Switcher */}
+            <button
+              onClick={toggleLang}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 text-white/50 hover:text-amber-400 hover:border-amber-400/40 transition-all text-xs"
+              title={lang === "en" ? "Switch to Arabic" : "التبديل إلى الإنجليزية"}
+            >
+              <Languages className="w-3.5 h-3.5" />
+              <span className="font-medium">{lang === "en" ? "عربي" : "EN"}</span>
+            </button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setLocation("/login")}
               className="border-amber-400/40 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400 bg-transparent text-xs tracking-widest uppercase"
             >
-              Employee Portal
+              {G.employeePortal}
             </Button>
           </div>
 
           {/* Mobile hamburger */}
-          <button className="md:hidden text-white/70 hover:text-white" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            <button
+              onClick={toggleLang}
+              className="flex items-center gap-1 px-2 py-1 rounded border border-white/20 text-white/50 text-xs"
+            >
+              <Languages className="w-3 h-3" />
+              {lang === "en" ? "ع" : "EN"}
+            </button>
+            <button className="text-white/70 hover:text-white" onClick={() => setMobileOpen(!mobileOpen)}>
+              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
         {mobileOpen && (
           <div className="md:hidden bg-[#0A0F1E]/98 backdrop-blur-xl border-t border-white/10 px-6 py-6 flex flex-col gap-4">
             {[
-              { label: "IT Solutions", path: "/it-solutions" },
-              { label: "ASTRA PM", path: "/astra-pm" },
-              { label: "Consultancy", path: "/consultancy" },
-              { label: "About", path: "/about" },
-              { label: "Contact", path: "/contact" },
+              { label: L.nav.itSolutions, path: "/it-solutions" },
+              { label: L.nav.astraPm, path: "/astra-pm" },
+              { label: L.nav.consultancy, path: "/consultancy" },
+              { label: L.nav.about, path: "/about" },
+              { label: L.nav.contact, path: "/contact" },
             ].map(({ label, path }) => (
-              <button key={label} onClick={() => { setLocation(path); setMobileOpen(false); }} className="text-white/70 hover:text-amber-400 text-sm py-2 border-b border-white/5 text-left">
+              <button
+                key={path}
+                onClick={() => { setLocation(path); setMobileOpen(false); }}
+                className={`text-white/70 hover:text-amber-400 text-sm py-2 border-b border-white/5 ${isRTL ? "text-right" : "text-left"}`}
+              >
                 {label}
               </button>
             ))}
             <Button onClick={() => setLocation("/login")} className="mt-2 bg-amber-500 hover:bg-amber-400 text-[#05080F] font-semibold">
-              Employee Portal
+              {G.employeePortal}
             </Button>
           </div>
         )}
@@ -174,23 +170,23 @@ export default function Home() {
           <motion.div initial="hidden" animate="show" variants={stagger}>
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-400/30 bg-amber-400/10 text-amber-400 text-xs tracking-widest uppercase mb-8">
               <Zap className="w-3 h-3" />
-              AI-Powered Enterprise Solutions
+              {L.hero.badge}
             </motion.div>
 
-            <motion.h1 variants={fadeUp} className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.05] mb-6">
-              <span className="text-white">Enterprise Technology</span>
+            <motion.h1 variants={fadeUp} className={`font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.05] mb-6 ${isRTL ? "font-arabic" : ""}`}>
+              <span className="text-white">{L.hero.headline1}</span>
               <br />
               <span className="bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 bg-clip-text text-transparent">
-                Powered by AI
+                {L.hero.headline2}
               </span>
             </motion.h1>
 
             <motion.p variants={fadeUp} className="text-white/60 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed mb-4">
-              Administrative & Business Development Services · IT Solutions · ASTRA PM Project Management
+              {L.hero.sub}
             </motion.p>
 
             <motion.p variants={fadeUp} className="text-white/40 text-base max-w-2xl mx-auto mb-12">
-              Empowering organizations with enterprise-grade technology, intelligent AI systems, and strategic consultancy to drive sustainable growth.
+              {L.hero.body}
             </motion.p>
 
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -199,7 +195,7 @@ export default function Home() {
                 className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold text-base px-8 py-6 shadow-xl shadow-amber-500/30 transition-all duration-300"
                 onClick={() => setLocation("/it-solutions")}
               >
-                Explore Our Services <ArrowRight className="ml-2 w-5 h-5" />
+                {L.hero.ctaPrimary} <ArrowRight className={`${isRTL ? "mr-2 rotate-180" : "ml-2"} w-5 h-5`} />
               </Button>
               <Button
                 variant="outline"
@@ -207,7 +203,7 @@ export default function Home() {
                 className="border-white/20 text-white hover:bg-white/10 hover:border-white/40 bg-transparent text-base px-8 py-6"
                 onClick={() => setLocation("/contact")}
               >
-                Get In Touch
+                {L.hero.ctaSecondary}
               </Button>
             </motion.div>
           </motion.div>
@@ -227,7 +223,7 @@ export default function Home() {
       <section className="bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-amber-500/10 border-y border-amber-400/20 py-10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {STATS.map(({ value, label }) => (
+            {(L.stats as Array<{value: string; label: string}>).map(({ value, label }) => (
               <div key={label} className="text-center">
                 <div className="font-display text-3xl md:text-4xl font-bold text-amber-400 mb-1">{value}</div>
                 <div className="text-white/50 text-sm tracking-wide">{label}</div>
@@ -250,21 +246,21 @@ export default function Home() {
           >
             <motion.div variants={fadeUp}>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-400/30 bg-blue-400/10 text-blue-400 text-xs tracking-widest uppercase mb-6">
-                <Monitor className="w-3 h-3" /> IT Solutions
+                <Monitor className="w-3 h-3" /> {L.itSection.badge}
               </div>
               <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
-                Enterprise Technology<br />
-                <span className="text-blue-400">That Scales With You</span>
+                {L.itSection.headline1}<br />
+                <span className="text-blue-400">{L.itSection.headline2}</span>
               </h2>
               <p className="text-white/60 text-lg leading-relaxed mb-8">
-                From cloud infrastructure and cybersecurity to custom software and AI-powered automation, Golden Team delivers end-to-end IT solutions that modernize your operations and protect your business.
+                {L.itSection.body}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button className="bg-blue-600 hover:bg-blue-500 text-white border-0 px-6">
-                  IT Solutions Overview <ChevronRight className="ml-1 w-4 h-4" />
+                  {L.itSection.ctaPrimary} <ChevronRight className={`${isRTL ? "mr-1 rotate-180" : "ml-1"} w-4 h-4`} />
                 </Button>
                 <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent px-6">
-                  Request Assessment
+                  {L.itSection.ctaSecondary}
                 </Button>
               </div>
             </motion.div>
@@ -278,18 +274,21 @@ export default function Home() {
             initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {IT_SERVICES.map(({ icon: Icon, title, desc }) => (
-              <motion.div
-                key={title} variants={fadeUp}
-                className="group p-6 rounded-xl border border-white/8 bg-white/3 hover:bg-blue-500/8 hover:border-blue-400/30 transition-all duration-300 cursor-pointer"
-              >
-                <div className="w-12 h-12 rounded-xl bg-blue-500/15 border border-blue-400/20 flex items-center justify-center mb-4 group-hover:bg-blue-500/25 transition-colors">
-                  <Icon className="w-6 h-6 text-blue-400" />
-                </div>
-                <h3 className="font-display font-semibold text-white mb-2 text-lg">{title}</h3>
-                <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
-              </motion.div>
-            ))}
+            {(L.itServices as Array<{title: string; desc: string}>).map(({ title, desc }, idx: number) => {
+              const Icon = IT_ICONS[idx];
+              return (
+                <motion.div
+                  key={idx} variants={fadeUp}
+                  className="group p-6 rounded-xl border border-white/8 bg-white/3 hover:bg-blue-500/8 hover:border-blue-400/30 transition-all duration-300 cursor-pointer"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/15 border border-blue-400/20 flex items-center justify-center mb-4 group-hover:bg-blue-500/25 transition-colors">
+                    <Icon className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <h3 className="font-display font-semibold text-white mb-2 text-lg">{title}</h3>
+                  <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
+                </motion.div>
+              );
+            })}
           </motion.div>
         </div>
       </section>
@@ -309,28 +308,23 @@ export default function Home() {
               <div className="absolute bottom-4 left-4 right-4">
                 <div className="flex items-center gap-2 bg-[#05080F]/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-violet-400/20">
                   <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
-                  <span className="text-violet-300 text-xs font-medium">ASTRA PM — Live Platform</span>
+                  <span className="text-violet-300 text-xs font-medium">{L.astraSection.liveBadge}</span>
                 </div>
               </div>
             </motion.div>
             <motion.div variants={fadeUp} className="order-1 lg:order-2">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-400/30 bg-violet-400/10 text-violet-400 text-xs tracking-widest uppercase mb-6">
-                <FolderKanban className="w-3 h-3" /> ASTRA PM
+                <FolderKanban className="w-3 h-3" /> {L.astraSection.badge}
               </div>
               <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
-                Intelligent Project<br />
-                <span className="text-violet-400">Management Platform</span>
+                {L.astraSection.headline1}<br />
+                <span className="text-violet-400">{L.astraSection.headline2}</span>
               </h2>
               <p className="text-white/60 text-lg leading-relaxed mb-6">
-                ASTRA PM is Golden Team's flagship project management platform — a comprehensive SaaS solution designed for enterprise project delivery. Built with PMBOK methodology, AI-powered insights, and the ASTRA AMG governance framework.
+                {L.astraSection.body}
               </p>
               <div className="grid grid-cols-2 gap-4 mb-8">
-                {[
-                  { label: "ISO 9001", sublabel: "Quality Gates" },
-                  { label: "NEO AI", sublabel: "Smart Insights" },
-                  { label: "ASTRA AMG", sublabel: "Governance" },
-                  { label: "Real-Time", sublabel: "Analytics" },
-                ].map(({ label, sublabel }) => (
+                {(L.astraSection.features as Array<{label: string; sublabel: string}>).map(({ label, sublabel }) => (
                   <div key={label} className="flex items-center gap-3 p-3 rounded-lg bg-white/4 border border-white/8">
                     <div className="w-2 h-2 rounded-full bg-violet-400 flex-shrink-0" />
                     <div>
@@ -342,10 +336,10 @@ export default function Home() {
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button className="bg-violet-600 hover:bg-violet-500 text-white border-0 px-6">
-                  Explore ASTRA PM <ChevronRight className="ml-1 w-4 h-4" />
+                  {L.astraSection.ctaPrimary} <ChevronRight className={`${isRTL ? "mr-1 rotate-180" : "ml-1"} w-4 h-4`} />
                 </Button>
                 <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent px-6">
-                  Request Demo
+                  {L.astraSection.ctaSecondary}
                 </Button>
               </div>
             </motion.div>
@@ -355,18 +349,21 @@ export default function Home() {
             initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {ASTRA_FEATURES.map(({ icon: Icon, title, desc }) => (
-              <motion.div
-                key={title} variants={fadeUp}
-                className="group p-6 rounded-xl border border-white/8 bg-white/3 hover:bg-violet-500/8 hover:border-violet-400/30 transition-all duration-300"
-              >
-                <div className="w-12 h-12 rounded-xl bg-violet-500/15 border border-violet-400/20 flex items-center justify-center mb-4 group-hover:bg-violet-500/25 transition-colors">
-                  <Icon className="w-6 h-6 text-violet-400" />
-                </div>
-                <h3 className="font-display font-semibold text-white mb-2 text-lg">{title}</h3>
-                <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
-              </motion.div>
-            ))}
+            {(L.astraFeatures as Array<{title: string; desc: string}>).map(({ title, desc }, idx: number) => {
+              const Icon = ASTRA_ICONS[idx];
+              return (
+                <motion.div
+                  key={idx} variants={fadeUp}
+                  className="group p-6 rounded-xl border border-white/8 bg-white/3 hover:bg-violet-500/8 hover:border-violet-400/30 transition-all duration-300"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-violet-500/15 border border-violet-400/20 flex items-center justify-center mb-4 group-hover:bg-violet-500/25 transition-colors">
+                    <Icon className="w-6 h-6 text-violet-400" />
+                  </div>
+                  <h3 className="font-display font-semibold text-white mb-2 text-lg">{title}</h3>
+                  <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
+                </motion.div>
+              );
+            })}
           </motion.div>
         </div>
       </section>
@@ -384,21 +381,21 @@ export default function Home() {
           >
             <motion.div variants={fadeUp}>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 text-amber-400 text-xs tracking-widest uppercase mb-6">
-                <Briefcase className="w-3 h-3" /> Business Consultancy
+                <Briefcase className="w-3 h-3" /> {L.consultSection.badge}
               </div>
               <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
-                Strategic Advisory for<br />
-                <span className="text-amber-400">Sustainable Growth</span>
+                {L.consultSection.headline1}<br />
+                <span className="text-amber-400">{L.consultSection.headline2}</span>
               </h2>
               <p className="text-white/60 text-lg leading-relaxed mb-8">
-                Our consultancy practice combines deep regional expertise with international best practices to help organizations navigate complexity, optimize operations, and achieve their strategic ambitions.
+                {L.consultSection.body}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold px-6">
-                  Consultancy Services <ChevronRight className="ml-1 w-4 h-4" />
+                  {L.consultSection.ctaPrimary} <ChevronRight className={`${isRTL ? "mr-1 rotate-180" : "ml-1"} w-4 h-4`} />
                 </Button>
                 <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent px-6">
-                  Schedule Consultation
+                  {L.consultSection.ctaSecondary}
                 </Button>
               </div>
             </motion.div>
@@ -412,18 +409,21 @@ export default function Home() {
             initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {CONSULT_SERVICES.map(({ icon: Icon, title, desc }) => (
-              <motion.div
-                key={title} variants={fadeUp}
-                className="group p-6 rounded-xl border border-white/8 bg-white/3 hover:bg-amber-500/8 hover:border-amber-400/30 transition-all duration-300"
-              >
-                <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-400/20 flex items-center justify-center mb-4 group-hover:bg-amber-500/25 transition-colors">
-                  <Icon className="w-6 h-6 text-amber-400" />
-                </div>
-                <h3 className="font-display font-semibold text-white mb-2 text-lg">{title}</h3>
-                <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
-              </motion.div>
-            ))}
+            {(L.consultServices as Array<{title: string; desc: string}>).map(({ title, desc }, idx: number) => {
+              const Icon = CONSULT_ICONS[idx];
+              return (
+                <motion.div
+                  key={idx} variants={fadeUp}
+                  className="group p-6 rounded-xl border border-white/8 bg-white/3 hover:bg-amber-500/8 hover:border-amber-400/30 transition-all duration-300"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-400/20 flex items-center justify-center mb-4 group-hover:bg-amber-500/25 transition-colors">
+                    <Icon className="w-6 h-6 text-amber-400" />
+                  </div>
+                  <h3 className="font-display font-semibold text-white mb-2 text-lg">{title}</h3>
+                  <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
+                </motion.div>
+              );
+            })}
           </motion.div>
         </div>
       </section>
@@ -433,13 +433,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-16">
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/20 bg-white/5 text-white/60 text-xs tracking-widest uppercase mb-6">
-              Why Golden Team
+              {L.about.badge}
             </motion.div>
             <motion.h2 variants={fadeUp} className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
-              One Partner for Your<br /><span className="text-amber-400">Entire Enterprise Journey</span>
+              {L.about.headline1}<br /><span className="text-amber-400">{L.about.headline2}</span>
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 text-lg max-w-3xl mx-auto">
-              Golden Team uniquely combines IT infrastructure, AI-powered platforms, and strategic consultancy under one roof — delivering integrated solutions that create real business value.
+              {L.about.body}
             </motion.p>
           </motion.div>
 
@@ -447,11 +447,7 @@ export default function Home() {
             initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
             className="grid md:grid-cols-3 gap-8 mb-20"
           >
-            {[
-              { icon: "🏆", title: "Proven Excellence", desc: "15+ years delivering enterprise solutions across the GCC region with measurable outcomes and client satisfaction." },
-              { icon: "🤖", title: "AI-First Approach", desc: "NEO AI Core integration across all services ensures intelligent automation and data-driven decision making." },
-              { icon: "🛡️", title: "ISO 9001 Quality", desc: "Every engagement is governed by our ISO 9001:2015 certified quality management system for consistent excellence." },
-            ].map(({ icon, title, desc }) => (
+            {(L.about.pillars as Array<{icon: string; title: string; desc: string}>).map(({ icon, title, desc }) => (
               <motion.div key={title} variants={fadeUp} className="text-center p-8 rounded-2xl border border-white/8 bg-white/3">
                 <div className="text-5xl mb-4">{icon}</div>
                 <h3 className="font-display text-xl font-bold text-white mb-3">{title}</h3>
@@ -462,7 +458,7 @@ export default function Home() {
 
           {/* Testimonials */}
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger} className="grid md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map(({ name, role, text }) => (
+            {(L.testimonials as Array<{name: string; role: string; text: string}>).map(({ name, role, text }) => (
               <motion.div key={name} variants={fadeUp} className="p-6 rounded-xl border border-white/8 bg-white/3">
                 <div className="flex gap-1 mb-4">
                   {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}
@@ -484,10 +480,10 @@ export default function Home() {
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}>
             <motion.h2 variants={fadeUp} className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
-              Ready to Transform<br /><span className="text-amber-400">Your Enterprise?</span>
+              {L.cta.headline1}<br /><span className="text-amber-400">{L.cta.headline2}</span>
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/60 text-lg mb-10">
-              Let's discuss how Golden Team can accelerate your business with cutting-edge IT, intelligent AI, and strategic advisory.
+              {L.cta.body}
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button
@@ -495,7 +491,7 @@ export default function Home() {
                 className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold px-10 py-6 text-base shadow-xl shadow-amber-500/30"
                 onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
               >
-                Start a Conversation <ArrowRight className="ml-2 w-5 h-5" />
+                {L.cta.ctaPrimary} <ArrowRight className={`${isRTL ? "mr-2 rotate-180" : "ml-2"} w-5 h-5`} />
               </Button>
               <Button
                 variant="outline"
@@ -503,7 +499,7 @@ export default function Home() {
                 className="border-white/20 text-white hover:bg-white/10 bg-transparent px-10 py-6 text-base"
                 onClick={() => setLocation("/login")}
               >
-                Employee Portal Login
+                {L.cta.ctaSecondary}
               </Button>
             </motion.div>
           </motion.div>
@@ -515,10 +511,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-16">
             <motion.h2 variants={fadeUp} className="font-display text-4xl md:text-5xl font-bold text-white mb-4">
-              Get In Touch
+              {L.contact.headline}
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 text-lg">
-              Our team is ready to help you achieve your business goals.
+              {L.contact.sub}
             </motion.p>
           </motion.div>
 
@@ -527,10 +523,10 @@ export default function Home() {
             className="grid md:grid-cols-3 gap-8 mb-16"
           >
             {[
-              { icon: Phone, label: "Phone", value: "+966 XX XXX XXXX", sub: "Sun–Thu, 8am–6pm" },
-              { icon: Mail, label: "Email", value: "info@goldenteam.sa", sub: "Response within 24 hours" },
-              { icon: MapPin, label: "Office", value: "Riyadh, Saudi Arabia", sub: "GCC Region Coverage" },
-            ].map(({ icon: Icon, label, value, sub }) => (
+              { Icon: Phone, ...L.contact.cards[0] },
+              { Icon: Mail, ...L.contact.cards[1] },
+              { Icon: MapPin, ...L.contact.cards[2] },
+            ].map(({ Icon, label, value, sub }) => (
               <motion.div key={label} variants={fadeUp} className="text-center p-8 rounded-xl border border-white/8 bg-white/3">
                 <div className="w-14 h-14 rounded-full bg-amber-500/15 border border-amber-400/20 flex items-center justify-center mx-auto mb-4">
                   <Icon className="w-6 h-6 text-amber-400" />
@@ -554,42 +550,56 @@ export default function Home() {
                   <span className="text-[#05080F] font-bold text-lg font-display">GT</span>
                 </div>
                 <div>
-                  <div className="text-white font-bold font-display">GOLDEN TEAM</div>
-                  <div className="text-amber-400/60 text-[10px] tracking-widest uppercase">Trading Services</div>
+                  <div className="text-white font-bold font-display">
+                    {isRTL ? "الفريق الذهبي" : "GOLDEN TEAM"}
+                  </div>
+                  <div className="text-amber-400/60 text-[10px] tracking-widest uppercase">
+                    {isRTL ? "للخدمات التجارية" : "Trading Services"}
+                  </div>
                 </div>
               </div>
               <p className="text-white/40 text-sm leading-relaxed max-w-xs">
-                Administrative & Business Development Services · IT Solutions · ASTRA PM Project Management Platform
+                {L.footer.tagline}
               </p>
             </div>
             <div>
-              <div className="text-white/60 text-xs tracking-widest uppercase mb-4">Services</div>
+              <div className="text-white/60 text-xs tracking-widest uppercase mb-4">{L.footer.servicesTitle}</div>
               {[
-                { label: "IT Solutions", path: "/it-solutions" },
-                { label: "ASTRA PM", path: "/astra-pm" },
-                { label: "Business Consultancy", path: "/consultancy" },
-                { label: "ISO 9001 Advisory", path: "/consultancy" },
-                { label: "AI Integration", path: "/it-solutions" },
+                { label: L.footer.services[0].label, path: "/it-solutions" },
+                { label: L.footer.services[1].label, path: "/astra-pm" },
+                { label: L.footer.services[2].label, path: "/consultancy" },
+                { label: L.footer.services[3].label, path: "/consultancy" },
+                { label: L.footer.services[4].label, path: "/it-solutions" },
               ].map(({ label, path }) => (
-                <button key={label} onClick={() => setLocation(path)} className="block text-white/40 text-sm py-1 hover:text-white/70 transition-colors text-left">{label}</button>
+                <button key={label} onClick={() => setLocation(path)} className={`block text-white/40 text-sm py-1 hover:text-white/70 transition-colors ${isRTL ? "text-right" : "text-left"}`}>{label}</button>
               ))}
             </div>
             <div>
-              <div className="text-white/60 text-xs tracking-widest uppercase mb-4">Company</div>
+              <div className="text-white/60 text-xs tracking-widest uppercase mb-4">{L.footer.companyTitle}</div>
               {[
-                { label: "About Us", path: "/about" },
-                { label: "Our Team", path: "/about" },
-                { label: "Careers", path: "/contact" },
-                { label: "Contact", path: "/contact" },
-                { label: "Employee Portal", path: "/login" },
+                { label: L.footer.company[0].label, path: "/about" },
+                { label: L.footer.company[1].label, path: "/about" },
+                { label: L.footer.company[2].label, path: "/contact" },
+                { label: L.footer.company[3].label, path: "/contact" },
+                { label: L.footer.company[4].label, path: "/login" },
               ].map(({ label, path }) => (
-                <button key={label} onClick={() => setLocation(path)} className="block text-white/40 text-sm py-1 hover:text-white/70 transition-colors text-left">{label}</button>
+                <button key={label} onClick={() => setLocation(path)} className={`block text-white/40 text-sm py-1 hover:text-white/70 transition-colors ${isRTL ? "text-right" : "text-left"}`}>{label}</button>
               ))}
             </div>
           </div>
           <div className="border-t border-white/8 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="text-white/30 text-sm">© 2026 Golden Team Trading Services. All rights reserved.</div>
-            <div className="text-white/30 text-sm">ISO 9001:2015 Certified · Powered by NEO AI</div>
+            <div className="text-white/30 text-sm">{L.footer.copyright}</div>
+            <div className="flex items-center gap-4">
+              <div className="text-white/30 text-sm">{L.footer.certLine}</div>
+              {/* Language toggle in footer */}
+              <button
+                onClick={toggleLang}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/15 text-white/30 hover:text-amber-400 hover:border-amber-400/30 transition-all text-xs"
+              >
+                <Languages className="w-3 h-3" />
+                {lang === "en" ? "عربي" : "English"}
+              </button>
+            </div>
           </div>
         </div>
       </footer>

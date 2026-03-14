@@ -5,6 +5,7 @@
  * Layout: Hero → contact info cards → lead capture form → map placeholder → footer
  */
 import { motion } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useLocation } from "wouter";
 import { useState } from "react";
 import {
@@ -68,6 +69,7 @@ const colorMap: Record<string, string> = {
 
 export default function Contact() {
   const [, navigate] = useLocation();
+  const { t } = useLanguage();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -105,12 +107,12 @@ export default function Contact() {
           </button>
           <div className="hidden md:flex items-center gap-8">
             {[
-              { label: "Home", path: "/" },
-              { label: "IT Solutions", path: "/it-solutions" },
-              { label: "ASTRA PM", path: "/astra-pm" },
-              { label: "Consultancy", path: "/consultancy" },
-              { label: "About", path: "/about" },
-              { label: "Contact", path: "/contact" },
+              { label: t("Home", "الرئيسية"), path: "/" },
+              { label: t("IT Solutions", "حلول تقنية المعلومات"), path: "/it-solutions" },
+              { label: t("ASTRA PM", "ASTRA لإدارة المشاريع"), path: "/astra-pm" },
+              { label: t("Consultancy", "الاستشارات"), path: "/consultancy" },
+              { label: t("About", "من نحن"), path: "/about" },
+              { label: t("Contact", "تواصل معنا"), path: "/contact" },
             ].map(({ label, path }) => (
               <button key={label} onClick={() => navigate(path)}
                 className={`text-sm tracking-wide transition-colors ${path === "/contact" ? "text-amber-400 font-semibold" : "text-white/60 hover:text-amber-400"}`}>
@@ -120,7 +122,7 @@ export default function Contact() {
           </div>
           <Button onClick={() => navigate("/login")}
             className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold text-xs tracking-widest uppercase px-5">
-            Employee Portal
+            {t("Employee Portal", "بوابة الموظفين")}
           </Button>
         </div>
       </nav>
@@ -131,18 +133,18 @@ export default function Contact() {
         <div className="relative max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" animate="show" variants={stagger} className="text-center">
             <motion.div variants={fadeUp} className="flex items-center justify-center gap-2 mb-6">
-              <button onClick={() => navigate("/")} className="text-white/40 hover:text-white/70 text-sm transition-colors">Home</button>
+              <button onClick={() => navigate("/")} className="text-white/40 hover:text-white/70 text-sm transition-colors">{t("Home", "الرئيسية")}</button>
               <ChevronRight className="w-3 h-3 text-white/30" />
-              <span className="text-amber-400 text-sm">Contact</span>
+              <span className="text-amber-400 text-sm">{t("Contact", "تواصل معنا")}</span>
             </motion.div>
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-400/30 bg-amber-500/10 text-amber-300 text-xs tracking-widest uppercase mb-6">
-              <MessageSquare className="w-3 h-3" /> Get In Touch
+              <MessageSquare className="w-3 h-3" /> {t("Get In Touch", "تواصل معنا")}
             </motion.div>
             <motion.h1 variants={fadeUp} className="text-5xl md:text-6xl font-bold mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Let's Start a<br /><span className="text-amber-400">Conversation</span>
+              {t("Let's Start a", "لنبدأ")}<br /><span className="text-amber-400">{t("Conversation", "حوارًا")}</span>
             </motion.h1>
             <motion.p variants={fadeUp} className="text-white/60 text-xl max-w-2xl mx-auto">
-              Whether you have a specific project in mind or just want to explore how Golden Team can help your organization, our team is ready to listen.
+              {t("Whether you have a specific project in mind or just want to explore how Golden Team can help your organization, our team is ready to listen.", "سواء كان لديك مشروع محدد أو ترغب في استكشاف كيف يمكن للفريق الذهبي مساعدتك، فريقنا مستعد للاستماع.")}
             </motion.p>
           </motion.div>
         </div>
@@ -179,10 +181,10 @@ export default function Contact() {
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger}>
             <motion.div variants={fadeUp} className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-                Send Us an Inquiry
+                {t("Send Us an Inquiry", "أرسل استفساراً")}
               </h2>
               <p className="text-white/50">
-                Complete the form below and a senior consultant will contact you within 4 business hours.
+                {t("Complete the form below and a senior consultant will contact you within 4 business hours.", "املأ النموذج أدناه وسيتواصل معك مستشار أول خلال 4 ساعات عمل.")}
               </p>
             </motion.div>
 
@@ -193,18 +195,18 @@ export default function Contact() {
                   <CheckCircle className="w-10 h-10 text-emerald-400" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
-                  Inquiry Received
+                  {t("Inquiry Received", "تم استلام استفسارك")}
                 </h3>
                 <p className="text-white/60 mb-8 max-w-md mx-auto">
-                  Thank you for reaching out. A member of our team will contact you at <span className="text-white">{form.email}</span> within 4 business hours.
+                  {t("Thank you for reaching out. A member of our team will contact you at", "شكراً لتواصلك معنا. سيتواصل معك أحد أعضاء فريقنا على")} <span className="text-white">{form.email}</span> {t("within 4 business hours.", "خلال 4 ساعات عمل.")}
                 </p>
                 <div className="flex flex-wrap gap-4 justify-center">
                   <Button onClick={() => { setSubmitted(false); setForm({ firstName: "", lastName: "", email: "", phone: "", company: "", role: "", service: "", budget: "", message: "" }); }}
                     variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent">
-                    Submit Another Inquiry
+                    {t("Submit Another Inquiry", "إرسال استفسار جديد")}
                   </Button>
                   <Button onClick={() => navigate("/")} className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold">
-                    Back to Home
+                    {t("Back to Home", "العودة للرئيسية")}
                   </Button>
                 </div>
               </motion.div>
@@ -215,7 +217,7 @@ export default function Contact() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-white/60 text-xs font-semibold tracking-wide uppercase mb-2">
-                      First Name <span className="text-amber-400">*</span>
+                      {t("First Name", "الاسم الأول")} <span className="text-amber-400">*</span>
                     </label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
@@ -226,7 +228,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <label className="block text-white/60 text-xs font-semibold tracking-wide uppercase mb-2">
-                      Last Name
+                      {t("Last Name", "اسم العائلة")}
                     </label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
@@ -241,7 +243,7 @@ export default function Contact() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-white/60 text-xs font-semibold tracking-wide uppercase mb-2">
-                      Email Address <span className="text-amber-400">*</span>
+                      {t("Email Address", "البريد الإلكتروني")} <span className="text-amber-400">*</span>
                     </label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
@@ -252,7 +254,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <label className="block text-white/60 text-xs font-semibold tracking-wide uppercase mb-2">
-                      Phone Number
+                      {t("Phone Number", "رقم الجوال")}
                     </label>
                     <div className="relative">
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
@@ -267,7 +269,7 @@ export default function Contact() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-white/60 text-xs font-semibold tracking-wide uppercase mb-2">
-                      Company / Organization
+                      {t("Company / Organization", "الشركة / المنظمة")}
                     </label>
                     <div className="relative">
                       <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
@@ -278,7 +280,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <label className="block text-white/60 text-xs font-semibold tracking-wide uppercase mb-2">
-                      Your Role / Title
+                      {t("Your Role / Title", "مسماك الوظيفي")}
                     </label>
                     <div className="relative">
                       <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
@@ -293,7 +295,7 @@ export default function Contact() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-white/60 text-xs font-semibold tracking-wide uppercase mb-2">
-                      Service of Interest <span className="text-amber-400">*</span>
+                      {t("Service of Interest", "الخدمة المطلوبة")} <span className="text-amber-400">*</span>
                     </label>
                     <Select value={form.service} onValueChange={(v) => setForm({ ...form, service: v })} required>
                       <SelectTrigger className="bg-white/5 border-white/10 text-white focus:border-amber-400/50">
@@ -308,7 +310,7 @@ export default function Contact() {
                   </div>
                   <div>
                     <label className="block text-white/60 text-xs font-semibold tracking-wide uppercase mb-2">
-                      Estimated Budget (SAR)
+                      {t("Estimated Budget (SAR)", "الميزانية التقديرية (ريال)")}
                     </label>
                     <Select value={form.budget} onValueChange={(v) => setForm({ ...form, budget: v })}>
                       <SelectTrigger className="bg-white/5 border-white/10 text-white focus:border-amber-400/50">
@@ -326,7 +328,7 @@ export default function Contact() {
                 {/* Message */}
                 <div>
                   <label className="block text-white/60 text-xs font-semibold tracking-wide uppercase mb-2">
-                    Message / Project Description <span className="text-amber-400">*</span>
+                    {t("Message / Project Description", "الرسالة / وصف المشروع")} <span className="text-amber-400">*</span>
                   </label>
                   <Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })}
                     placeholder="Please describe your project, challenge, or question. The more detail you provide, the better we can prepare for our conversation..."
@@ -338,7 +340,7 @@ export default function Contact() {
                 <div className="flex items-start gap-3 p-4 rounded-xl bg-white/3 border border-white/5">
                   <CheckCircle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
                   <p className="text-white/40 text-xs leading-relaxed">
-                    Your information is protected under our Privacy Policy and Saudi Arabia's Personal Data Protection Law (PDPL). We will never share your data with third parties without your explicit consent.
+                    {t("Your information is protected under our Privacy Policy and Saudi Arabia's Personal Data Protection Law (PDPL). We will never share your data with third parties without your explicit consent.", "معلوماتك محمية بموجب سياسة الخصوصية ونظام حماية البيانات الشخصية السعودي. لن نشارك بياناتك مع أطراف ثالثة دون موافقتك الصريحة.")}
                   </p>
                 </div>
 
@@ -347,11 +349,11 @@ export default function Contact() {
                   {loading ? (
                     <span className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-[#05080F]/30 border-t-[#05080F] rounded-full animate-spin" />
-                      Sending Inquiry...
+                      {t("Sending Inquiry...", "جاري الإرسال...")}
                     </span>
                   ) : (
                     <span className="flex items-center gap-2">
-                      <Send className="w-4 h-4" /> Send Inquiry
+                      <Send className="w-4 h-4" /> {t("Send Inquiry", "إرسال الاستفسار")}
                     </span>
                   )}
                 </Button>
@@ -366,7 +368,7 @@ export default function Contact() {
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-10">
             <motion.h2 variants={fadeUp} className="text-3xl font-bold mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Our Offices
+              {t("Our Offices", "مكاتبنا")}
             </motion.h2>
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}
@@ -392,16 +394,16 @@ export default function Contact() {
       {/* ── Footer ── */}
       <footer className="border-t border-white/8 bg-[#05080F] py-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-white/30 text-sm">© 2026 Golden Team Trading Services. All rights reserved.</div>
+          <div className="text-white/30 text-sm">{t("© 2026 Golden Team Trading Services. All rights reserved.", "© 2026 شركة الفريق الذهبي للخدمات التجارية. جميع الحقوق محفوظة.")}</div>
           <div className="flex gap-6">
             {["/", "/it-solutions", "/astra-pm", "/consultancy", "/about", "/contact"].map((path, i) => (
               <button key={path} onClick={() => navigate(path)}
                 className="text-white/30 hover:text-white/60 text-sm transition-colors">
-                {["Home", "IT Solutions", "ASTRA PM", "Consultancy", "About", "Contact"][i]}
+                {[t("Home","الرئيسية"), t("IT Solutions","حلول تقنية المعلومات"), t("ASTRA PM","ASTRA لإدارة المشاريع"), t("Consultancy","الاستشارات"), t("About","من نحن"), t("Contact","تواصل معنا")][i]}
               </button>
             ))}
           </div>
-          <div className="text-white/30 text-sm">ISO 9001:2015 · Powered by NEO AI</div>
+          <div className="text-white/30 text-sm">{t("ISO 9001:2015 · Powered by NEO AI", "ISO 9001:2015 · مدعوم بـ NEO AI")}</div>
         </div>
       </footer>
     </div>

@@ -3,6 +3,7 @@
  * Design: "Neural Depth"
  */
 import { motion } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useLocation } from "wouter";
 import { Brain, ArrowRight, Zap, Database, Cpu, Shield, BarChart3, Scale, FileCheck, MessageSquare, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -53,21 +54,22 @@ const applications = [
 
 export default function NEOArchitecture() {
   const [, setLocation] = useLocation();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-[#060B14] text-white">
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 h-14 flex items-center px-6" style={{ background: "rgba(6,11,20,0.9)", backdropFilter: "blur(20px)" }}>
         <button onClick={() => setLocation("/")} className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-sm mr-6">
-          <ChevronLeft className="w-4 h-4" /> Back
+          <ChevronLeft className="w-4 h-4" /> {t("Back", "رجوع")}
         </button>
         <div className="flex items-center gap-2">
           <Brain className="w-4 h-4 text-blue-400" />
-          <span className="font-semibold text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>NEO AI Architecture</span>
+          <span className="font-semibold text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{t("NEO AI Architecture", "هيكل نظام NEO AI")}</span>
         </div>
         <div className="ml-auto flex gap-3">
           <Button onClick={() => setLocation("/login")} size="sm" className="bg-blue-600 hover:bg-blue-500 text-white border-0 h-8 text-xs">
-            Access Portal <ArrowRight className="ml-1 w-3 h-3" />
+            {t("Access Portal", "دخول البوابة")} <ArrowRight className="ml-1 w-3 h-3" />
           </Button>
         </div>
       </nav>
@@ -85,10 +87,10 @@ export default function NEOArchitecture() {
                 <Zap className="w-3 h-3 mr-1" /> Hybrid AI: 80% Manus + 20% GPT-4
               </Badge>
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                NEO AI Architecture
+                {t("NEO AI Architecture", "هيكل نظام NEO AI")}
               </h1>
               <p className="text-white/50 max-w-2xl mx-auto text-lg">
-                A 4-layer hybrid AI system with 7 specialized modules, 125+ API procedures, and sub-2-second response times — orchestrating every aspect of Golden Team's enterprise operations.
+                {t("A 4-layer hybrid AI system with 7 specialized modules, 125+ API procedures, and sub-2-second response times — orchestrating every aspect of Golden Team's enterprise operations.", "نظام ذكاء اصطناعي هجين من 4 طبقات بـ7 وحدات متخصصة وأكثر من 125 إجراء API وزمن استجابة أقل من ثانيتين — ينسّق كل جوانب عمليات الفريق الذهبي المؤسسية.")}
               </p>
             </motion.div>
             <div className="flex justify-center gap-8 mt-8">
@@ -107,7 +109,7 @@ export default function NEOArchitecture() {
           <div>
             <motion.h2 initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
               className="text-2xl font-bold text-white mb-8 text-center" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              System Architecture Layers
+              {t("System Architecture Layers", "طبقات هيكل النظام")}
             </motion.h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {layers.map((layer, i) => (
@@ -131,7 +133,7 @@ export default function NEOArchitecture() {
           <div className="flex flex-col items-center">
             <motion.h2 initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
               className="text-2xl font-bold text-white mb-8 text-center" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              NEO Orchestration Core
+              {t("NEO Orchestration Core", "نواة تنسيق NEO")}
             </motion.h2>
             <div className="relative w-64 h-64 mb-8">
               <div className="absolute inset-0 rounded-full neo-pulse" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)" }} />
@@ -148,7 +150,7 @@ export default function NEOArchitecture() {
           <div>
             <motion.h2 initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
               className="text-2xl font-bold text-white mb-8 text-center" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              7 Specialized AI Modules
+              {t("7 Specialized AI Modules", "7 وحدات ذكاء اصطناعي متخصصة")}
             </motion.h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {modules.map((m, i) => (
@@ -166,7 +168,7 @@ export default function NEOArchitecture() {
           <div>
             <motion.h2 initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
               className="text-2xl font-bold text-white mb-8 text-center" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              Applications Layer — 12 Enterprise Modules
+              {t("Applications Layer — 12 Enterprise Modules", "طبقة التطبيقات — 12 وحدة مؤسسية")}
             </motion.h2>
             <div className="flex flex-wrap gap-3 justify-center">
               {applications.map((app, i) => (
@@ -181,7 +183,7 @@ export default function NEOArchitecture() {
           {/* CTA */}
           <div className="text-center">
             <Button onClick={() => setLocation("/login")} size="lg" className="bg-blue-600 hover:bg-blue-500 text-white border-0 px-10">
-              Access the Employee Portal <ArrowRight className="ml-2 w-4 h-4" />
+              {t("Access the Employee Portal", "دخول بوابة الموظفين")} <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </div>
         </div>

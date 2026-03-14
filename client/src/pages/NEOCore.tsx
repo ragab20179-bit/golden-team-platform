@@ -6,6 +6,7 @@
  */
 import { useState } from "react";
 import PortalLayout from "@/components/PortalLayout";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -120,14 +121,15 @@ const LIVE_METRICS = [
 ];
 
 export default function NEOCore() {
+  const { t } = useLanguage();
   const [activeModule, setActiveModule] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"architecture" | "modules" | "routing" | "metrics">("architecture");
 
   return (
     <PortalLayout
-      title="Hybrid NEO Core"
-      subtitle="AI Orchestration Engine — 80% Manus + 20% GPT-4"
-      badge="ONLINE"
+      title={t("Hybrid NEO Core", "نواة NEO الهجينة")}
+      subtitle={t("AI Orchestration Engine — 80% Manus + 20% GPT-4", "محرك تنسيق الذكاء الاصطناعي — 80% Manus + 20% GPT-4")}
+      badge={t("ONLINE", "متصل")}
       badgeColor="text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
     >
       <div className="p-4 md:p-6 space-y-6">
@@ -193,7 +195,7 @@ export default function NEOCore() {
             <button key={tab} onClick={() => setActiveTab(tab)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all capitalize
                 ${activeTab === tab ? "bg-blue-600 text-white shadow-lg" : "text-white/40 hover:text-white"}`}>
-              {tab === "architecture" ? "🏗 Architecture" : tab === "modules" ? "🧠 AI Modules" : tab === "routing" ? "⚡ Routing Logic" : "📊 Live Metrics"}
+              {tab === "architecture" ? `🏗 ${t("Architecture", "الهيكل")}` : tab === "modules" ? `🧠 ${t("AI Modules", "وحدات AI")}` : tab === "routing" ? `⚡ ${t("Routing Logic", "منطق التوجيه")}` : `📊 ${t("Live Metrics", "مقاييس مباشرة")}`}
             </button>
           ))}
         </div>
@@ -202,14 +204,14 @@ export default function NEOCore() {
         {activeTab === "architecture" && (
           <motion.div variants={FADE} initial="hidden" animate="show" className="space-y-4">
             <div className="glass-card rounded-xl border border-white/5 p-5 overflow-x-auto">
-              <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-5">NEO AI Architecture — 4 Layer Model</h3>
+              <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-5">{t("NEO AI Architecture — 4 Layer Model", "هيكل NEO AI — نموذج 4 طبقات")}</h3>
 
               {/* Architecture Layers */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 min-w-[700px]">
 
                 {/* Layer 1: Data Sources */}
                 <div className="space-y-2">
-                  <div className="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center mb-3">Data Sources Layer</div>
+                  <div className="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center mb-3">{t("Data Sources Layer", "طبقة مصادر البيانات")}</div>
                   {DATA_SOURCES.map((ds, i) => (
                     <div key={i} className="rounded-lg bg-white/3 border border-white/5 p-2.5 flex items-center gap-2">
                       <ds.icon className={`w-3.5 h-3.5 ${ds.color} shrink-0`} />
@@ -220,7 +222,7 @@ export default function NEOCore() {
 
                 {/* Layer 2: AI Infrastructure */}
                 <div className="space-y-2">
-                  <div className="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center mb-3">AI Infrastructure Layer</div>
+                  <div className="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center mb-3">{t("AI Infrastructure Layer", "طبقة بنية AI")}</div>
                   <div className="rounded-xl border border-blue-500/30 bg-blue-500/5 p-3 h-full">
                     <div className="text-xs font-bold text-blue-300 mb-3 text-center">Manus AI Platform</div>
                     {[
@@ -243,7 +245,7 @@ export default function NEOCore() {
 
                 {/* Layer 3: NEO Core Engine */}
                 <div className="space-y-2">
-                  <div className="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center mb-3">NEO Core Engine</div>
+                  <div className="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center mb-3">{t("NEO Core Engine", "محرك NEO الأساسي")}</div>
                   {/* Intelligent Router */}
                   <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/5 p-3 mb-3">
                     <div className="flex items-center justify-center gap-2 mb-2">
@@ -273,7 +275,7 @@ export default function NEOCore() {
 
                 {/* Layer 4: Applications */}
                 <div className="space-y-2">
-                  <div className="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center mb-3">Applications Layer</div>
+                  <div className="text-[10px] font-bold text-white/30 uppercase tracking-widest text-center mb-3">{t("Applications Layer", "طبقة التطبيقات")}</div>
                   {APPLICATIONS.map((app, i) => (
                     <div key={i} className="rounded-lg bg-white/3 border border-white/5 p-2.5 flex items-center gap-2 hover:border-white/10 transition-colors cursor-pointer"
                       onClick={() => toast.info(`Opening ${app.label}...`)}>
@@ -419,7 +421,7 @@ export default function NEOCore() {
             <div className="glass-card rounded-xl border border-white/5 overflow-hidden">
               <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
                 <Network className="w-4 h-4 text-cyan-400" />
-                <span className="text-sm font-semibold text-white">Intelligent Router Decision Rules</span>
+                <span className="text-sm font-semibold text-white">{t("Intelligent Router Decision Rules", "قواعد قرار الموجّه الذكي")}</span>
               </div>
               <div className="divide-y divide-white/5">
                 {ROUTING_RULES.map((rule, i) => (
@@ -441,7 +443,7 @@ export default function NEOCore() {
 
             {/* Transaction Flow */}
             <div className="glass-card rounded-xl border border-white/5 p-5">
-              <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-4">NEO Transaction Execution Flow</h3>
+              <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-4">{t("NEO Transaction Execution Flow", "تدفق تنفيذ معاملات NEO")}</h3>
               <div className="flex flex-col md:flex-row items-start md:items-center gap-2">
                 {[
                   { step: "1", label: "Intent Capture", desc: "Employee describes task in natural language (AR/EN)", color: "bg-blue-500" },
@@ -473,7 +475,7 @@ export default function NEOCore() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Module Traffic Distribution */}
               <div className="glass-card rounded-xl border border-white/5 p-5">
-                <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-4">Module Traffic Distribution</h3>
+                <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-4">{t("Module Traffic Distribution", "توزيع حركة الوحدات")}</h3>
                 <div className="space-y-3">
                   {AI_MODULES.map((mod) => (
                     <div key={mod.id} className="flex items-center gap-3">
@@ -490,7 +492,7 @@ export default function NEOCore() {
 
               {/* Performance Stats */}
               <div className="glass-card rounded-xl border border-white/5 p-5">
-                <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-4">Performance Statistics</h3>
+                <h3 className="text-sm font-semibold text-white/60 uppercase tracking-widest mb-4">{t("Performance Statistics", "إحصائيات الأداء")}</h3>
                 <div className="space-y-4">
                   {[
                     { label: "Response Time P50", value: "0.9s", target: "< 1s", status: "good" },
@@ -517,7 +519,7 @@ export default function NEOCore() {
             <div className="glass-card rounded-xl border border-amber-500/10 bg-amber-500/3 p-5">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="w-4 h-4 text-amber-400" />
-                <span className="text-sm font-semibold text-amber-300">Hybrid AI Cost Efficiency Analysis</span>
+                <span className="text-sm font-semibold text-amber-300">{t("Hybrid AI Cost Efficiency Analysis", "تحليل كفاءة تكلفة AI الهجين")}</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="rounded-lg bg-white/3 border border-white/5 p-4 text-center">

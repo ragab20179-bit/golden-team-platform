@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 import PortalLayout from "@/components/PortalLayout";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { trpc } from "@/lib/trpc";
 import {
   astraAuthorityCheck,
@@ -38,11 +39,12 @@ const FADE = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } };
 // ─── Outcome Badge ─────────────────────────────────────────────────────────────
 
 function OutcomeBadge({ outcome }: { outcome: AstraOutcome }) {
+  const { t } = useLanguage();
   const map = {
-    ALLOW:    { icon: CheckCircle2,   color: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10", label: "ALLOW" },
-    DENY:     { icon: XCircle,        color: "text-red-400 border-red-500/30 bg-red-500/10",             label: "DENY" },
-    ESCALATE: { icon: ArrowUpCircle,  color: "text-amber-400 border-amber-500/30 bg-amber-500/10",       label: "ESCALATE" },
-    DEGRADE:  { icon: AlertTriangle,  color: "text-orange-400 border-orange-500/30 bg-orange-500/10",    label: "DEGRADE" },
+    ALLOW:    { icon: CheckCircle2,   color: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10", label: t("ALLOW",    "مسموح")    },
+    DENY:     { icon: XCircle,        color: "text-red-400 border-red-500/30 bg-red-500/10",             label: t("DENY",     "مرفوض")    },
+    ESCALATE: { icon: ArrowUpCircle,  color: "text-amber-400 border-amber-500/30 bg-amber-500/10",       label: t("ESCALATE", "تصعيد")    },
+    DEGRADE:  { icon: AlertTriangle,  color: "text-orange-400 border-orange-500/30 bg-orange-500/10",    label: t("DEGRADE",  "تخفيض")    },
   };
   const { icon: Icon, color, label } = map[outcome];
   return (
@@ -58,6 +60,7 @@ function OutcomeBadge({ outcome }: { outcome: AstraOutcome }) {
 const ROLES = ["staff", "manager", "director", "cfo", "ceo", "board", "hr_manager", "finance_manager", "it_manager", "qms_manager", "legal_counsel", "system"];
 
 function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => void }) {
+  const { t } = useLanguage();
   const [actorId, setActorId] = useState("user-001");
   const [actorRole, setActorRole] = useState("manager");
   const [domain, setDomain] = useState("procurement");
@@ -65,7 +68,7 @@ function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => v
   const [costCenter, setCostCenter] = useState("Operations");
   const [amountSar, setAmountSar] = useState("50000");
   const [consent, setConsent] = useState(true);
-  const [justification, setJustification] = useState("Test governance check");
+  const [justification, setJustification] = useState(t("Test governance check", "فحص الحوكمة التجريبي"));
   const [lastDecision, setLastDecision] = useState<AstraDecision | null>(null);
   const [running, setRunning] = useState(false);
 
@@ -105,9 +108,9 @@ function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => v
         onSuccess: () => onDecisionPersisted?.(),
       });
 
-      if (decision.outcome === "ALLOW") toast.success("ASTRA: ALLOW — transaction authorized");
-      else if (decision.outcome === "DENY") toast.error(`ASTRA: DENY — ${decision.reason_code}`);
-      else if (decision.outcome === "ESCALATE") toast.warning("ASTRA: ESCALATE — escalated to senior authority");
+      if (decision.outcome === "ALLOW") toast.success(t("ASTRA: ALLOW — transaction authorized", "ASTRA: مسموح — تم تفويض المعاملة"));
+      else if (decision.outcome === "DENY") toast.error(`ASTRA: ${t("DENY", "مرفوض")} — ${decision.reason_code}`);
+      else if (decision.outcome === "ESCALATE") toast.warning(t("ASTRA: ESCALATE — escalated to senior authority", "ASTRA: تصعيد — تم التصعيد إلى سلطة أعلى"));
     }, 320);
   };
 
@@ -115,14 +118,14 @@ function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => v
     <div className="glass-card border border-white/8 rounded-xl overflow-hidden" style={{ background: "rgba(9,14,26,0.7)" }}>
       <div className="flex items-center gap-3 px-5 py-3 border-b border-white/5" style={{ background: "rgba(239,68,68,0.04)" }}>
         <Zap className="w-4 h-4 text-red-400" />
-        <span className="text-sm font-semibold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Live Authority Check</span>
+        <span className="text-sm font-semibold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{t("Live Authority Check", "فحص الصلاحية المباشر")}</span>
         <Badge className="ml-auto text-[10px] bg-red-500/10 text-red-400 border-red-500/20">ASTRA Engine v{GT_POLICY_PACK.version}</Badge>
       </div>
 
       <div className="p-5 grid grid-cols-2 gap-3">
         {/* Actor */}
         <div>
-          <label className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">Actor ID</label>
+          <label className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">{t("Actor ID", "معرّف المنفّذ")}</label>
           <input
             value={actorId}
             onChange={e => setActorId(e.target.value)}
@@ -130,7 +133,7 @@ function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => v
           />
         </div>
         <div>
-          <label className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">Actor Role</label>
+          <label className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">{t("Actor Role", "دور المنفّذ")}</label>
           <select
             value={actorRole}
             onChange={e => setActorRole(e.target.value)}
@@ -142,7 +145,7 @@ function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => v
 
         {/* Domain */}
         <div>
-          <label className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">Domain</label>
+          <label className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">{t("Domain", "النطاق")}</label>
           <select
             value={domain}
             onChange={e => { setDomain(e.target.value); setAction(DOMAIN_REGISTRY.find(d => d.key === e.target.value)?.actions[0]?.key || ""); }}
@@ -152,7 +155,7 @@ function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => v
           </select>
         </div>
         <div>
-          <label className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">Action</label>
+          <label className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">{t("Action", "الإجراء")}</label>
           <select
             value={action}
             onChange={e => setAction(e.target.value)}
@@ -164,7 +167,7 @@ function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => v
 
         {/* Context */}
         <div>
-          <label className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">Amount (SAR)</label>
+          <label className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">{t("Amount (SAR)", "المبلغ (ريال)")}</label>
           <input
             type="number"
             value={amountSar}
@@ -173,7 +176,7 @@ function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => v
           />
         </div>
         <div>
-          <label className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">Cost Center</label>
+          <label className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">{t("Cost Center", "مركز التكلفة")}</label>
           <select
             value={costCenter}
             onChange={e => setCostCenter(e.target.value)}
@@ -184,7 +187,7 @@ function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => v
         </div>
 
         <div className="col-span-2">
-          <label className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">Justification</label>
+          <label className="text-[10px] text-white/40 uppercase tracking-widest mb-1 block">{t("Justification", "المبرر")}</label>
           <input
             value={justification}
             onChange={e => setJustification(e.target.value)}
@@ -195,7 +198,7 @@ function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => v
         <div className="col-span-2 flex items-center gap-3">
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} className="accent-red-500" />
-            <span className="text-xs text-white/60">Consent granted</span>
+            <span className="text-xs text-white/60">{t("Consent granted", "تم منح الموافقة")}</span>
           </label>
           <Button
             onClick={runCheck}
@@ -203,7 +206,7 @@ function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => v
             className="ml-auto bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 text-xs"
           >
             {running ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
-            {running ? "Checking…" : "Run ASTRA Check"}
+            {running ? t("Checking…", "جارٍ الفحص…") : t("Run ASTRA Check", "تشغيل فحص ASTRA")}
           </Button>
         </div>
       </div>
@@ -240,7 +243,7 @@ function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => v
                 </div>
               </div>
               <div className="text-right shrink-0">
-                <div className="text-[10px] text-white/30">Committed to audit log</div>
+                  <div className="text-[10px] text-white/30">{t("Committed to audit log", "مُسجَّل في سجل التدقيق")}</div>
                 <div className="text-[10px] text-white/20 font-mono">{new Date(lastDecision.created_at).toLocaleTimeString()}</div>
               </div>
             </div>
@@ -254,11 +257,12 @@ function LiveCheckPanel({ onDecisionPersisted }: { onDecisionPersisted?: () => v
 // ─── Decision Log ──────────────────────────────────────────────────────────────
 
 function DecisionLog({ refreshTrigger }: { refreshTrigger?: number }) {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState<string | null>(null);
 
   // Read from DB — real persistent audit trail
   const { data: dbLog, refetch, isLoading } = trpc.astra.getDecisions.useQuery({ limit: 50 });
-  const clearDb = trpc.astra.clearLog.useMutation({ onSuccess: () => { refetch(); toast.success("Decision log cleared from DB"); } });
+  const clearDb = trpc.astra.clearLog.useMutation({ onSuccess: () => { refetch(); toast.success(t("Decision log cleared from DB", "تم مسح سجل القرارات")); } });
 
   // Also keep in-memory log as fallback
   const [memLog, setMemLog] = useState<AstraDecision[]>(() => getDecisionLog());
@@ -288,7 +292,7 @@ function DecisionLog({ refreshTrigger }: { refreshTrigger?: number }) {
     <div className="glass-card border border-white/8 rounded-xl overflow-hidden" style={{ background: "rgba(9,14,26,0.7)" }}>
       <div className="flex items-center gap-3 px-5 py-3 border-b border-white/5">
         <Activity className="w-4 h-4 text-blue-400" />
-        <span className="text-sm font-semibold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Decision Log</span>
+        <span className="text-sm font-semibold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{t("Decision Log", "سجل القرارات")}</span>
         <span className="text-[10px] text-white/30 ml-1">({log.length} entries)</span>
         <div className="ml-auto flex items-center gap-2">
           <button onClick={refresh} className="text-white/30 hover:text-white/60 transition-colors">
@@ -305,7 +309,7 @@ function DecisionLog({ refreshTrigger }: { refreshTrigger?: number }) {
       <div className="max-h-72 overflow-y-auto">
         {log.length === 0 ? (
           <div className="px-5 py-8 text-center text-white/20 text-sm">
-            No decisions yet — run an ASTRA check above or trigger a transaction via NEO
+            {t("No decisions yet — run an ASTRA check above or trigger a transaction via NEO", "لا قرارات بعد — شغّل فحص ASTRA أعلاه أو أطلق معاملة عبر NEO")}
           </div>
         ) : (
           log.map((d) => (
@@ -372,13 +376,14 @@ function DecisionLog({ refreshTrigger }: { refreshTrigger?: number }) {
 // ─── Policy Pack Viewer ────────────────────────────────────────────────────────
 
 function PolicyPackViewer() {
+  const { t } = useLanguage();
   const [openDomain, setOpenDomain] = useState<string | null>(null);
 
   return (
     <div className="glass-card border border-white/8 rounded-xl overflow-hidden" style={{ background: "rgba(9,14,26,0.7)" }}>
       <div className="flex items-center gap-3 px-5 py-3 border-b border-white/5">
         <FileText className="w-4 h-4 text-violet-400" />
-        <span className="text-sm font-semibold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Policy Pack</span>
+        <span className="text-sm font-semibold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{t("Policy Pack", "حزمة السياسات")}</span>
         <Badge className="ml-auto text-[10px] bg-violet-500/10 text-violet-400 border-violet-500/20">v{GT_POLICY_PACK.version}</Badge>
       </div>
 
@@ -392,7 +397,7 @@ function PolicyPackViewer() {
               <span className="text-base">{domain.icon}</span>
               <div className="flex-1">
                 <div className={`text-sm font-medium ${domain.color}`} style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{domain.label}</div>
-                <div className="text-[10px] text-white/30">{domain.actions.length} actions defined</div>
+                <div className="text-[10px] text-white/30">{domain.actions.length} {t("actions defined", "إجراء محدد")}</div>
               </div>
               {openDomain === domain.key ? <ChevronDown className="w-3.5 h-3.5 text-white/20" /> : <ChevronRight className="w-3.5 h-3.5 text-white/20" />}
             </button>
@@ -441,22 +446,22 @@ function PolicyPackViewer() {
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
-export default function GovernanceModule() {
+function GovernanceModuleInner() {
   const [, navigate] = useLocation();
   const [decisionRefreshTick, setDecisionRefreshTick] = useState(0);
+  const { t } = useLanguage();
 
   const stats = [
-    { label: "Policy Pack Version", value: `v${GT_POLICY_PACK.version}`, color: "text-violet-400", icon: FileText },
-    { label: "Domains Covered", value: `${DOMAIN_REGISTRY.length}`, color: "text-blue-400", icon: Database },
-    { label: "Total Actions", value: `${DOMAIN_REGISTRY.reduce((s, d) => s + d.actions.length, 0)}`, color: "text-emerald-400", icon: Activity },
-    { label: "Engine Status", value: "ACTIVE", color: "text-emerald-400", icon: Zap },
+    { label: t("Policy Pack Version", "إصدار حزمة السياسات"), value: `v${GT_POLICY_PACK.version}`, color: "text-violet-400", icon: FileText },
+    { label: t("Domains Covered", "النطاقات المشمولة"),     value: `${DOMAIN_REGISTRY.length}`, color: "text-blue-400", icon: Database },
+    { label: t("Total Actions", "إجمالي الإجراءات"),        value: `${DOMAIN_REGISTRY.reduce((s, d) => s + d.actions.length, 0)}`, color: "text-emerald-400", icon: Activity },
+    { label: t("Engine Status", "حالة المحرك"),             value: t("ACTIVE", "نشط"), color: "text-emerald-400", icon: Zap },
   ];
 
-  return (
-    <PortalLayout
+  return (<PortalLayout
       title="ASTRA AMG"
-      subtitle="Authority Matrix Governance — Live Engine"
-      badge="Engine Active"
+      subtitle={t("Authority Matrix Governance — Live Engine", "حوكمة مصفوفة الصلاحيات — محرك مباشر")}
+      badge={t("Engine Active", "المحرك نشط")}
       badgeColor="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
     >
       <div className="p-6 space-y-6 overflow-y-auto h-full">
@@ -499,7 +504,7 @@ export default function GovernanceModule() {
               <div className="text-3xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>97.2%</div>
               <div className="text-xs text-emerald-400">↑ +0.8% this month</div>
             </div>
-            <div className="text-sm text-white/50">Overall Governance Score — ISO 9001 Aligned</div>
+            <div className="text-sm text-white/50">{t("Overall Governance Score — ISO 9001 Aligned", "درجة الحوكمة الإجمالية — متوافق مع ISO 9001")}</div>
             <div className="text-[11px] text-white/30 mt-0.5">
               ASTRA-TAWZEEF-V1 · Policy Pack GT v{GT_POLICY_PACK.version} · Fail-closed · Append-only audit trail
             </div>
@@ -511,14 +516,14 @@ export default function GovernanceModule() {
               className="text-xs border-white/10 text-white/60 hover:text-white"
             >
               <Users className="w-3.5 h-3.5 mr-1.5" />
-              Authority Matrix
+              {t("Authority Matrix", "مصفوفة الصلاحيات")}
             </Button>
             <Button
               onClick={() => navigate("/portal/audit")}
               className="text-xs bg-rose-600 hover:bg-rose-700 text-white"
             >
               <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
-              Full Audit Log
+              {t("Full Audit Log", "سجل التدقيق الكامل")}
             </Button>
           </div>
         </motion.div>
@@ -571,4 +576,8 @@ export default function GovernanceModule() {
       </div>
     </PortalLayout>
   );
+}
+
+export default function GovernanceModule() {
+  return <GovernanceModuleInner />;
 }

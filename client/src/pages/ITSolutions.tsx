@@ -5,6 +5,7 @@
  * Layout: Full-width hero → service grid → tech stack → process → CTA
  */
 import { motion } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useLocation } from "wouter";
 import {
   Server, Shield, Cloud, Code, Network, Database, Cpu, Lock,
@@ -99,6 +100,7 @@ const colorMap: Record<string, string> = {
 
 export default function ITSolutions() {
   const [, navigate] = useLocation();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-[#05080F] text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -116,12 +118,12 @@ export default function ITSolutions() {
           </button>
           <div className="hidden md:flex items-center gap-8">
             {[
-              { label: "Home", path: "/" },
-              { label: "IT Solutions", path: "/it-solutions" },
-              { label: "ASTRA PM", path: "/astra-pm" },
-              { label: "Consultancy", path: "/consultancy" },
-              { label: "About", path: "/about" },
-              { label: "Contact", path: "/contact" },
+              { label: t("Home", "الرئيسية"), path: "/" },
+              { label: t("IT Solutions", "حلول تقنية المعلومات"), path: "/it-solutions" },
+              { label: t("ASTRA PM", "ASTRA لإدارة المشاريع"), path: "/astra-pm" },
+              { label: t("Consultancy", "الاستشارات"), path: "/consultancy" },
+              { label: t("About", "من نحن"), path: "/about" },
+              { label: t("Contact", "تواصل معنا"), path: "/contact" },
             ].map(({ label, path }) => (
               <button key={label} onClick={() => navigate(path)}
                 className={`text-sm tracking-wide transition-colors ${path === "/it-solutions" ? "text-amber-400 font-semibold" : "text-white/60 hover:text-amber-400"}`}>
@@ -131,11 +133,10 @@ export default function ITSolutions() {
           </div>
           <Button onClick={() => navigate("/login")}
             className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold text-xs tracking-widest uppercase px-5">
-            Employee Portal
+            {t("Employee Portal", "بوابة الموظفين")}
           </Button>
         </div>
       </nav>
-
       {/* ── Hero ── */}
       <section className="relative pt-16 min-h-[60vh] flex items-center overflow-hidden">
         <div className="absolute inset-0">
@@ -146,27 +147,27 @@ export default function ITSolutions() {
         <div className="relative max-w-7xl mx-auto px-6 py-24">
           <motion.div initial="hidden" animate="show" variants={stagger}>
             <motion.div variants={fadeUp} className="flex items-center gap-2 mb-6">
-              <button onClick={() => navigate("/")} className="text-white/40 hover:text-white/70 text-sm transition-colors">Home</button>
+              <button onClick={() => navigate("/")} className="text-white/40 hover:text-white/70 text-sm transition-colors">{t("Home", "الرئيسية")}</button>
               <ChevronRight className="w-3 h-3 text-white/30" />
-              <span className="text-amber-400 text-sm">IT Solutions</span>
+              <span className="text-amber-400 text-sm">{t("IT Solutions", "حلول تقنية المعلومات")}</span>
             </motion.div>
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-400/30 bg-blue-500/10 text-blue-300 text-xs tracking-widest uppercase mb-6">
-              <Cpu className="w-3 h-3" /> Enterprise IT Services
+              <Cpu className="w-3 h-3" /> {t("Enterprise IT Services", "خدمات تقنية المعلومات المؤسسية")}
             </motion.div>
             <motion.h1 variants={fadeUp} className="text-5xl md:text-6xl font-bold mb-6 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Technology That<br /><span className="text-amber-400">Drives Your Business</span>
+              {t("Technology That", "تقنية")}<br /><span className="text-amber-400">{t("Drives Your Business", "تدفع أعمالك إلى الأمام")}</span>
             </motion.h1>
             <motion.p variants={fadeUp} className="text-white/60 text-xl max-w-2xl mb-10 leading-relaxed">
-              From infrastructure to AI integration, Golden Team delivers end-to-end IT solutions that modernize operations, strengthen security, and accelerate growth across the GCC.
+              {t("From infrastructure to AI integration, Golden Team delivers end-to-end IT solutions that modernize operations, strengthen security, and accelerate growth across the GCC.", "من البنية التحتية حتى تكامل الذكاء الاصطناعي، يقدّم الفريق الذهبي حلول تقنية معلومات شاملة تحدّث العمليات وتعزّز الأمن وتُسرّع النمو عبر منطقة الخليج.")}
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap gap-4">
               <Button onClick={() => navigate("/contact")}
                 className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold px-8 py-3 text-sm tracking-wide">
-                Request a Consultation <ArrowRight className="w-4 h-4 ml-2" />
+                {t("Request a Consultation", "طلب استشارة")} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
               <Button onClick={() => navigate("/about")} variant="outline"
                 className="border-white/20 text-white hover:bg-white/10 bg-transparent px-8 py-3 text-sm">
-                Our Certifications
+                {t("Our Certifications", "شهاداتنا")}
               </Button>
             </motion.div>
           </motion.div>
@@ -196,10 +197,10 @@ export default function ITSolutions() {
               Our Services
             </motion.div>
             <motion.h2 variants={fadeUp} className="text-4xl md:text-5xl font-bold mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Complete IT Service Portfolio
+              {t("Complete IT Service Portfolio", "محفظة خدمات تقنية المعلومات الشاملة")}
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 text-lg max-w-3xl mx-auto">
-              Eight specialized service lines covering every dimension of enterprise IT — from physical infrastructure to intelligent AI systems.
+              {t("Eight specialized service lines covering every dimension of enterprise IT — from physical infrastructure to intelligent AI systems.", "ثمانية خطوط خدمات متخصصة تغطي كل أبعاد تقنية المعلومات المؤسسية — من البنية التحتية المادية حتى أنظمة الذكاء الاصطناعي.")}
             </motion.p>
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.05 }} variants={stagger}
@@ -238,10 +239,10 @@ export default function ITSolutions() {
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-14">
             <motion.h2 variants={fadeUp} className="text-3xl md:text-4xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Technology Partnerships
+              {t("Technology Partnerships", "شراكات تقنية")}
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 max-w-2xl mx-auto">
-              We work with the world's leading technology vendors to deliver best-in-class solutions.
+              {t("We work with the world's leading technology vendors to deliver best-in-class solutions.", "نتعاون مع كبرى موردي التقنية عالمياً لتقديم حلول متميزة.")}
             </motion.p>
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
@@ -264,10 +265,10 @@ export default function ITSolutions() {
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-16">
             <motion.h2 variants={fadeUp} className="text-4xl font-bold mb-4" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Our Engagement Process
+              {t("Our Engagement Process", "منهجية عملنا")}
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 max-w-2xl mx-auto">
-              A structured, transparent methodology that ensures every project is delivered on time, on budget, and to specification.
+              {t("A structured, transparent methodology that ensures every project is delivered on time, on budget, and to specification.", "منهجية منظمة وشفافة تضمن تسليم كل مشروع في الوقت وضمن الميزانية ووفق المواصفات.")}
             </motion.p>
           </motion.div>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.1 }} variants={stagger}
@@ -309,10 +310,10 @@ export default function ITSolutions() {
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}>
             <motion.h2 variants={fadeUp} className="text-4xl md:text-5xl font-bold mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Ready to Transform<br /><span className="text-amber-400">Your IT Infrastructure?</span>
+              {t("Ready to Transform", "هل أنت مستعد")}<br /><span className="text-amber-400">{t("Your IT Infrastructure?", "لتحويل بنيتك التقنية؟")}</span>
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 text-lg mb-10 max-w-2xl mx-auto">
-              Schedule a free discovery session with our senior architects and receive a tailored IT roadmap within 5 business days.
+              {t("Schedule a free discovery session with our senior architects and receive a tailored IT roadmap within 5 business days.", "جدول جلسة اكتشاف مجانية مع كبار مهندسينا واحصل على خارطة طريق تقنية مخصصة خلال 5 أيام عمل.")}
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap gap-4 justify-center">
               <Button onClick={() => navigate("/contact")}
@@ -331,16 +332,16 @@ export default function ITSolutions() {
       {/* ── Footer ── */}
       <footer className="border-t border-white/8 bg-[#05080F] py-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-white/30 text-sm">© 2026 Golden Team Trading Services. All rights reserved.</div>
+          <div className="text-white/30 text-sm">{t("© 2026 Golden Team Trading Services. All rights reserved.", "© 2026 شركة الفريق الذهبي للخدمات التجارية. جميع الحقوق محفوظة.")}</div>
           <div className="flex gap-6">
             {["/", "/it-solutions", "/astra-pm", "/consultancy", "/about", "/contact"].map((path, i) => (
               <button key={path} onClick={() => navigate(path)}
                 className="text-white/30 hover:text-white/60 text-sm transition-colors">
-                {["Home", "IT Solutions", "ASTRA PM", "Consultancy", "About", "Contact"][i]}
+                {[t("Home","الرئيسية"), t("IT Solutions","حلول تقنية المعلومات"), t("ASTRA PM","ASTRA لإدارة المشاريع"), t("Consultancy","الاستشارات"), t("About","من نحن"), t("Contact","تواصل معنا")][i]}
               </button>
             ))}
           </div>
-          <div className="text-white/30 text-sm">ISO 9001:2015 · Powered by NEO AI</div>
+          <div className="text-white/30 text-sm">{t("ISO 9001:2015 · Powered by NEO AI", "ISO 9001:2015 · مدعوم بـ NEO AI")}</div>
         </div>
       </footer>
     </div>

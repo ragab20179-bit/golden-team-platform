@@ -3,13 +3,15 @@
  * Flips the entire portal to Arabic RTL when activated
  */
 import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from "react";
+import { type Lang } from "@/lib/i18n";
 
-type Lang = "en" | "ar";
+export type { Lang };
 
 interface LanguageContextType {
   lang: Lang;
   isRTL: boolean;
   toggleLang: () => void;
+  setLang: (lang: Lang) => void;
   t: (en: string, ar: string) => string;
 }
 
@@ -35,7 +37,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const t = useCallback((en: string, ar: string) => (lang === "ar" ? ar : en), [lang]);
 
   return (
-    <LanguageContext.Provider value={{ lang, isRTL, toggleLang, t }}>
+    <LanguageContext.Provider value={{ lang, isRTL, toggleLang, setLang, t }}>
       {children}
     </LanguageContext.Provider>
   );
