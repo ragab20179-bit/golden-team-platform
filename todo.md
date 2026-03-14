@@ -105,3 +105,12 @@
 
 ## Last Updated
 2026-03-15 17:45 UTC — Phase 7 complete, all three features delivered
+
+## Phase 8 — ASTRA PM Page Diagrams from Google Drive Vault
+- [x] Browse Google Drive ASTRA PM vault folder for diagrams
+- [x] Download all ASTRA PM diagrams (architecture, workflow, tech-stack, software-integration, infra-scaling, file-collab, team-structure, use-cases, implementation-timeline, market-opportunity)
+- [x] Upload 10 diagrams to CDN via manus-upload-file --webdev
+- [x] Integrate diagrams into ASTRA PM page with bilingual captions, category filter, and lightbox viewer
+
+## Last Updated
+2026-03-15 18:20 UTC — Phase 8 complete, ASTRA PM vault diagrams integrated
