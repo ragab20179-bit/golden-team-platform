@@ -7,6 +7,11 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { NEOChatProvider } from "./contexts/NEOChatContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import Home from "./pages/Home";
+import ITSolutions from "./pages/ITSolutions";
+import AstraPM from "./pages/AstraPM";
+import Consultancy from "./pages/Consultancy";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import Portal from "./pages/Portal";
 import NEOArchitecture from "./pages/NEOArchitecture";
@@ -48,6 +53,11 @@ function Router() {
       <Route path="/neo-architecture" component={NEOArchitecture} />
       <Route path="/architecture" component={Architecture} />
       <Route path="/project-plan" component={ProjectPlan} />
+      <Route path="/it-solutions" component={ITSolutions} />
+      <Route path="/astra-pm" component={AstraPM} />
+      <Route path="/consultancy" component={Consultancy} />
+      <Route path="/about" component={About} />
+      <Route path="/contact" component={Contact} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

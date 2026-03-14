@@ -95,15 +95,15 @@ export default function Home() {
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8 text-sm">
             {[
-              { label: "IT Solutions", href: "#it-solutions" },
-              { label: "ASTRA PM", href: "#astra-pm" },
-              { label: "Consultancy", href: "#consultancy" },
-              { label: "About", href: "#about" },
-              { label: "Contact", href: "#contact" },
-            ].map(({ label, href }) => (
-              <a key={label} href={href} className="text-white/60 hover:text-amber-400 transition-colors duration-200 tracking-wide">
+              { label: "IT Solutions", path: "/it-solutions" },
+              { label: "ASTRA PM", path: "/astra-pm" },
+              { label: "Consultancy", path: "/consultancy" },
+              { label: "About", path: "/about" },
+              { label: "Contact", path: "/contact" },
+            ].map(({ label, path }) => (
+              <button key={label} onClick={() => setLocation(path)} className="text-white/60 hover:text-amber-400 transition-colors duration-200 tracking-wide">
                 {label}
-              </a>
+              </button>
             ))}
           </div>
 
@@ -127,10 +127,16 @@ export default function Home() {
         {/* Mobile Menu */}
         {mobileOpen && (
           <div className="md:hidden bg-[#0A0F1E]/98 backdrop-blur-xl border-t border-white/10 px-6 py-6 flex flex-col gap-4">
-            {["IT Solutions", "ASTRA PM", "Consultancy", "About", "Contact"].map((item) => (
-              <a key={item} href={`#${item.toLowerCase().replace(" ", "-")}`} className="text-white/70 hover:text-amber-400 text-sm py-2 border-b border-white/5" onClick={() => setMobileOpen(false)}>
-                {item}
-              </a>
+            {[
+              { label: "IT Solutions", path: "/it-solutions" },
+              { label: "ASTRA PM", path: "/astra-pm" },
+              { label: "Consultancy", path: "/consultancy" },
+              { label: "About", path: "/about" },
+              { label: "Contact", path: "/contact" },
+            ].map(({ label, path }) => (
+              <button key={label} onClick={() => { setLocation(path); setMobileOpen(false); }} className="text-white/70 hover:text-amber-400 text-sm py-2 border-b border-white/5 text-left">
+                {label}
+              </button>
             ))}
             <Button onClick={() => setLocation("/login")} className="mt-2 bg-amber-500 hover:bg-amber-400 text-[#05080F] font-semibold">
               Employee Portal
@@ -176,7 +182,7 @@ export default function Home() {
               <Button
                 size="lg"
                 className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold text-base px-8 py-6 shadow-xl shadow-amber-500/30 transition-all duration-300"
-                onClick={() => document.getElementById("it-solutions")?.scrollIntoView({ behavior: "smooth" })}
+                onClick={() => setLocation("/it-solutions")}
               >
                 Explore Our Services <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
@@ -184,7 +190,7 @@ export default function Home() {
                 variant="outline"
                 size="lg"
                 className="border-white/20 text-white hover:bg-white/10 hover:border-white/40 bg-transparent text-base px-8 py-6"
-                onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
+                onClick={() => setLocation("/contact")}
               >
                 Get In Touch
               </Button>
@@ -543,15 +549,26 @@ export default function Home() {
             </div>
             <div>
               <div className="text-white/60 text-xs tracking-widest uppercase mb-4">Services</div>
-              {["IT Solutions", "ASTRA PM", "Business Consultancy", "ISO 9001 Advisory", "AI Integration"].map((s) => (
-                <div key={s} className="text-white/40 text-sm py-1 hover:text-white/70 cursor-pointer transition-colors">{s}</div>
+              {[
+                { label: "IT Solutions", path: "/it-solutions" },
+                { label: "ASTRA PM", path: "/astra-pm" },
+                { label: "Business Consultancy", path: "/consultancy" },
+                { label: "ISO 9001 Advisory", path: "/consultancy" },
+                { label: "AI Integration", path: "/it-solutions" },
+              ].map(({ label, path }) => (
+                <button key={label} onClick={() => setLocation(path)} className="block text-white/40 text-sm py-1 hover:text-white/70 transition-colors text-left">{label}</button>
               ))}
             </div>
             <div>
               <div className="text-white/60 text-xs tracking-widest uppercase mb-4">Company</div>
-              {["About Us", "Our Team", "Careers", "Contact", "Employee Portal"].map((s) => (
-                <div key={s} onClick={s === "Employee Portal" ? () => setLocation("/login") : undefined}
-                  className="text-white/40 text-sm py-1 hover:text-white/70 cursor-pointer transition-colors">{s}</div>
+              {[
+                { label: "About Us", path: "/about" },
+                { label: "Our Team", path: "/about" },
+                { label: "Careers", path: "/contact" },
+                { label: "Contact", path: "/contact" },
+                { label: "Employee Portal", path: "/login" },
+              ].map(({ label, path }) => (
+                <button key={label} onClick={() => setLocation(path)} className="block text-white/40 text-sm py-1 hover:text-white/70 transition-colors text-left">{label}</button>
               ))}
             </div>
           </div>
