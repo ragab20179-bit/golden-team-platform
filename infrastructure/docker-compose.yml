@@ -1,0 +1,408 @@
+###############################################################################
+# Golden Team Trading Services — NEO Enterprise Platform
+# Docker Compose Production Stack
+# Document: GT-INFRA-001 | Version: 1.1 | March 2026 (Updated: Odoo 17 → 19.0)
+#
+# Services included:
+#   Infrastructure:  PostgreSQL 16, Redis 7, MinIO, Nginx
+#   ERP/Finance:     Odoo 19 Community + OCA modules
+#   HR:              OrangeHRM 5
+#   Project Mgmt:    OpenProject 16 (ASTRA PM engine)
+#   BI/KPIs:         Metabase
+#   Communications:  Rocket.Chat
+#   Knowledge Base:  Outline
+#
+# Usage:
+#   1. Copy .env.example to .env and fill in all values
+#   2. Run: bash scripts/init.sh
+#   3. Run: docker compose up -d
+###############################################################################
+
+name: gt-neo-platform
+
+networks:
+  neo-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+  data-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
+  integration-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  odoo-data:
+  odoo-addons:
+  openproject-data:
+  openproject-assets:
+  orangehrm-data:
+  metabase-data:
+  rocketchat-uploads:
+  outline-data:
+  nginx-certs:
+
+###############################################################################
+# INFRASTRUCTURE LAYER
+###############################################################################
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16 — Primary Database (NEO native + all app databases)
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: gt-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_SUPERUSER:-gtadmin}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - data-internal
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER:-gtadmin}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: >
+      postgres
+        -c max_connections=200
+        -c shared_buffers=512MB
+        -c effective_cache_size=1536MB
+        -c maintenance_work_mem=128MB
+        -c checkpoint_completion_target=0.9
+        -c wal_buffers=16MB
+        -c default_statistics_target=100
+        -c random_page_cost=1.1
+        -c effective_io_concurrency=200
+        -c work_mem=4MB
+        -c min_wal_size=1GB
+        -c max_wal_size=4GB
+        -c wal_level=replica
+        -c archive_mode=on
+        -c archive_command='cp %p /var/lib/postgresql/data/archive/%f'
+
+  # ---------------------------------------------------------------------------
+  # Redis 7.2 — Cache, Queues, Sessions, Pub/Sub, Rate Limiting
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7.2-alpine
+    container_name: gt-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - neo-internal
+      - data-internal
+    ports:
+      - "127.0.0.1:6379:6379"
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # MinIO — Object Storage (files, drawings, contracts, media)
+  # ---------------------------------------------------------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: gt-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-gtminio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BROWSER_REDIRECT_URL: https://${DOMAIN_MINIO:-minio.yourdomain.com}
+    volumes:
+      - minio-data:/data
+    networks:
+      - data-internal
+      - neo-internal
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # Nginx — Reverse Proxy & SSL Termination
+  # ---------------------------------------------------------------------------
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: gt-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - nginx-certs:/etc/nginx/ssl
+    networks:
+      - neo-internal
+      - integration-internal
+    depends_on:
+      - odoo
+      - openproject
+      - metabase
+      - rocketchat
+      - outline
+      - minio
+
+###############################################################################
+# ERP / FINANCE LAYER
+###############################################################################
+
+  # ---------------------------------------------------------------------------
+  # Odoo 19 Community — ERP, Finance, CRM, Procurement
+  # ---------------------------------------------------------------------------
+  odoo:
+    image: odoo:19.0
+    container_name: gt-odoo
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      HOST: postgres
+      PORT: 5432
+      USER: ${ODOO_DB_USER:-odoo}
+      PASSWORD: ${ODOO_DB_PASSWORD}
+    volumes:
+      - odoo-data:/var/lib/odoo
+      - ./odoo/config/odoo.conf:/etc/odoo/odoo.conf:ro
+      - ./odoo/addons:/mnt/extra-addons:ro
+    networks:
+      - data-internal
+      - integration-internal
+    ports:
+      - "127.0.0.1:8069:8069"
+      - "127.0.0.1:8072:8072"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8069/web/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+###############################################################################
+# HR LAYER
+###############################################################################
+
+  # ---------------------------------------------------------------------------
+  # OrangeHRM 5 — Human Resources Management
+  # ---------------------------------------------------------------------------
+  orangehrm:
+    image: orangehrm/orangehrm:latest
+    container_name: gt-orangehrm
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ORANGEHRM_DATABASE_HOST: postgres
+      ORANGEHRM_DATABASE_PORT: 5432
+      ORANGEHRM_DATABASE_NAME: ${ORANGEHRM_DB_NAME:-orangehrm}
+      ORANGEHRM_DATABASE_USER: ${ORANGEHRM_DB_USER:-orangehrm}
+      ORANGEHRM_DATABASE_PASSWORD: ${ORANGEHRM_DB_PASSWORD}
+    volumes:
+      - orangehrm-data:/var/www/html/lib/confs
+    networks:
+      - data-internal
+      - integration-internal
+    ports:
+      - "127.0.0.1:8080:80"
+
+###############################################################################
+# PROJECT MANAGEMENT LAYER (ASTRA PM ENGINE)
+###############################################################################
+
+  # ---------------------------------------------------------------------------
+  # OpenProject 16 Community — Project Management (ASTRA PM Engine)
+  # ---------------------------------------------------------------------------
+  openproject:
+    image: openproject/openproject:16
+    container_name: gt-openproject
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      OPENPROJECT_HOST__NAME: ${DOMAIN_OPENPROJECT:-pm.yourdomain.com}
+      OPENPROJECT_HTTPS: "true"
+      OPENPROJECT_DEFAULT__LANGUAGE: en
+      DATABASE_URL: postgresql://${OPENPROJECT_DB_USER:-openproject}:${OPENPROJECT_DB_PASSWORD}@postgres/openproject
+      RAILS_CACHE_STORE: redis
+      OPENPROJECT_CACHE__MEMCACHE__SERVER: redis://redis:6379/5
+      OPENPROJECT_RAILS__RELATIVE__URL__ROOT: ""
+      IMAP_ENABLED: "false"
+    volumes:
+      - openproject-data:/var/openproject/assets
+    networks:
+      - data-internal
+      - integration-internal
+    ports:
+      - "127.0.0.1:8090:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health_checks/default"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+###############################################################################
+# BI / KPI LAYER
+###############################################################################
+
+  # ---------------------------------------------------------------------------
+  # Metabase — KPI Dashboards & Business Intelligence
+  # ---------------------------------------------------------------------------
+  metabase:
+    image: metabase/metabase:latest
+    container_name: gt-metabase
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: ${METABASE_DB_NAME:-metabase}
+      MB_DB_PORT: 5432
+      MB_DB_USER: ${METABASE_DB_USER:-metabase}
+      MB_DB_PASS: ${METABASE_DB_PASSWORD}
+      MB_DB_HOST: postgres
+      MB_SITE_URL: https://${DOMAIN_METABASE:-bi.yourdomain.com}
+      JAVA_TIMEZONE: Asia/Riyadh
+    volumes:
+      - metabase-data:/metabase-data
+    networks:
+      - data-internal
+      - integration-internal
+    ports:
+      - "127.0.0.1:3030:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+###############################################################################
+# COMMUNICATIONS LAYER
+###############################################################################
+
+  # ---------------------------------------------------------------------------
+  # Rocket.Chat — Internal Communications Backbone
+  # ---------------------------------------------------------------------------
+  rocketchat:
+    image: registry.rocket.chat/rocketchat/rocket.chat:latest
+    container_name: gt-rocketchat
+    restart: unless-stopped
+    depends_on:
+      - rocketchat-mongo
+    environment:
+      MONGO_URL: mongodb://rocketchat-mongo:27017/rocketchat
+      MONGO_OPLOG_URL: mongodb://rocketchat-mongo:27017/local?replicaSet=rs0
+      ROOT_URL: https://${DOMAIN_ROCKETCHAT:-chat.yourdomain.com}
+      PORT: 3000
+      DEPLOY_PLATFORM: docker
+      OVERWRITE_SETTING_Show_Setup_Wizard: completed
+    volumes:
+      - rocketchat-uploads:/app/uploads
+    networks:
+      - integration-internal
+    ports:
+      - "127.0.0.1:3100:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  rocketchat-mongo:
+    image: mongo:6.0
+    container_name: gt-rocketchat-mongo
+    restart: unless-stopped
+    command: mongod --oplogSize 128 --replSet rs0
+    volumes:
+      - ./rocketchat/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - integration-internal
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+###############################################################################
+# KNOWLEDGE BASE LAYER
+###############################################################################
+
+  # ---------------------------------------------------------------------------
+  # Outline — Company Wiki & Knowledge Base
+  # ---------------------------------------------------------------------------
+  outline:
+    image: outlinewiki/outline:latest
+    container_name: gt-outline
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${OUTLINE_DB_USER:-outline}:${OUTLINE_DB_PASSWORD}@postgres/outline
+      REDIS_URL: redis://redis:6379/6
+      URL: https://${DOMAIN_OUTLINE:-wiki.yourdomain.com}
+      PORT: 3000
+      SECRET_KEY: ${OUTLINE_SECRET_KEY}
+      UTILS_SECRET: ${OUTLINE_UTILS_SECRET}
+      AWS_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-gtminio}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD}
+      AWS_REGION: us-east-1
+      AWS_S3_UPLOAD_BUCKET_URL: http://minio:9000
+      AWS_S3_UPLOAD_BUCKET_NAME: outline
+      AWS_S3_FORCE_PATH_STYLE: "true"
+      AWS_S3_ACL: private
+      FORCE_HTTPS: "false"
+      ENABLE_UPDATES: "false"
+      WEB_CONCURRENCY: 1
+      FILE_STORAGE: s3
+    networks:
+      - data-internal
+      - integration-internal
+    ports:
+      - "127.0.0.1:3200:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/_health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
