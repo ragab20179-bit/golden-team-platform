@@ -33,3 +33,6 @@
 
 ## Last Updated
 2026-03-14 18:30 UTC — Phase 3 complete, all pre-launch items done
+
+## Bug Fixes
+- [x] Fix duplicated main title on landing page hero section (replaced bg image + updated h1 tagline)
