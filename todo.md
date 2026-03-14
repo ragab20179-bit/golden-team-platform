@@ -68,3 +68,18 @@
 
 ## Last Updated
 2026-03-14 21:35 UTC — Phase 5 complete, Drive Vault universal file upload deployed
+
+## Phase 6 — Port Universal Upload System from Khobar Repo
+- [x] Install missing dependencies: csv-parse, xml2js, dxf-parser, nanoid
+- [x] Port server/fileParser.ts — full format support (PDF, Excel, CSV, XML, DOCX, Image/Vision, DXF, Text)
+- [x] Fix detectCategory bug: DOCX MIME contains 'xml' substring — moved docx check before xml
+- [x] Port server/routers/universalUpload.ts — 5-step chunked pipeline with parse status + AI context injection
+- [x] Register universalUpload router in server/routers.ts
+- [x] Port client/src/components/UniversalFileUpload.tsx — multi-file queue, speed/ETA, parse status
+- [x] Replace FileUploadZone in DriveVault with UniversalFileUpload
+- [x] Add bilingual labels to UniversalFileUpload component
+- [x] Write vitest tests: 16 universalUpload tests + 13 vault tests = 48 total, all passing
+- [x] Fix vault.test.ts to use new filePath-based parseFile API
+
+## Last Updated
+2026-03-15 17:09 UTC — Phase 6 complete, universal upload system ported from Khobar repo

@@ -16,7 +16,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import PortalLayout from "@/components/PortalLayout";
-import FileUploadZone from "@/components/FileUploadZone";
+import UniversalFileUpload from "@/components/UniversalFileUpload";
 import { trpc } from "@/lib/trpc";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -193,11 +193,16 @@ export default function DriveVault() {
               <FolderOpen className="w-4 h-4" />
               {t(`Upload to: ${FOLDER_LABELS[activeFolder]?.en ?? activeFolder}`, `رفع إلى: ${FOLDER_LABELS[activeFolder]?.ar ?? activeFolder}`)}
             </h3>
-            <FileUploadZone
-              folder={activeFolder === "all" ? "general" : activeFolder}
-              onUploadComplete={() => {
+            <UniversalFileUpload
+              context="vault"
+              maxSizeMB={500}
+              showPreview={true}
+              onFileReady={() => {
                 utils.vault.listFiles.invalidate();
-                setShowUpload(false);
+              }}
+              onAllComplete={() => {
+                utils.vault.listFiles.invalidate();
+                toast.success(t("All files uploaded and ready", "تم رفع جميع الملفات وهي جاهزة"));
               }}
             />
           </div>

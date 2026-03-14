@@ -4,6 +4,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { vaultRouter } from "./routers/vault";
+import { universalUploadRouter } from "./routers/universalUpload";
 import {
   insertAstraDecision,
   getAstraDecisions,
@@ -125,5 +126,8 @@ export const appRouter = router({
 
   // ─── Drive Vault — Universal File Upload ───────────────────────────────────
   vault: vaultRouter,
+
+  // ─── Universal Chunked Upload — All modules ────────────────────────────────
+  universalUpload: universalUploadRouter,
 });
 export type AppRouter = typeof appRouter;

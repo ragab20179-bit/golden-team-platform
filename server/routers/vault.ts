@@ -3,6 +3,7 @@
  * Handles file upload confirmation, listing, search, and deletion.
  * Upload itself goes directly from client → S3 via presigned URL (no server proxy for bytes).
  */
+import fs from "fs";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { router, protectedProcedure } from "../_core/trpc";
@@ -72,10 +73,21 @@ export const vaultRouter = router({
         folder,
       });
 
+      // Write buffer to temp file for the new filePath-based parser
+      const tmpDir = "/tmp/vault-uploads";
+      if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir, { recursive: true });
+      const tmpPath = `${tmpDir}/${fileId}-${filename.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+      fs.writeFileSync(tmpPath, buffer);
+
       // Parse file content asynchronously (don't block the response)
-      parseAndSummarize(fileId, buffer, mimeType, filename).catch((err) => {
-        console.error("[Vault] Parse error for file", fileId, err);
-      });
+      parseAndSummarize(fileId, tmpPath, mimeType, filename, s3Url)
+        .finally(() => {
+          // Cleanup temp file after parsing
+          try { fs.unlinkSync(tmpPath); } catch { /* ignore */ }
+        })
+        .catch((err) => {
+          console.error("[Vault] Parse error for file", fileId, err);
+        });
 
       return { id: fileId, s3Url, s3Key, message: "File uploaded successfully" };
     }),
@@ -165,19 +177,29 @@ export const vaultRouter = router({
 
 /**
  * Background task: parse file content and generate AI summary.
+ * Now uses the new filePath-based parseFile API (not buffer-based).
  */
 async function parseAndSummarize(
   fileId: number,
-  buffer: Buffer,
+  filePath: string,
   mimeType: string,
-  filename: string
+  filename: string,
+  fileUrl?: string
 ): Promise<void> {
   try {
-    const { text, meta } = await parseFile(buffer, mimeType, filename);
+    const result = await parseFile(filePath, filename, mimeType, fileUrl);
+    const text = result.extractedText || "";
+    const meta = {
+      category: result.category,
+      summary: result.summary,
+      pageCount: result.pageCount,
+      headers: result.headers,
+      warnings: result.warnings,
+    };
 
-    let aiSummary: string | undefined;
+    let aiSummary: string | undefined = result.summary;
 
-    // Generate AI summary only if there's meaningful text content
+    // Generate enhanced AI summary only if there's meaningful text content
     if (text && text.trim().length > 100) {
       try {
         const truncatedText = text.slice(0, 4000); // Limit for LLM context
@@ -195,7 +217,7 @@ async function parseAndSummarize(
           ],
         });
         const rawContent = response.choices?.[0]?.message?.content;
-        aiSummary = typeof rawContent === "string" ? rawContent : undefined;
+        if (typeof rawContent === "string") aiSummary = rawContent;
       } catch (llmErr) {
         console.warn("[Vault] LLM summary failed:", llmErr);
       }
