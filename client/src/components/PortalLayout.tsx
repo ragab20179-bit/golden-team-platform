@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Users, Database, UserCheck, BarChart3,
   ShoppingCart, FileCheck, Scale, MessageSquare, Shield,
   ScrollText, Brain, ChevronLeft, ChevronRight, LogOut,
-  Bell, Settings, Menu, X, Mic, Cpu, Languages
+  Bell, Settings, Menu, X, Mic, Cpu, Languages, ShieldAlert
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -160,6 +160,9 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
                 {lang === 'en' ? 'عربي' : 'EN'}
               </span>
             </button>
+            <a href="/admin" title="Admin Panel" className="w-8 h-8 rounded-lg flex items-center justify-center text-red-400/70 hover:text-red-300 hover:bg-red-500/10 transition-colors border border-red-500/20 hover:border-red-500/40">
+              <ShieldAlert className="w-4 h-4" />
+            </a>
             <button onClick={() => toast.info(t("No new notifications", "لا توجد إشعارات جديدة"))} className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition-colors relative">
               <Bell className="w-4 h-4" />
               <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-400" />

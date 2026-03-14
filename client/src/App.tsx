@@ -30,6 +30,13 @@ import GovernanceModule from "./pages/GovernanceModule";
 import MeetingModule from "./pages/MeetingModule";
 import NEOCore from "./pages/NEOCore";
 import AuthorityMatrix from "./pages/AuthorityMatrix";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserManagement from "./pages/admin/UserManagement";
+import RolesPermissions from "./pages/admin/RolesPermissions";
+import SystemSettings from "./pages/admin/SystemSettings";
+import PlatformHealth from "./pages/admin/PlatformHealth";
+import AdminAuditLog from "./pages/admin/AdminAuditLog";
+import ModuleAccess from "./pages/admin/ModuleAccess";
 
 function Router() {
   return (
@@ -58,6 +65,13 @@ function Router() {
       <Route path="/consultancy" component={Consultancy} />
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/users" component={UserManagement} />
+      <Route path="/admin/roles" component={RolesPermissions} />
+      <Route path="/admin/settings" component={SystemSettings} />
+      <Route path="/admin/health" component={PlatformHealth} />
+      <Route path="/admin/audit" component={AdminAuditLog} />
+      <Route path="/admin/modules" component={ModuleAccess} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
