@@ -4,6 +4,8 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { NEOChatProvider } from "./contexts/NEOChatContext";
+import { LanguageProvider } from "./contexts/LanguageContext";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Portal from "./pages/Portal";
@@ -22,6 +24,7 @@ import AuditModule from "./pages/AuditModule";
 import GovernanceModule from "./pages/GovernanceModule";
 import MeetingModule from "./pages/MeetingModule";
 import NEOCore from "./pages/NEOCore";
+import AuthorityMatrix from "./pages/AuthorityMatrix";
 
 function Router() {
   return (
@@ -39,6 +42,7 @@ function Router() {
       <Route path="/portal/comms" component={CommsModule} />
       <Route path="/portal/audit" component={AuditModule} />
       <Route path="/portal/governance" component={GovernanceModule} />
+      <Route path="/portal/governance/authority-matrix" component={AuthorityMatrix} />
       <Route path="/portal/meetings" component={MeetingModule} />
       <Route path="/portal/neo-core" component={NEOCore} />
       <Route path="/neo-architecture" component={NEOArchitecture} />
@@ -54,10 +58,14 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark">
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <LanguageProvider>
+          <NEOChatProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </NEOChatProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
-import { Shield, AlertTriangle, CheckCircle, Lock, Eye, FileText, Activity } from "lucide-react";
+import { Shield, AlertTriangle, CheckCircle, Lock, Eye, FileText, Activity, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useLocation } from "wouter";
 import PortalLayout from "@/components/PortalLayout";
 
 const policies = [
@@ -20,6 +21,7 @@ const deviations = [
 ];
 
 export default function GovernanceModule() {
+  const [, navigate] = useLocation();
   return (
     <PortalLayout title="ASTRA AMG" subtitle="Audit, Management & Governance — ASTRA AMG" badge="1 Open Deviation" badgeColor="bg-red-500/10 text-red-400 border-red-500/20">
       <div className="p-6 space-y-6">
@@ -36,17 +38,25 @@ export default function GovernanceModule() {
                 <div className="text-xs text-emerald-400 mt-0.5">↑ +0.8% from last month</div>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              {[
-                { label: "Active Policies", value: "18", color: "text-blue-400" },
-                { label: "Open Deviations", value: "2", color: "text-amber-400" },
-                { label: "Compliant Depts", value: "5/6", color: "text-emerald-400" },
-              ].map((s, i) => (
-                <div key={i}>
-                  <div className={`text-xl font-bold ${s.color}`} style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{s.value}</div>
-                  <div className="text-[11px] text-white/30">{s.label}</div>
-                </div>
-              ))}
+            <div className="flex flex-col items-end gap-4">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                {[
+                  { label: "Active Policies", value: "18", color: "text-blue-400" },
+                  { label: "Open Deviations", value: "2", color: "text-amber-400" },
+                  { label: "Compliant Depts", value: "5/6", color: "text-emerald-400" },
+                ].map((s, i) => (
+                  <div key={i}>
+                    <div className={`text-xl font-bold ${s.color}`} style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{s.value}</div>
+                    <div className="text-[11px] text-white/30">{s.label}</div>
+                  </div>
+                ))}
+              </div>
+              <Button
+                onClick={() => navigate("/portal/governance/authority-matrix")}
+                className="bg-rose-600 hover:bg-rose-700 text-white text-xs flex items-center gap-2">
+                <Settings className="w-3.5 h-3.5" />
+                Configure Authority Matrix
+              </Button>
             </div>
           </div>
         </div>

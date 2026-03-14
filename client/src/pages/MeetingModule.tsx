@@ -6,13 +6,15 @@
  */
 import { useState } from "react";
 import PortalLayout from "@/components/PortalLayout";
+import NEOChatWindow from "@/components/NEOChatWindow";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import {
   Video, Mic, MicOff, VideoOff, Users, Clock, FileText,
   Brain, Zap, Globe, BarChart2, CheckCircle2, AlertCircle,
   Calendar, Play, Square, Download, MessageSquare, Eye,
-  Activity, Star, ChevronRight, Plus, Search, Filter
+  Activity, Star, ChevronRight, Plus, Search, Filter, MessageCircle
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -83,6 +85,8 @@ export default function MeetingModule() {
   const [liveActive, setLiveActive] = useState(false);
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
+  const [showNEOChat, setShowNEOChat] = useState(false);
+  const { lang, t } = useLanguage();
   const [liveTranscript] = useState([
     { speaker: "Ahmed Al-Rashid", lang: "AR", text: "نبدأ بمراجعة أداء الربع الثاني...", time: "14:02" },
     { speaker: "NEO AI", lang: "EN", text: "Transcribing: 'Let us begin with the Q2 performance review...' — Sentiment: Neutral (82%)", time: "14:02", isNeo: true },
@@ -411,6 +415,47 @@ export default function MeetingModule() {
                     NEO is listening...
                   </div>
                 </div>
+              </div>
+
+              {/* NEO AI Chat Fallback Panel */}
+              <div className="glass-card rounded-xl border border-violet-500/20 bg-violet-500/3 overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-violet-400" />
+                    <span className="text-sm font-semibold text-white">
+                      {t("NEO AI Chat — Meeting Fallback", "نيو للمحادثة — بديل الاجتماع")}
+                    </span>
+                    <Badge className="text-[10px] border border-violet-500/30 bg-violet-500/10 text-violet-300">
+                      {t("Audio/Video Fallback", "بديل الصوت/الفيديو")}
+                    </Badge>
+                  </div>
+                  <button
+                    onClick={() => setShowNEOChat(!showNEOChat)}
+                    className="text-xs text-violet-400 hover:text-violet-300 transition-colors border border-violet-500/20 rounded-lg px-3 py-1 hover:bg-violet-500/10"
+                  >
+                    {showNEOChat ? t("Collapse", "طي") : t("Expand Chat", "فتح المحادثة")}
+                  </button>
+                </div>
+                {!showNEOChat && (
+                  <div className="px-4 py-3 text-xs text-white/30">
+                    {t(
+                      "If audio or video fails, continue the meeting entirely through NEO AI text chat. All meeting intelligence features remain active — transcription, decision capture, and action items.",
+                      "إذا فشل الصوت أو الفيديو، تابع الاجتماع بالكامل عبر محادثة نيو النصية. تبقى جميع ميزات الذكاء الاجتماعي نشطة — النسخ والقرارات وبنود العمل."
+                    )}
+                  </div>
+                )}
+                {showNEOChat && (
+                  <div className="h-96">
+                    <NEOChatWindow
+                      compact={true}
+                      showHeader={false}
+                      placeholder={t(
+                        "Continue your meeting via text — NEO captures all decisions and action items...",
+                        "تابع اجتماعك عبر النص — نيو يلتقط جميع القرارات وبنود العمل..."
+                      )}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Real-time NEO Insights */}

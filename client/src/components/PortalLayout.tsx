@@ -8,11 +8,12 @@ import {
   LayoutDashboard, Users, Database, UserCheck, BarChart3,
   ShoppingCart, FileCheck, Scale, MessageSquare, Shield,
   ScrollText, Brain, ChevronLeft, ChevronRight, LogOut,
-  Bell, Settings, Menu, X, Mic, Cpu
+  Bell, Settings, Menu, X, Mic, Cpu, Languages
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export const NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/portal", color: "text-blue-400" },
@@ -42,6 +43,7 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
   const [location, setLocation] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { lang, isRTL, toggleLang, t } = useLanguage();
 
   const handleLogout = () => {
     toast.success("Logged out successfully");
@@ -107,7 +109,7 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
   );
 
   return (
-    <div className="flex h-screen bg-[#060B14] overflow-hidden">
+    <div className="flex h-screen bg-[#060B14] overflow-hidden" dir={isRTL ? "rtl" : "ltr"}>
       {/* Desktop Sidebar */}
       <aside className={`hidden md:flex flex-col shrink-0 border-r border-white/5 transition-all duration-300 relative
         ${collapsed ? "w-16" : "w-60"}`}
@@ -147,7 +149,18 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
             {badge && <Badge className={`text-[10px] border ${badgeColor} ml-2`}>{badge}</Badge>}
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => toast.info("No new notifications")} className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition-colors relative">
+            {/* Language Toggle */}
+            <button
+              onClick={toggleLang}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/3 hover:bg-white/8 hover:border-white/20 transition-all text-white/60 hover:text-white"
+              title={t("Switch to Arabic", "التبديل إلى الإنجليزية")}
+            >
+              <Languages className="w-3.5 h-3.5" />
+              <span className="text-xs font-semibold" style={{ fontFamily: lang === 'ar' ? "'Noto Sans Arabic', sans-serif" : "'Space Grotesk', sans-serif" }}>
+                {lang === 'en' ? 'عربي' : 'EN'}
+              </span>
+            </button>
+            <button onClick={() => toast.info(t("No new notifications", "لا توجد إشعارات جديدة"))} className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition-colors relative">
               <Bell className="w-4 h-4" />
               <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-400" />
             </button>
