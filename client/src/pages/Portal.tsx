@@ -31,6 +31,11 @@ import {
   TRANSACTION_DEFINITIONS,
   TransactionState,
 } from "@/lib/neoTransactionEngine";
+import {
+  astraAuthorityCheck,
+  buildAstraRequest,
+  type AstraDecision,
+} from "@/lib/astraEngine";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface ChatMessage {
@@ -133,6 +138,7 @@ export default function Portal() {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [activeTransaction, setActiveTransaction] = useState<TransactionState | null>(null);
+  const [lastAstraDecision, setLastAstraDecision] = useState<AstraDecision | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -262,9 +268,48 @@ export default function Portal() {
 
         if (amgRequired) {
           txn.stage = "AMG_CHECK";
+
+          // ── ASTRA Engine Live Call ──────────────────────────────────────
+          const domainMap: Record<string, string> = {
+            CREATE_PO: "procurement", CREATE_QUOTE: "finance",
+            APPROVE_LEAVE: "hr", CREATE_INVOICE: "finance",
+            ADD_EMPLOYEE: "hr", LOG_RISK: "qms",
+            SCHEDULE_MEETING: "governance", CREATE_CONTRACT: "legal",
+            SUBMIT_EXPENSE: "finance", OPEN_TICKET: "it",
+          };
+          const actionMap: Record<string, string> = {
+            CREATE_PO: "approve_po", CREATE_QUOTE: "create_invoice",
+            APPROVE_LEAVE: "approve_leave", CREATE_INVOICE: "approve_payment",
+            ADD_EMPLOYEE: "onboard_employee", LOG_RISK: "log_risk",
+            SCHEDULE_MEETING: "escalate_decision", CREATE_CONTRACT: "approve_contract",
+            SUBMIT_EXPENSE: "log_expense", OPEN_TICKET: "create_ticket",
+          };
+          const astraReq = buildAstraRequest(
+            "neo-portal-user",
+            "manager",
+            domainMap[txn.type] || "governance",
+            actionMap[txn.type] || "escalate_decision",
+            {
+              cost_center: txn.fields["cost_center"] || "Operations",
+              amount_sar: Number(txn.fields["amount"] || txn.fields["salary"] || 0),
+              consent: true,
+              justification: `NEO Transaction: ${def.title}`,
+            }
+          );
+          const astraDecision = astraAuthorityCheck(astraReq);
+          setLastAstraDecision(astraDecision);
+          // ── End ASTRA Call ─────────────────────────────────────────────
+
+          const outcomeIcon = astraDecision.outcome === "ALLOW" ? "✅" : astraDecision.outcome === "ESCALATE" ? "⬆️" : "🔐";
+          const amgContent = getAMGMessage(txn) +
+            `\n\n---\n**ASTRA AMG Decision:** ${outcomeIcon} \`${astraDecision.outcome}\`` +
+            `\n**Policy Pack:** v${astraDecision.policy_pack_version}` +
+            `\n**Decision ID:** \`${astraDecision.decision_id.slice(0, 8)}…\`` +
+            `\n**Latency:** ${astraDecision.latency_ms}ms`;
+
           setMessages(prev => [...prev, {
             id: Date.now() + 1, role: "neo",
-            content: getAMGMessage(txn),
+            content: amgContent,
             time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
             module: "ASTRA AMG",
             transaction: { ...txn },
@@ -274,17 +319,28 @@ export default function Portal() {
 
           setTimeout(() => {
             const approvedTxn = { ...txn, amgApproved: true, stage: "EXECUTE" as const };
+            const approvalMsg = astraDecision.outcome === "DENY"
+              ? `❌ **ASTRA AMG: Transaction Denied**\n\nReason: \`${astraDecision.reason_code}\`\n\nThis transaction has been blocked by the governance engine. Please contact your administrator.`
+              : astraDecision.outcome === "ESCALATE"
+              ? `⬆️ **ASTRA AMG: Escalated to Senior Authority**\n\nAmount exceeds manager threshold. Escalating to Director/CFO for approval. Executing with escalation flag...`
+              : `✅ **ASTRA AMG: ALLOW** — Decision \`${astraDecision.decision_id.slice(0, 8)}\` committed to audit log.\n\nExecuting via ${def.integration}...`;
+
             setMessages(prev => [...prev, {
               id: Date.now() + 2, role: "neo",
-              content: `✅ **ASTRA AMG Approval Granted**\n\nYour line manager has approved this transaction. Executing now via ${def.integration}...`,
+              content: approvalMsg,
               time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
               module: "ASTRA AMG",
-              transaction: approvedTxn,
+              transaction: astraDecision.outcome === "DENY" ? { ...txn, stage: "REJECTED" as const } : approvedTxn,
               isTransactionCard: true,
             }]);
-            setActiveTransaction(approvedTxn);
-            setTimeout(() => executeTransaction(approvedTxn), 1500);
-          }, 3000);
+
+            if (astraDecision.outcome !== "DENY") {
+              setActiveTransaction(approvedTxn);
+              setTimeout(() => executeTransaction(approvedTxn), 1500);
+            } else {
+              setActiveTransaction(null);
+            }
+          }, 2500);
         } else {
           txn.stage = "EXECUTE";
           setMessages(prev => [...prev, {

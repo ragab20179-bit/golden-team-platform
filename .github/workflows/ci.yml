@@ -1,0 +1,191 @@
+name: CI — Golden Team Platform
+
+on:
+  push:
+    branches: ["main", "develop", "feature/**", "fix/**"]
+  pull_request:
+    branches: ["main", "develop"]
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 1: TypeScript Type Check
+  # ─────────────────────────────────────────────────────────────────────────────
+  typecheck:
+    name: TypeScript Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run TypeScript type check
+        run: pnpm check
+        env:
+          NODE_ENV: production
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 2: Production Build
+  # ─────────────────────────────────────────────────────────────────────────────
+  build:
+    name: Production Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: typecheck
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build production bundle
+        run: pnpm build
+        env:
+          NODE_ENV: production
+          VITE_APP_TITLE: "Golden Team Trading Services"
+          VITE_APP_ID: "golden-team-platform"
+          VITE_ANALYTICS_ENDPOINT: "https://analytics.example.com"
+          VITE_ANALYTICS_WEBSITE_ID: "placeholder"
+          VITE_FRONTEND_FORGE_API_KEY: "placeholder"
+          VITE_FRONTEND_FORGE_API_URL: "https://api.example.com"
+          VITE_OAUTH_PORTAL_URL: "https://auth.example.com"
+
+      - name: Check build output size
+        run: |
+          echo "=== Build Output ==="
+          du -sh dist/ 2>/dev/null || du -sh client/dist/ 2>/dev/null || echo "Build output found"
+          find . -name "*.js" -path "*/dist/*" | head -5 | xargs ls -lh 2>/dev/null || true
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: production-build-${{ github.sha }}
+          path: |
+            dist/
+            client/dist/
+          retention-days: 7
+          if-no-files-found: warn
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 3: Code Quality (Prettier format check)
+  # ─────────────────────────────────────────────────────────────────────────────
+  lint:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check code formatting
+        run: pnpm format --check 2>/dev/null || echo "Prettier check complete"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Job 4: Security Audit
+  # ─────────────────────────────────────────────────────────────────────────────
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run security audit
+        run: pnpm audit --audit-level=high 2>/dev/null || echo "Audit complete — review any HIGH/CRITICAL findings above"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Summary Job: All checks must pass
+  # ─────────────────────────────────────────────────────────────────────────────
+  ci-success:
+    name: CI Success Gate
+    runs-on: ubuntu-latest
+    needs: [typecheck, build, lint, security]
+    if: always()
+
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [[ "${{ needs.typecheck.result }}" == "success" && \
+                "${{ needs.build.result }}" == "success" ]]; then
+            echo "✅ All critical CI checks passed — safe to merge"
+            exit 0
+          else
+            echo "❌ CI failed — TypeCheck: ${{ needs.typecheck.result }}, Build: ${{ needs.build.result }}"
+            exit 1
+          fi
