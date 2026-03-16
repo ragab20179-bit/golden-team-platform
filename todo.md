@@ -222,3 +222,13 @@
 - [ ] Write vitest tests for token endpoint and context builder
 - [ ] Save checkpoint
 - [ ] Update Drive Vault with Phase 16 summary
+
+## Phase 17 — Google Sign-In
+- [ ] Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET secrets
+- [ ] Create server/routers/googleAuth.ts with OAuth callback handler
+- [ ] Add /api/auth/google and /api/auth/google/callback Express routes
+- [ ] Upsert user in DB from Google profile (email, name, picture)
+- [ ] Add Google Sign-In button to login page
+- [ ] Update Employee Portal button on public site to show Google option
+- [ ] Write vitest tests for Google auth handler
+- [ ] Save checkpoint and update Drive Vault
