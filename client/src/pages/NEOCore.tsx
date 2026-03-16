@@ -126,6 +126,11 @@ export default function NEOCore() {
     refetchInterval: 30000, // auto-refresh every 30 seconds
   });
 
+  // ── Real GPT-4o token usage + cost from neo_ai_usage table ──────────────────
+  const { data: usageStats, isLoading: usageLoading } = trpc.neoModules.getUsageStats.useQuery(undefined, {
+    refetchInterval: 30000,
+  });
+
   // Live metrics strip — values from DB, fallback to "--" while loading
   const liveMetrics = [
     {
@@ -595,6 +600,49 @@ export default function NEOCore() {
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+
+                    {/* AI Module Token Usage & Cost — from neo_ai_usage table */}
+            <div className="glass-card rounded-xl border border-violet-500/20 p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Brain className="w-4 h-4 text-violet-400" />
+                <h3 className="text-sm font-semibold text-white/70 uppercase tracking-widest">{t("AI Module Usage & Cost (from DB)", "استخدام وتكلفة وحدات AI")}</h3>
+                <Badge className="ml-auto text-[10px] border-violet-500/30 bg-violet-500/10 text-violet-400">neo_ai_usage table</Badge>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                {[
+                  { label: t("Total AI Calls", "إجمالي استدعاءات AI"), value: usageLoading ? "..." : (usageStats?.totalCalls ?? 0).toLocaleString(), color: "text-violet-400" },
+                  { label: t("Today's Calls", "استدعاءات اليوم"), value: usageLoading ? "..." : (usageStats?.todayCalls ?? 0).toLocaleString(), color: "text-blue-400" },
+                  { label: t("Total Tokens", "إجمالي الرموز"), value: usageLoading ? "..." : (usageStats?.totalTokens ?? 0).toLocaleString(), color: "text-cyan-400" },
+                  { label: t("Estimated Cost (USD)", "التكلفة التقديرية"), value: usageLoading ? "..." : `$${usageStats?.totalCostUsd ?? "0.000000"}`, color: "text-emerald-400" },
+                ].map((stat, i) => (
+                  <div key={i} className="text-center p-3 rounded-lg bg-white/3 border border-white/5">
+                    <div className={`text-xl font-bold ${stat.color}`} style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{stat.value}</div>
+                    <div className="text-[10px] text-white/30 mt-1">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+              {/* Per-module breakdown */}
+              {!usageLoading && usageStats && Object.keys(usageStats.callsByModule).length > 0 && (
+                <div className="space-y-2">
+                  <div className="text-[10px] text-white/30 uppercase tracking-wider mb-2">{t("Calls by Module", "الاستدعاءات حسب الوحدة")}</div>
+                  {Object.entries(usageStats.callsByModule).map(([mod, calls]) => (
+                    <div key={mod} className="flex items-center justify-between text-xs">
+                      <span className="text-white/50 capitalize">{mod}</span>
+                      <div className="flex items-center gap-4">
+                        <span className="text-white/70">{(calls as number).toLocaleString()} calls</span>
+                        <span className="text-emerald-400">${(usageStats.costByModule[mod] ?? 0).toFixed(6)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {!usageLoading && (!usageStats || usageStats.totalCalls === 0) && (
+                <div className="text-xs text-white/30 text-center py-2">{t("No AI module calls yet. Use the query panels on module pages to generate usage data.", "لا توجد استدعاءات AI بعد.")}</div>
+              )}
+              <div className="mt-3 pt-3 border-t border-white/5 text-[10px] text-white/25">
+                {usageStats?.pricingNote ?? "GPT-4o: $2.50/1M input tokens, $10.00/1M output tokens (openai.com/api/pricing, 2025)"}
               </div>
             </div>
 

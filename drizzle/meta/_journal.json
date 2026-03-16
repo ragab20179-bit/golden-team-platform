@@ -50,6 +50,13 @@
       "when": 1773640465095,
       "tag": "0006_clumsy_proudstar",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1773646613725,
+      "tag": "0007_cold_silvermane",
+      "breakpoints": true
     }
   ]
 }

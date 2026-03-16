@@ -169,3 +169,19 @@
 
 ## Last Updated
 2026-03-16 07:35 UTC — Phase 13 complete, real GPT-4o integration + 7 AI module procedures + live metrics, 130/130 tests passing
+
+## Phase 14 — AI Module Query UI + GPT-4o Token Usage Tracking
+- [x] Add neo_ai_usage table to drizzle/schema.ts (module, engine, promptTokens, completionTokens, totalTokens, costUsd, query, userId, createdAt)
+- [x] Run pnpm db:push to create table
+- [x] Update all 7 neoModules procedures to log token usage after each AI call
+- [x] Add getUsageStats procedure to neoModules router (total cost, tokens by engine, by module, by day)
+- [x] Build reusable AIModuleQueryPanel component (query input, submit, response card with dataSource + contextSummary)
+- [x] Wire AIModuleQueryPanel into FinancialModule/KPIModule (analyzeFinancial)
+- [x] Wire AIModuleQueryPanel into HRModule (businessIntelligence)
+- [x] Wire AIModuleQueryPanel into ProcurementModule (analyzeFinancial / criticalThinking)
+- [x] Wire AIModuleQueryPanel into QMSModule (qmsAnalysis)
+- [x] Wire AIModuleQueryPanel into NEOCore Modules tab (all 7 modules with module selector)
+- [x] Update neoModules.getMetrics to include real cost data from neo_ai_usage
+- [x] Update NEO Core metrics tab to show real cost per request, total spend, token breakdown
+- [x] Write vitest tests for usage tracking procedures (135/135 passing)
+- [x] Save checkpoint

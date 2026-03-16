@@ -304,3 +304,38 @@ export const approvalActions = mysqlTable("approval_actions", {
 });
 export type ApprovalAction = typeof approvalActions.$inferSelect;
 export type InsertApprovalAction = typeof approvalActions.$inferInsert;
+
+/**
+ * NEO AI Usage Log — Token and cost tracking for every AI call.
+ * Records which module, engine, user, token counts, and estimated cost.
+ * Used to replace hardcoded cost estimates on NEO Core metrics page with real data.
+ * Rows are append-only — never updated or deleted.
+ */
+export const neoAiUsage = mysqlTable("neo_ai_usage", {
+  id: int("id").autoincrement().primaryKey(),
+  // Which NEO module triggered this call
+  module: varchar("module", { length: 64 }).notNull(), // e.g. "financial", "risk", "decision", "critical", "qms", "business", "conversational", "chat"
+  // Which engine handled it
+  engine: mysqlEnum("engine", ["gpt", "manus", "hybrid"]).notNull(),
+  // OpenAI model name (e.g. "gpt-4o") or Manus model name
+  modelName: varchar("modelName", { length: 64 }).notNull().default("unknown"),
+  // Token counts (0 for Manus Forge calls where tokens are not exposed)
+  promptTokens: int("promptTokens").notNull().default(0),
+  completionTokens: int("completionTokens").notNull().default(0),
+  totalTokens: int("totalTokens").notNull().default(0),
+  // Estimated cost in USD (calculated at write time using known pricing)
+  // GPT-4o pricing as of 2025: $2.50/1M input tokens, $10.00/1M output tokens
+  // Source: https://openai.com/api/pricing/ — update if pricing changes
+  estimatedCostUsd: varchar("estimatedCostUsd", { length: 16 }).notNull().default("0.000000"),
+  // The first 200 chars of the user query (for debugging, not stored in full)
+  queryPreview: varchar("queryPreview", { length: 200 }),
+  // User who triggered the call (null for system calls)
+  userId: int("userId"),
+  userName: varchar("userName", { length: 128 }),
+  // Response latency in milliseconds
+  latencyMs: int("latencyMs").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type NeoAiUsage = typeof neoAiUsage.$inferSelect;
+export type InsertNeoAiUsage = typeof neoAiUsage.$inferInsert;

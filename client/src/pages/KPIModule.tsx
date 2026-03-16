@@ -10,6 +10,7 @@ import PortalLayout from "@/components/PortalLayout";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis } from "recharts";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { KPIBulkImport } from "@/components/ModuleBulkImport";
+import { AIModuleQueryPanel } from "@/components/AIModuleQueryPanel";
 
 const monthlyData = [
   { month: "Oct", monthAr: "أكت",    revenue: 1800, target: 2000, satisfaction: 91 },
@@ -106,6 +107,18 @@ export default function KPIModule() {
         </div>
       </div>
 
+      {/* AI KPI Intelligence Panel */}
+      <div className="px-6 pb-6">
+        <AIModuleQueryPanel
+          module="business"
+          title={t("KPI Intelligence — Business Management AI", "ذكاء مؤشرات الأداء")}
+          extraInput={{ focus: "kpi" }}
+          placeholder={t(
+            "e.g. Which KPIs are off-track? What is our overall performance against targets?",
+            "مثال: ما هي مؤشرات الأداء المتأخرة؟"
+          )}
+        />
+      </div>
       <KPIBulkImport open={bulkOpen} onClose={() => setBulkOpen(false)} />
     </PortalLayout>
   );

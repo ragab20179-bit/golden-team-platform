@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
+import { AIModuleQueryPanel } from "@/components/AIModuleQueryPanel";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -149,6 +150,18 @@ export default function ERPModule() {
               </button>
             ))}
           </div>
+
+      {/* AI Module Query Panel */}
+      <div className="px-6 pb-6">
+        <AIModuleQueryPanel
+          module="decision"
+          title={t("ERP Decision Intelligence — GPT-4o", "ذكاء قرارات ERP")}
+          placeholder={t(
+            "e.g. What ASTRA AMG policy rules apply to this procurement? Analyze recent DENY decisions.",
+            "مثال: ما قواعد سياسة ASTRA AMG التي تنطبق على هذه المشتريات؟"
+          )}
+        />
+      </div>
         </div>
       </div>
     </PortalLayout>
