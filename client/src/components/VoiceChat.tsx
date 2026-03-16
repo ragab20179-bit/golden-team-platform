@@ -42,7 +42,7 @@ import {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type VoiceId = "alloy" | "echo" | "shimmer" | "nova" | "coral" | "fable" | "onyx";
+type VoiceId = "alloy" | "ash" | "ballad" | "coral" | "echo" | "sage" | "shimmer" | "verse" | "marin" | "cedar";
 type Language = "auto" | "en" | "ar";
 type ConnectionState = "idle" | "connecting" | "connected" | "disconnecting" | "error";
 
@@ -64,13 +64,16 @@ interface FunctionCallEntry {
 // ─── Voice Selector ───────────────────────────────────────────────────────────
 
 const VOICES: { id: VoiceId; label: string; description: string }[] = [
-  { id: "nova", label: "Nova", description: "Warm, professional — recommended" },
-  { id: "alloy", label: "Alloy", description: "Neutral, balanced" },
-  { id: "echo", label: "Echo", description: "Clear, precise" },
-  { id: "shimmer", label: "Shimmer", description: "Soft, calm" },
+  { id: "alloy", label: "Alloy", description: "Neutral, balanced — recommended" },
+  { id: "ash", label: "Ash", description: "Clear, precise" },
+  { id: "ballad", label: "Ballad", description: "Expressive, narrative" },
   { id: "coral", label: "Coral", description: "Friendly, energetic" },
-  { id: "fable", label: "Fable", description: "Expressive, narrative" },
-  { id: "onyx", label: "Onyx", description: "Deep, authoritative" },
+  { id: "echo", label: "Echo", description: "Deep, authoritative" },
+  { id: "sage", label: "Sage", description: "Calm, thoughtful" },
+  { id: "shimmer", label: "Shimmer", description: "Soft, warm" },
+  { id: "verse", label: "Verse", description: "Versatile, professional" },
+  { id: "marin", label: "Marin", description: "Smooth, conversational" },
+  { id: "cedar", label: "Cedar", description: "Rich, authoritative" },
 ];
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -82,7 +85,7 @@ interface VoiceChatProps {
 export function VoiceChat({ onClose }: VoiceChatProps) {
   // ── State ──
   const [connectionState, setConnectionState] = useState<ConnectionState>("idle");
-  const [selectedVoice, setSelectedVoice] = useState<VoiceId>("nova");
+  const [selectedVoice, setSelectedVoice] = useState<VoiceId>("alloy");
   const [selectedLanguage, setSelectedLanguage] = useState<Language>("auto");
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false); // AI is speaking
