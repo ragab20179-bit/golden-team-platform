@@ -209,3 +209,16 @@
 - [ ] Write vitest tests for all new procedures
 - [ ] Save checkpoint
 - [ ] Update Drive Vault with GT-NEO-015 document
+
+## Phase 16 — NEO Voice (Real-Time WebRTC Voice Chat)
+
+- [ ] Add `trpc.neo.realtimeToken` endpoint — mints ephemeral OpenAI token server-side
+- [ ] Build `buildVoiceContext()` helper — queries DB and builds NEO system prompt with live company data
+- [ ] Build `VoiceChat.tsx` component — WebRTC peer connection, mic capture, VAD, live transcript
+- [ ] Add voice selector (alloy, echo, shimmer, nova, coral) to VoiceChat UI
+- [ ] Add function-calling tools to voice session (raise request, query HR, check KPI, search vault)
+- [ ] Integrate VoiceChat into NEO Chat page as Voice Mode toggle button
+- [ ] Log voice session token usage to `neo_ai_usage` table
+- [ ] Write vitest tests for token endpoint and context builder
+- [ ] Save checkpoint
+- [ ] Update Drive Vault with Phase 16 summary
