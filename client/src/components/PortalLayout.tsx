@@ -32,6 +32,7 @@ const NAV_ITEMS_EN = [
   { key: "meetings",      icon: Mic,             path: "/portal/meetings",     color: "text-blue-300" },
   { key: "neoCore",       icon: Cpu,             path: "/portal/neo-core",     color: "text-violet-300" },
   { key: "vault",         icon: HardDrive,       path: "/portal/vault",        color: "text-amber-300" },
+  { key: "neoChat",       icon: MessageSquare,   path: "/portal/neo-chat",     color: "text-green-400" },
 ];
 
 const NAV_LABELS: Record<string, { en: string; ar: string }> = {
@@ -49,6 +50,7 @@ const NAV_LABELS: Record<string, { en: string; ar: string }> = {
   meetings:    { en: "ASTRA Meetings", ar: "اجتماعات أسترا" },
   neoCore:     { en: "NEO AI Core",    ar: "محرك NEO الذكي" },
   vault:       { en: "Drive Vault",    ar: "مستودع الملفات" },
+  neoChat:     { en: "NEO Chat",        ar: "محادثة NEO" },
 };
 
 // NAV_ITEMS exported from navItems.ts to avoid Fast Refresh issues

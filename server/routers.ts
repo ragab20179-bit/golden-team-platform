@@ -6,6 +6,7 @@ import { z } from "zod";
 import { vaultRouter } from "./routers/vault";
 import { universalUploadRouter } from "./routers/universalUpload";
 import { modulesRouter } from "./routers/modules";
+import { neoChatRouter } from "./routers/neoChat";
 import {
   insertAstraDecision,
   getAstraDecisions,
@@ -130,8 +131,10 @@ export const appRouter = router({
 
   // ─── Universal Chunked Upload — All modules ────────────────────────────────
   universalUpload: universalUploadRouter,
-
-  // ─── Module Data — HR, KPI, Procurement bulk import + list ─────────────────
+  // ─── Module Data — HR, KPI, Procurement bulk import + list ─────────────────────
   modules: modulesRouter,
+
+  // ─── NEO Chat/Intercom — M1 of Phase 2 ─────────────────────────────────────────────
+  neoChat: neoChatRouter,
 });
 export type AppRouter = typeof appRouter;
