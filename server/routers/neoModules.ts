@@ -737,6 +737,60 @@ ACCURACY POLICY: Only state facts you can verify. If unsure, say "I cannot confi
       };
     }),
 
+  /**
+   * Returns per-day token usage and cost for the last N days (for chart rendering).
+   * Groups by calendar date (UTC) and engine.
+   */
+  getDailyUsage: protectedProcedure
+    .input(z.object({ days: z.number().int().min(1).max(90).default(30) }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      const since = new Date();
+      since.setUTCDate(since.getUTCDate() - input.days);
+      since.setUTCHours(0, 0, 0, 0);
+
+      const rows = await db
+        .select({
+          day: sql<string>`DATE(createdAt)`,
+          engine: neoAiUsage.engine,
+          calls: sql<number>`count(*)`,
+          tokens: sql<number>`sum(totalTokens)`,
+          costUsd: sql<string>`sum(CAST(estimatedCostUsd AS DECIMAL(12,6)))`,
+        })
+        .from(neoAiUsage)
+        .where(gte(neoAiUsage.createdAt, since))
+        .groupBy(sql`DATE(createdAt)`, neoAiUsage.engine)
+        .orderBy(sql`DATE(createdAt)`);
+
+      return rows.map(r => ({
+        day: r.day,
+        engine: r.engine,
+        calls: Number(r.calls),
+        tokens: Number(r.tokens),
+        costUsd: parseFloat(r.costUsd ?? "0"),
+      }));
+    }),
+
+  /**
+   * Returns the last N individual AI calls for the recent-calls log table.
+   */
+  getRecentCalls: protectedProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(200).default(50) }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+
+      const rows = await db
+        .select()
+        .from(neoAiUsage)
+        .orderBy(desc(neoAiUsage.createdAt))
+        .limit(input.limit);
+
+      return rows;
+    }),
+
   // ── Live Metrics ──────────────────────────────────────────────────────────
   /**
    * Returns real DB counts for the NEO Core dashboard metrics strip.
