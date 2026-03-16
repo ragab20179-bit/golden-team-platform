@@ -246,3 +246,14 @@
 - [ ] Update Employee Portal button on public site to show Google option
 - [ ] Write vitest tests for Google auth handler
 - [ ] Save checkpoint and update Drive Vault
+
+## Phase 19 — Voice API Bug Fix
+- [x] Diagnose voice failure: OpenAI removed nova/fable/onyx from Realtime API voice list
+- [x] Update server/routers/neoVoice.ts: voice enum → alloy/ash/ballad/coral/echo/sage/shimmer/verse/marin/cedar
+- [x] Update client/src/components/VoiceChat.tsx: VOICES array updated, default changed to alloy
+- [x] Update server/neoVoice.test.ts: replace nova with alloy in all 6 test cases
+- [x] Verify live: ephemeral token minted successfully (sess_DK1q1ZfQhO5SiVuJ5Livt, model gpt-4o-realtime-preview)
+- [x] 154/154 tests passing, 0 TypeScript errors
+
+## Last Updated
+2026-03-16 09:05 UTC — Phase 19 complete, voice API fully operational with updated voice list

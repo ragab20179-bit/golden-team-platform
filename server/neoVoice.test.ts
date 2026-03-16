@@ -92,16 +92,16 @@ describe("neoVoiceRouter", () => {
           id: "sess_abc123",
           client_secret: { value: "ek_live_test_token", expires_at: 1800000000 },
           model: "gpt-4o-realtime-preview",
-          voice: "nova",
+          voice: "alloy",
         }),
       });
 
-      const result = await caller.getEphemeralToken({ voice: "nova", language: "en" });
+      const result = await caller.getEphemeralToken({ voice: "alloy", language: "en" });
 
       expect(result.ephemeralToken).toBe("ek_live_test_token");
       expect(result.sessionId).toBe("sess_abc123");
       expect(result.model).toBe("gpt-4o-realtime-preview");
-      expect(result.voice).toBe("nova");
+      expect(result.voice).toBe("alloy");
       expect(typeof result.contextSummary).toBe("string");
       expect(result.expiresAt).toBe(1800000000);
     });
@@ -160,7 +160,7 @@ describe("neoVoiceRouter", () => {
       });
 
       await expect(
-        caller.getEphemeralToken({ voice: "nova", language: "en" })
+        caller.getEphemeralToken({ voice: "alloy", language: "en" })
       ).rejects.toThrow("Failed to mint ephemeral token");
     });
 
@@ -171,11 +171,11 @@ describe("neoVoiceRouter", () => {
           id: "sess_ar",
           client_secret: { value: "ek_ar", expires_at: 1800000000 },
           model: "gpt-4o-realtime-preview",
-          voice: "nova",
+          voice: "alloy",
         }),
       });
 
-      await caller.getEphemeralToken({ voice: "nova", language: "ar" });
+      await caller.getEphemeralToken({ voice: "alloy", language: "ar" });
 
       const callArgs = mockFetch.mock.calls[0];
       const body = JSON.parse(callArgs[1].body);

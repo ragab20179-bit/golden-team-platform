@@ -265,8 +265,8 @@ export const neoVoiceRouter = router({
     .input(
       z.object({
         voice: z
-          .enum(["alloy", "echo", "shimmer", "nova", "coral", "fable", "onyx"])
-          .default("nova"),
+          .enum(["alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse", "marin", "cedar"])
+          .default("alloy"),
         language: z.enum(["en", "ar", "auto"]).default("auto"),
       })
     )
