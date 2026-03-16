@@ -154,3 +154,18 @@
 
 ## Last Updated
 2026-03-16 02:10 UTC — Phase 12 complete, Request & Approval Engine M3 delivered, 115/115 tests passing
+
+## Phase 13 — Real GPT-4 Integration + 7 AI Module Procedures + Live Metrics
+- [x] Add OPENAI_API_KEY secret
+- [x] Create server/_core/gpt.ts — OpenAI GPT-4o direct helper
+- [x] Update server/_core/env.ts to expose OPENAI_API_KEY
+- [x] Update neoChat router to call invokeGPT for gpt/hybrid routing decisions
+- [x] Build server/routers/neoModules.ts with 7 AI module procedures
+- [x] Add neoModules.getMetrics procedure (real DB counts)
+- [x] Wire neoModules router into appRouter
+- [x] Update NEOCore.tsx to fetch live metrics from trpc.neoModules.getMetrics
+- [x] Write vitest tests for all new procedures (15 tests)
+- [x] Save checkpoint
+
+## Last Updated
+2026-03-16 07:35 UTC — Phase 13 complete, real GPT-4o integration + 7 AI module procedures + live metrics, 130/130 tests passing

@@ -8,6 +8,7 @@ import { universalUploadRouter } from "./routers/universalUpload";
 import { modulesRouter } from "./routers/modules";
 import { neoChatRouter } from "./routers/neoChat";
 import { requestsRouter } from "./routers/requests";
+import { neoModulesRouter } from "./routers/neoModules";
 import {
   insertAstraDecision,
   getAstraDecisions,
@@ -140,5 +141,8 @@ export const appRouter = router({
 
   // ─── Request & Approval Engine — M3 of Phase 2 ──────────────────────────────────────
   requests: requestsRouter,
+
+  // ─── NEO AI Modules — 7 Specialized AI Engines + Live Metrics ─────────────────────────
+  neoModules: neoModulesRouter,
 });
 export type AppRouter = typeof appRouter;
