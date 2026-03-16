@@ -43,6 +43,13 @@
       "when": 1773639168269,
       "tag": "0005_demonic_storm",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1773640465095,
+      "tag": "0006_clumsy_proudstar",
+      "breakpoints": true
     }
   ]
 }

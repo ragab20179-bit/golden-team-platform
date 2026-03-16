@@ -140,3 +140,17 @@
 
 ## Last Updated
 2026-03-16 01:48 UTC — Phase 11 complete, NEO Chat M1 delivered, 88/88 tests passing
+
+## Phase 12 — Request & Approval Engine (M3 of Phase 2)
+- [x] Add requests, approval_steps, approval_actions tables to DB schema and push migration
+- [x] Build server/routers/requests.ts — tRPC procedures (submitRequest, getMyRequests, getPendingApprovals, approveRequest, rejectRequest, cancelRequest, getRequestById, getStats)
+- [x] Integrate ASTRA AMG authority matrix — auto-assign approvers based on request type + amount (≤10K/≤50K/≤500K SAR) + board threshold enforcement
+- [x] Build Requests.tsx page — submit dialog, my requests list, pending approvals tab, detail dialog, approve/reject dialogs
+- [x] Add /portal/requests route in App.tsx
+- [x] Add Requests sidebar nav item to PortalLayout (bilingual EN/AR)
+- [x] Full bilingual Arabic/English support in all request/approval UI
+- [x] Write 27 vitest tests (request numbers, approval chains, ASTRA policy enforcement, validation)
+- [x] 115 total tests passing, 0 TypeScript errors
+
+## Last Updated
+2026-03-16 02:10 UTC — Phase 12 complete, Request & Approval Engine M3 delivered, 115/115 tests passing

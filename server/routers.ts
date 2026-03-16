@@ -7,6 +7,7 @@ import { vaultRouter } from "./routers/vault";
 import { universalUploadRouter } from "./routers/universalUpload";
 import { modulesRouter } from "./routers/modules";
 import { neoChatRouter } from "./routers/neoChat";
+import { requestsRouter } from "./routers/requests";
 import {
   insertAstraDecision,
   getAstraDecisions,
@@ -136,5 +137,8 @@ export const appRouter = router({
 
   // ─── NEO Chat/Intercom — M1 of Phase 2 ─────────────────────────────────────────────
   neoChat: neoChatRouter,
+
+  // ─── Request & Approval Engine — M3 of Phase 2 ──────────────────────────────────────
+  requests: requestsRouter,
 });
 export type AppRouter = typeof appRouter;

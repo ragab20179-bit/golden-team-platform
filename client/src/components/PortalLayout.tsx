@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Users, Database, UserCheck, BarChart3,
   ShoppingCart, FileCheck, Scale, MessageSquare, Shield,
   ScrollText, Brain, ChevronLeft, ChevronRight, LogOut,
-  Bell, Settings, Menu, Mic, Cpu, Languages, ShieldAlert, HardDrive
+  Bell, Settings, Menu, Mic, Cpu, Languages, ShieldAlert, HardDrive, ClipboardList
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +33,7 @@ const NAV_ITEMS_EN = [
   { key: "neoCore",       icon: Cpu,             path: "/portal/neo-core",     color: "text-violet-300" },
   { key: "vault",         icon: HardDrive,       path: "/portal/vault",        color: "text-amber-300" },
   { key: "neoChat",       icon: MessageSquare,   path: "/portal/neo-chat",     color: "text-green-400" },
+  { key: "requests",     icon: ClipboardList,   path: "/portal/requests",     color: "text-yellow-400" },
 ];
 
 const NAV_LABELS: Record<string, { en: string; ar: string }> = {
@@ -51,6 +52,7 @@ const NAV_LABELS: Record<string, { en: string; ar: string }> = {
   neoCore:     { en: "NEO AI Core",    ar: "محرك NEO الذكي" },
   vault:       { en: "Drive Vault",    ar: "مستودع الملفات" },
   neoChat:     { en: "NEO Chat",        ar: "محادثة NEO" },
+  requests:    { en: "Requests",         ar: "الطلبات والموافقات" },
 };
 
 // NAV_ITEMS exported from navItems.ts to avoid Fast Refresh issues
