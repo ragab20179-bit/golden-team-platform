@@ -9,6 +9,7 @@ import { modulesRouter } from "./routers/modules";
 import { neoChatRouter } from "./routers/neoChat";
 import { requestsRouter } from "./routers/requests";
 import { neoModulesRouter } from "./routers/neoModules";
+import { neoVoiceRouter } from "./routers/neoVoice";
 import {
   insertAstraDecision,
   getAstraDecisions,
@@ -144,5 +145,6 @@ export const appRouter = router({
 
   // ─── NEO AI Modules — 7 Specialized AI Engines + Live Metrics ─────────────────────────
   neoModules: neoModulesRouter,
+  neoVoice: neoVoiceRouter,
 });
 export type AppRouter = typeof appRouter;

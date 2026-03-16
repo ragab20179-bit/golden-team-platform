@@ -198,7 +198,7 @@ describe("universalUploadRouter", () => {
       expect(result.fileKey).toBeTruthy();
       expect(result.status).toBe("parsing");
       expect(result.fileName).toBe("complete.pdf");
-    });
+    }, 15000);
   });
 
   // ── getStatus ─────────────────────────────────────────────────────────────

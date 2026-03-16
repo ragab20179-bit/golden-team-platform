@@ -25,9 +25,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import {
   MessageSquare, Plus, Send, Paperclip, X, Bot, User,
   Zap, Brain, Layers, Archive, Loader2, ChevronRight,
-  Cpu, Sparkles, AlertCircle,
+  Cpu, Sparkles, AlertCircle, Mic,
 } from "lucide-react";
 import { Streamdown } from "streamdown";
+import { VoiceChat } from "@/components/VoiceChat";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -82,6 +83,7 @@ export default function NEOChat() {
 
   // State
   const [activeConvId, setActiveConvId] = useState<number | null>(null);
+  const [voiceModeOpen, setVoiceModeOpen] = useState(false);
   const [messageInput, setMessageInput] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -215,7 +217,14 @@ export default function NEOChat() {
 
   return (
     <TooltipProvider>
-      <div className="flex h-[calc(100vh-4rem)] bg-[#05080F] text-white overflow-hidden" dir={isRTL ? "rtl" : "ltr"}>
+      <div className="flex h-[calc(100vh-4rem)] bg-[#05080F] text-white overflow-hidden relative" dir={isRTL ? "rtl" : "ltr"}>
+
+        {/* ── Voice Mode Panel (slide-in overlay) ── */}
+        {voiceModeOpen && (
+          <div className="absolute inset-y-0 right-0 w-80 z-30 shadow-2xl shadow-black/50">
+            <VoiceChat onClose={() => setVoiceModeOpen(false)} />
+          </div>
+        )}
 
         {/* ── Sidebar ── */}
         <div className="w-72 flex-shrink-0 border-r border-white/10 flex flex-col bg-[#0A0F1E]">
@@ -366,13 +375,36 @@ export default function NEOChat() {
                     </div>
                   </div>
                 </div>
-                {activeConv.lastEngine && (
-                  <Badge className={`text-[10px] border ${ENGINE_CONFIG[activeConv.lastEngine as keyof typeof ENGINE_CONFIG]?.colorClass}`}>
-                    {isRTL
-                      ? ENGINE_CONFIG[activeConv.lastEngine as keyof typeof ENGINE_CONFIG]?.labelAr
-                      : ENGINE_CONFIG[activeConv.lastEngine as keyof typeof ENGINE_CONFIG]?.labelEn}
-                  </Badge>
-                )}
+                <div className="flex items-center gap-2">
+                  {activeConv.lastEngine && (
+                    <Badge className={`text-[10px] border ${ENGINE_CONFIG[activeConv.lastEngine as keyof typeof ENGINE_CONFIG]?.colorClass}`}>
+                      {isRTL
+                        ? ENGINE_CONFIG[activeConv.lastEngine as keyof typeof ENGINE_CONFIG]?.labelAr
+                        : ENGINE_CONFIG[activeConv.lastEngine as keyof typeof ENGINE_CONFIG]?.labelEn}
+                    </Badge>
+                  )}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className={`h-8 w-8 p-0 transition-colors ${
+                          voiceModeOpen
+                            ? "text-amber-400 bg-amber-500/20 hover:bg-amber-500/30"
+                            : "text-white/40 hover:text-amber-400 hover:bg-amber-500/10"
+                        }`}
+                        onClick={() => setVoiceModeOpen(v => !v)}
+                      >
+                        <Mic className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {voiceModeOpen
+                        ? t("Close Voice Mode", "إغلاق وضع الصوت")
+                        : t("Open Voice Mode", "فتح وضع الصوت")}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </div>
 
               {/* Messages */}
