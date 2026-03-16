@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
+import { AIModuleQueryPanel } from "@/components/AIModuleQueryPanel";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const contracts = [
@@ -142,6 +143,18 @@ export default function LegalModule() {
               </div>
             ))}
           </div>
+
+      {/* AI Module Query Panel */}
+      <div className="px-6 pb-6">
+        <AIModuleQueryPanel
+          module="critical"
+          title={t("Legal Intelligence — Critical Thinking AI", "ذكاء الشؤون القانونية")}
+          placeholder={t(
+            "e.g. Analyze risk in our expiring contracts. What procurement items need legal review?",
+            "مثال: حلل المخاطر في العقود المنتهية. ما بنود المشتريات التي تحتاج مراجعة قانونية؟"
+          )}
+        />
+      </div>
         </div>
       </div>
     </PortalLayout>

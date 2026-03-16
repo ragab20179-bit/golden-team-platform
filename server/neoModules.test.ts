@@ -100,16 +100,11 @@ describe("neoModules.getMetrics — response shape", () => {
       procurementItems: {},
       vaultFiles: {},
       astraPolicyRules: {},
+      neoAiUsage: {},  // required by getMetrics cost queries
     }));
 
     vi.doMock("./db", () => ({
-      getDb: vi.fn().mockResolvedValue({
-        select: vi.fn().mockReturnValue({
-          from: vi.fn().mockReturnValue({
-            where: vi.fn().mockResolvedValue([{ count: 0 }]),
-          }),
-        }),
-      }),
+      getDb: vi.fn().mockResolvedValue(makeUsageDb()),
     }));
 
     const { neoModulesRouter } = await import("./routers/neoModules");
@@ -153,16 +148,11 @@ describe("neoModules.getMetrics — response shape", () => {
       procurementItems: {},
       vaultFiles: {},
       astraPolicyRules: {},
+      neoAiUsage: {},  // required by getMetrics cost queries
     }));
 
     vi.doMock("./db", () => ({
-      getDb: vi.fn().mockResolvedValue({
-        select: vi.fn().mockReturnValue({
-          from: vi.fn().mockReturnValue({
-            where: vi.fn().mockResolvedValue([{ count: 0 }]),
-          }),
-        }),
-      }),
+      getDb: vi.fn().mockResolvedValue(makeUsageDb()),
     }));
 
     const { neoModulesRouter } = await import("./routers/neoModules");
@@ -178,19 +168,19 @@ describe("neoModules.getMetrics — response shape", () => {
 // ─── Input validation tests ───────────────────────────────────────────────────
 
 describe("neoModules — input validation", () => {
-  it("analyzeFinancial rejects empty query", async () => {
+  it("analyzeFinancials rejects empty query", async () => {
     const { neoModulesRouter } = await import("./routers/neoModules");
     const caller = neoModulesRouter.createCaller(createAuthContext());
     await expect(
-      caller.analyzeFinancial({ query: "" })
+      caller.analyzeFinancials({ query: "" })
     ).rejects.toThrow();
   });
 
-  it("analyzeFinancial rejects query over 2000 chars", async () => {
+  it("analyzeFinancials rejects query over 2000 chars", async () => {
     const { neoModulesRouter } = await import("./routers/neoModules");
     const caller = neoModulesRouter.createCaller(createAuthContext());
     await expect(
-      caller.analyzeFinancial({ query: "x".repeat(2001) })
+      caller.analyzeFinancials({ query: "x".repeat(2001) })
     ).rejects.toThrow();
   });
 
@@ -216,7 +206,9 @@ describe("neoModules — input validation", () => {
   it("chat procedure rejects empty query", async () => {
     const { neoModulesRouter } = await import("./routers/neoModules");
     const caller = neoModulesRouter.createCaller(createAuthContext());
+    // chat uses 'query' field
     await expect(
+      // @ts-expect-error intentionally passing empty string
       caller.chat({ query: "", language: "en" })
     ).rejects.toThrow();
   });
@@ -260,5 +252,190 @@ describe("neoChat routing — engine selection", () => {
     const lower = testQuery.toLowerCase();
     const isAnalytical = ANALYTICAL_KEYWORDS.some(kw => lower.includes(kw));
     expect(isAnalytical).toBe(false);
+  });
+});
+
+// ─── getUsageStats shape test ──────────────────────────────────────────────────
+
+// Helper: creates a fully chainable Drizzle mock that resolves to `rows` at any point
+function makeChainableDb(rows: unknown[] = []) {
+  const chain: Record<string, unknown> = {};
+  const resolve = vi.fn().mockResolvedValue(rows);
+  // Every method returns the same chain object, and the chain is also thenable
+  const methods = ["from", "where", "orderBy", "limit", "groupBy", "having", "leftJoin", "innerJoin"];
+  for (const m of methods) {
+    chain[m] = vi.fn().mockReturnValue(chain);
+  }
+  // Make the chain itself a Promise (thenable)
+  chain.then = resolve.getMockImplementation();
+  // Also allow direct await by making it a real promise
+  Object.assign(chain, Promise.resolve(rows));
+  // Override: make the chain awaitable by wrapping in a Proxy
+  return new Proxy(chain, {
+    get(target, prop) {
+      if (prop === "then" || prop === "catch" || prop === "finally") {
+        return Promise.resolve(rows)[prop as "then"];
+      }
+      return target[prop as string] ?? vi.fn().mockReturnValue(new Proxy(chain, this));
+    },
+  });
+}
+
+function makeUsageDb() {
+  // Creates a fully chainable Drizzle-like mock that supports:
+  // .select().from() — direct await
+  // .select().from().where() — await
+  // .select().from().orderBy().limit() — await
+  // .select().from().limit() — await
+  const makeFromResult = () => ({
+    where: vi.fn().mockResolvedValue([{ count: 0 }]),
+    orderBy: vi.fn().mockImplementation(() => ({
+      limit: vi.fn().mockResolvedValue([]),
+    })),
+    limit: vi.fn().mockResolvedValue([]),
+    // direct await (no where/orderBy/limit)
+    then: (resolve: (v: unknown) => void, _reject?: unknown) => Promise.resolve([{ count: 0 }]).then(resolve),
+    catch: (fn: (e: unknown) => void) => Promise.resolve([{ count: 0 }]).catch(fn),
+    finally: (fn: () => void) => Promise.resolve([{ count: 0 }]).finally(fn),
+  });
+  return {
+    select: vi.fn().mockReturnValue({
+      from: vi.fn().mockImplementation(() => makeFromResult()),
+    }),
+    insert: vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) }),
+  };
+}
+
+describe("neoModules.getUsageStats — response shape", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it("returns all required usage fields with correct types", async () => {
+    // Mock DB to return empty usage table with full chain support
+    vi.doMock("../drizzle/schema", () => ({
+      neoAiUsage: {},
+      neoMessages: {},
+      neoConversations: {},
+      requests: {},
+      astraDecisions: {},
+      hrEmployees: {},
+      kpiTargets: {},
+      procurementItems: {},
+      vaultFiles: {},
+      astraPolicyRules: {},
+    }));
+
+    vi.doMock("./db", () => ({
+      getDb: vi.fn().mockResolvedValue(makeUsageDb()),
+    }));
+
+    const { neoModulesRouter } = await import("./routers/neoModules");
+    const caller = neoModulesRouter.createCaller(createAuthContext());
+    const stats = await caller.getUsageStats();
+
+    // Verify all required fields are present
+    expect(stats).toHaveProperty("totalCalls");
+    expect(stats).toHaveProperty("todayCalls");
+    expect(stats).toHaveProperty("totalTokens");
+    expect(stats).toHaveProperty("totalCostUsd");
+    expect(stats).toHaveProperty("callsByModule");
+    expect(stats).toHaveProperty("costByModule");
+    expect(stats).toHaveProperty("pricingNote");
+
+    // Type checks
+    expect(typeof stats.totalCalls).toBe("number");
+    expect(typeof stats.todayCalls).toBe("number");
+    expect(typeof stats.totalTokens).toBe("number");
+    expect(typeof stats.totalCostUsd).toBe("string"); // formatted as string e.g. "0.000000"
+    expect(typeof stats.callsByModule).toBe("object");
+    expect(typeof stats.costByModule).toBe("object");
+    expect(typeof stats.pricingNote).toBe("string");
+  });
+
+  it("returns zero counts when neo_ai_usage table is empty", async () => {
+    vi.doMock("../drizzle/schema", () => ({
+      neoAiUsage: {},
+      neoMessages: {},
+      neoConversations: {},
+      requests: {},
+      astraDecisions: {},
+      hrEmployees: {},
+      kpiTargets: {},
+      procurementItems: {},
+      vaultFiles: {},
+      astraPolicyRules: {},
+    }));
+
+    vi.doMock("./db", () => ({
+      getDb: vi.fn().mockResolvedValue(makeUsageDb()),
+    }));
+
+    const { neoModulesRouter } = await import("./routers/neoModules");
+    const caller = neoModulesRouter.createCaller(createAuthContext());
+    const stats = await caller.getUsageStats();
+
+    expect(stats.totalCalls).toBe(0);
+    expect(stats.todayCalls).toBe(0);
+    expect(stats.totalTokens).toBe(0);
+    expect(stats.totalCostUsd).toBe("0.000000");
+  });
+
+  it("pricingNote references openai.com/api/pricing as the source", async () => {
+    vi.doMock("../drizzle/schema", () => ({
+      neoAiUsage: {},
+      neoMessages: {},
+      neoConversations: {},
+      requests: {},
+      astraDecisions: {},
+      hrEmployees: {},
+      kpiTargets: {},
+      procurementItems: {},
+      vaultFiles: {},
+      astraPolicyRules: {},
+    }));
+
+    vi.doMock("./db", () => ({
+      getDb: vi.fn().mockResolvedValue(makeUsageDb()),
+    }));
+
+    const { neoModulesRouter } = await import("./routers/neoModules");
+    const caller = neoModulesRouter.createCaller(createAuthContext());
+    const stats = await caller.getUsageStats();
+
+    // Per AI Response Policy: cost figures must cite their source
+    expect(stats.pricingNote).toContain("openai.com");
+  });
+});
+
+// ─── AIModuleQueryPanel tRPC contract tests ───────────────────────────────────
+
+describe("neoModules — AIModuleQueryPanel tRPC contracts", () => {
+  it("all 7 module procedures exist on the router", async () => {
+    const { neoModulesRouter } = await import("./routers/neoModules");
+    // Verify all 7 AI module procedures are registered (using actual procedure names from neoModules.ts)
+    const procedures = Object.keys(neoModulesRouter._def.procedures);
+    expect(procedures).toContain("analyzeFinancials");   // Financial AI
+    expect(procedures).toContain("assessRisk");           // Risk Management AI
+    expect(procedures).toContain("makeDecision");         // Decision-Making AI
+    expect(procedures).toContain("analyzeProblems");      // Critical Thinking AI
+    expect(procedures).toContain("qmsAnalysis");          // QMS AI
+    expect(procedures).toContain("businessIntelligence"); // Business Management AI
+    expect(procedures).toContain("chat");                 // Conversational AI
+    expect(procedures).toContain("getMetrics");
+    expect(procedures).toContain("getUsageStats");
+  });
+
+  it("all AI module procedures require authentication (protectedProcedure)", async () => {
+    // Verify that calling without auth context throws UNAUTHORIZED
+    const { neoModulesRouter } = await import("./routers/neoModules");
+    const unauthCaller = neoModulesRouter.createCaller({
+      user: null,
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: { clearCookie: vi.fn(), cookie: vi.fn() } as unknown as TrpcContext["res"],
+    });
+    await expect(unauthCaller.analyzeFinancials({ query: "test" })).rejects.toThrow();
+    await expect(unauthCaller.getMetrics()).rejects.toThrow();
+    await expect(unauthCaller.getUsageStats()).rejects.toThrow();
   });
 });

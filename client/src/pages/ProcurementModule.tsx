@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ProcurementBulkImport } from "@/components/ModuleBulkImport";
+import { AIModuleQueryPanel } from "@/components/AIModuleQueryPanel";
 
 const pos = [
   { id: "PO-2026-041", vendor: "Tech Supply Arabia",  vendorAr: "تك سبلاي العربية",    items: "IT Equipment",      itemsAr: "معدات تقنية المعلومات",  amount: "SAR 145,000", amountAr: "145,000 ريال", status: "Pending Approval", statusAr: "بانتظار الموافقة", date: "Mar 12", dateAr: "12 مارس" },
@@ -143,6 +144,18 @@ export default function ProcurementModule() {
         </div>
       </div>
 
+
+      {/* AI Financial Analysis Panel */}
+      <div className="px-6 pb-6">
+        <AIModuleQueryPanel
+          module="financial"
+          title={t("Financial Intelligence — GPT-4o", "ذكاء مالي — GPT-4o")}
+          placeholder={t(
+            "e.g. What is total spend by category? Which vendors have the highest pending amounts?",
+            "مثال: ما هو إجمالي الإنفاق حسب الفئة؟"
+          )}
+        />
+      </div>
       <ProcurementBulkImport open={bulkOpen} onClose={() => setBulkOpen(false)} />
     </PortalLayout>
   );

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
+import { AIModuleQueryPanel } from "@/components/AIModuleQueryPanel";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const ncrs = [
@@ -132,6 +133,18 @@ export default function QMSModule() {
               ))}
             </div>
           </div>
+
+      {/* AI Module Query Panel */}
+      <div className="px-6 pb-6">
+        <AIModuleQueryPanel
+          module="qms"
+          title={t("QMS Intelligence — ISO 9001 AI", "ذكاء نظام إدارة الجودة")}
+          placeholder={t(
+            "e.g. What ISO 9001 clause applies to our supplier evaluation? Review our QMS documents.",
+            "مثال: ما بند ISO 9001 الذي ينطبق على تقييم الموردين؟"
+          )}
+        />
+      </div>
         </div>
       </div>
     </PortalLayout>

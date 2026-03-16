@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
+import { AIModuleQueryPanel } from "@/components/AIModuleQueryPanel";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -123,6 +124,18 @@ export default function CRMModule() {
               ))}
             </div>
           </div>
+
+      {/* AI Module Query Panel */}
+      <div className="px-6 pb-6">
+        <AIModuleQueryPanel
+          module="business"
+          title={t("CRM Intelligence — Business Management AI", "ذكاء إدارة علاقات العملاء")}
+          placeholder={t(
+            "e.g. Analyze our client portfolio. What business opportunities should we prioritize?",
+            "مثال: حلل محفظة عملائنا. ما الفرص التجارية التي يجب إعطاؤها الأولوية؟"
+          )}
+        />
+      </div>
         </div>
       </div>
     </PortalLayout>

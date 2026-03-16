@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { HRBulkImport } from "@/components/ModuleBulkImport";
+import { AIModuleQueryPanel } from "@/components/AIModuleQueryPanel";
 
 const employees = [
   { name: "Ahmed Al-Rashidi",  nameAr: "أحمد الراشدي",   role: "Senior IT Engineer",    roleAr: "مهندس تقنية معلومات أول",  dept: "IT Solutions",  deptAr: "حلول تقنية المعلومات", status: "Active",   statusAr: "نشط",   avatar: "AA" },
@@ -162,6 +163,18 @@ export default function HRModule() {
         </div>
       </div>
 
+      {/* AI Business Intelligence Panel — HR Focus */}
+      <div className="px-6 pb-6">
+        <AIModuleQueryPanel
+          module="business"
+          title={t("HR Intelligence — Business Management AI", "ذكاء الموارد البشرية")}
+          extraInput={{ focus: "hr" }}
+          placeholder={t(
+            "e.g. What is our headcount by department? Analyze salary distribution across teams.",
+            "مثال: ما هو عدد الموظفين حسب القسم؟ حلل توزيع الرواتب."
+          )}
+        />
+      </div>
       {/* Bulk Import Dialog */}
       <HRBulkImport open={bulkOpen} onClose={() => setBulkOpen(false)} />
     </PortalLayout>
