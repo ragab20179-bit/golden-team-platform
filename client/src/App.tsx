@@ -38,6 +38,7 @@ import PlatformHealth from "./pages/admin/PlatformHealth";
 import AdminAuditLog from "./pages/admin/AdminAuditLog";
 import ModuleAccess from "./pages/admin/ModuleAccess";
 import DriveVault from "./pages/DriveVault";
+import NEOChat from "./pages/NEOChat";
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -59,6 +60,7 @@ function Router() {
       <Route path="/portal/meetings" component={MeetingModule} />
       <Route path="/portal/neo-core" component={NEOCore} />
       <Route path="/portal/vault" component={DriveVault} />
+      <Route path="/portal/neo-chat" component={NEOChat} />
       <Route path="/neo-architecture" component={NEOArchitecture} />
       <Route path="/architecture" component={Architecture} />
       <Route path="/project-plan" component={ProjectPlan} />

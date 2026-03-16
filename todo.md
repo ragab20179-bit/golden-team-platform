@@ -126,3 +126,17 @@
 
 ## Last Updated
 2026-03-15 19:05 UTC — Phase 9 complete, 70/70 tests passing, 0 TypeScript errors
+
+## Phase 11 — NEO Chat/Intercom (M1 of Phase 2)
+- [x] Add neo_conversations, neo_messages tables to DB schema and push migration
+- [x] Build server/routers/neoChat.ts — tRPC procedures (createConversation, sendMessage, listConversations, getMessages, deleteConversation, archiveConversation)
+- [x] Build AI routing logic — Manus/GPT/Hybrid router with keyword scoring (EN + AR keywords)
+- [x] Build AI response via invokeLLM with conversation history context
+- [x] Build NEOChat.tsx page — conversation sidebar + message thread + composer with drag-and-drop
+- [x] Add /portal/neo-chat route in App.tsx
+- [x] Add NEO Chat sidebar nav item to PortalLayout (bilingual EN/AR)
+- [x] Write 18 vitest tests for neoChat router (routing algorithm, title generation, message validation, conversation types)
+- [x] 88 total tests passing, 0 TypeScript errors
+
+## Last Updated
+2026-03-16 01:48 UTC — Phase 11 complete, NEO Chat M1 delivered, 88/88 tests passing

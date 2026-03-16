@@ -166,3 +166,51 @@ export const procurementItems = mysqlTable("procurement_items", {
 });
 export type ProcurementItem = typeof procurementItems.$inferSelect;
 export type InsertProcurementItem = typeof procurementItems.$inferInsert;
+
+/**
+ * NEO Chat/Intercom — Conversation threads.
+ * Each conversation is a named thread (direct, group, or AI assistant).
+ * type: 'direct' = 1-on-1, 'group' = team channel, 'ai' = NEO AI assistant thread
+ */
+export const neoConversations = mysqlTable("neo_conversations", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  type: mysqlEnum("type", ["direct", "group", "ai"]).notNull().default("ai"),
+  createdBy: int("createdBy").notNull(),
+  // For AI conversations: tracks the routing engine used
+  lastEngine: mysqlEnum("lastEngine", ["manus", "gpt", "hybrid"]).default("manus"),
+  // Metadata: participant count, last message preview
+  participantIds: json("participantIds"), // array of user IDs
+  lastMessageAt: timestamp("lastMessageAt").defaultNow(),
+  lastMessagePreview: varchar("lastMessagePreview", { length: 256 }),
+  isArchived: boolean("isArchived").notNull().default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type NeoConversation = typeof neoConversations.$inferSelect;
+export type InsertNeoConversation = typeof neoConversations.$inferInsert;
+
+/**
+ * NEO Chat/Intercom — Individual messages.
+ * senderType: 'user' = human, 'ai' = NEO AI response, 'system' = automated notification
+ * For AI messages: engine, routingScore, and contextUsed are populated.
+ */
+export const neoMessages = mysqlTable("neo_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  conversationId: int("conversationId").notNull(),
+  senderType: mysqlEnum("senderType", ["user", "ai", "system"]).notNull().default("user"),
+  senderUserId: int("senderUserId"), // null for AI/system messages
+  body: text("body").notNull(),
+  // AI routing metadata (populated for AI messages)
+  engine: mysqlEnum("engine", ["manus", "gpt", "hybrid"]),
+  routingScore: json("routingScore"),   // { manusScore, gptScore, hybridBoost, keywordHits }
+  contextUsed: json("contextUsed"),     // { files, decisions, meetings referenced }
+  // File attachments
+  attachments: json("attachments"),     // array of { name, url, mimeType, sizeBytes }
+  // Message status
+  isRead: boolean("isRead").notNull().default(false),
+  isDeleted: boolean("isDeleted").notNull().default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type NeoMessage = typeof neoMessages.$inferSelect;
+export type InsertNeoMessage = typeof neoMessages.$inferInsert;
