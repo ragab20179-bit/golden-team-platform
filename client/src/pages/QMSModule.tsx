@@ -1,152 +1,260 @@
 /**
  * QMS Module — نظام إدارة الجودة ISO 9001
  * Bilingual: Arabic / English
+ * Live data from modules.qms.list + modules.qms.stats via tRPC
  */
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { FileCheck, Plus } from "lucide-react";
+import { Award, Plus, Loader2, Trash2, RefreshCw, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
-import { AIModuleQueryPanel } from "@/components/AIModuleQueryPanel";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { AIModuleQueryPanel } from "@/components/AIModuleQueryPanel";
+import { trpc } from "@/lib/trpc";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 
-const ncrs = [
-  { id: "NCR-2026-012", area: "IT Solutions",  areaAr: "حلول تقنية المعلومات", desc: "Software delivery SLA missed by 2 days",   descAr: "تأخر تسليم البرمجيات يومين عن مستوى الخدمة المتفق عليه",  severity: "Minor",  severityAr: "طفيف",  status: "Open",        statusAr: "مفتوح",       due: "Mar 20", dueAr: "20 مارس" },
-  { id: "NCR-2026-013", area: "Procurement",   areaAr: "المشتريات",            desc: "Vendor evaluation form incomplete",          descAr: "نموذج تقييم المورد غير مكتمل",                              severity: "Minor",  severityAr: "طفيف",  status: "In Progress", statusAr: "قيد التنفيذ", due: "Mar 18", dueAr: "18 مارس" },
-];
+const statusColor: Record<string, string> = {
+  open:        "bg-rose-500/10 text-rose-400 border-rose-500/20",
+  in_progress: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+  resolved:    "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  closed:      "bg-white/5 text-white/40 border-white/10",
+};
 
-const docs = [
-  { name: "Quality Manual v4.2",              nameAr: "دليل الجودة الإصدار 4.2",           type: "Policy",    typeAr: "سياسة",   status: "Approved",        statusAr: "معتمد",           rev: "4.2" },
-  { name: "Procurement Procedure QP-04",       nameAr: "إجراء المشتريات QP-04",             type: "Procedure", typeAr: "إجراء",   status: "Pending Review",  statusAr: "بانتظار المراجعة", rev: "3.1" },
-  { name: "Customer Satisfaction Survey",      nameAr: "استبيان رضا العملاء",               type: "Form",      typeAr: "نموذج",   status: "Approved",        statusAr: "معتمد",           rev: "2.0" },
-  { name: "Internal Audit Checklist",          nameAr: "قائمة مراجعة التدقيق الداخلي",     type: "Checklist", typeAr: "قائمة",   status: "Pending Approval",statusAr: "بانتظار الاعتماد", rev: "5.0" },
-];
-
-const clauses = [
-  { clause: "4. Context",     clauseAr: "4. السياق",       score: 100 },
-  { clause: "5. Leadership",  clauseAr: "5. القيادة",      score: 98  },
-  { clause: "6. Planning",    clauseAr: "6. التخطيط",      score: 96  },
-  { clause: "7. Support",     clauseAr: "7. الدعم",        score: 99  },
-  { clause: "8. Operations",  clauseAr: "8. التشغيل",      score: 97  },
-  { clause: "9. Performance", clauseAr: "9. الأداء",       score: 98  },
-  { clause: "10. Improvement",clauseAr: "10. التحسين",     score: 95  },
-  { clause: "Overall",        clauseAr: "الإجمالي",        score: 98  },
-];
+const severityColor: Record<string, string> = {
+  critical:    "bg-rose-500/20 text-rose-300",
+  major:       "bg-orange-500/20 text-orange-300",
+  minor:       "bg-amber-500/20 text-amber-300",
+  observation: "bg-blue-500/20 text-blue-300",
+};
 
 export default function QMSModule() {
   const { t, isRTL } = useLanguage();
+  const [addOpen, setAddOpen] = useState(false);
+  const [form, setForm] = useState({
+    ncrNumber: "", title: "", titleAr: "", description: "",
+    category: "", severity: "minor" as const,
+    reportedBy: "", assignedTo: "", dueDate: "",
+    status: "open" as const,
+  });
+
+  const utils = trpc.useUtils();
+
+  const { data: incidents = [], isLoading, refetch } = trpc.modules.qms.list.useQuery({ limit: 200 });
+  const { data: stats } = trpc.modules.qms.stats.useQuery();
+
+  const addIncident = trpc.modules.qms.add.useMutation({
+    onSuccess: () => {
+      toast.success(t("NCR added", "تمت إضافة التقرير"));
+      utils.modules.qms.list.invalidate();
+      utils.modules.qms.stats.invalidate();
+      setAddOpen(false);
+      setForm({ ncrNumber: "", title: "", titleAr: "", description: "", category: "", severity: "minor", reportedBy: "", assignedTo: "", dueDate: "", status: "open" });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const updateStatus = trpc.modules.qms.update.useMutation({
+    onSuccess: () => {
+      utils.modules.qms.list.invalidate();
+      utils.modules.qms.stats.invalidate();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const deleteIncident = trpc.modules.qms.delete.useMutation({
+    onSuccess: () => {
+      toast.success(t("NCR removed", "تم حذف التقرير"));
+      utils.modules.qms.list.invalidate();
+      utils.modules.qms.stats.invalidate();
+    },
+    onError: (e) => toast.error(e.message),
+  });
 
   return (
     <PortalLayout
-      title={t("QMS / ISO 9001", "نظام إدارة الجودة")}
-      subtitle={t("Quality Management System", "نظام إدارة الجودة — معيار ISO 9001")}
-      badge={t("98.1% Compliant", "98.1% امتثال")}
+      title={t("Quality Management", "إدارة الجودة")}
+      subtitle={t("ISO 9001:2015 Non-Conformance & Audit Management", "إدارة عدم المطابقة والتدقيق")}
+      badge={stats ? t(`${stats.open} Open NCRs`, `${stats.open} تقارير مفتوحة`) : t("Loading…", "جارٍ التحميل…")}
       badgeColor="bg-teal-500/10 text-teal-400 border-teal-500/20"
     >
       <div className="p-6 space-y-6" dir={isRTL ? "rtl" : "ltr"}>
+
+        {/* ── Live Stats ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: t("Compliance Score", "درجة الامتثال"),  value: "98.1%", color: "text-teal-400",  bg: "border-teal-500/20" },
-            { label: t("Open NCRs", "تقارير عدم مطابقة"),     value: "2",     color: "text-amber-400", bg: "border-amber-500/20" },
-            { label: t("CAPA Overdue", "إجراءات تصحيحية متأخرة"), value: "1", color: "text-rose-400",  bg: "border-rose-500/20" },
-            { label: t("Docs Pending", "وثائق معلقة"),         value: "4",     color: "text-blue-400",  bg: "border-blue-500/20" },
+            { label: t("Total NCRs",  "إجمالي التقارير"), value: stats?.total      ?? "—", icon: Award,         color: "text-teal-400",    bg: "border-teal-500/20" },
+            { label: t("Open",        "مفتوح"),            value: stats?.open       ?? "—", icon: AlertTriangle, color: "text-rose-400",    bg: "border-rose-500/20" },
+            { label: t("In Progress", "قيد المعالجة"),     value: stats?.inProgress ?? "—", icon: Clock,         color: "text-amber-400",   bg: "border-amber-500/20" },
+            { label: t("Resolved",    "محلول"),            value: stats?.resolved   ?? "—", icon: CheckCircle,   color: "text-emerald-400", bg: "border-emerald-500/20" },
           ].map((s, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
               className={`glass-card p-4 border ${s.bg} rounded-xl`}>
+              <s.icon className={`w-5 h-5 ${s.color} mb-2`} />
               <div className={`text-2xl font-bold ${s.color}`} style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{s.value}</div>
-              <div className="text-xs text-white/40 mt-1">{s.label}</div>
+              <div className="text-xs text-white/40 mt-0.5">{s.label}</div>
             </motion.div>
           ))}
         </div>
 
-        {/* ISO 9001 Clauses */}
-        <div className="glass-card border border-white/5 p-5 rounded-xl">
-          <h2 className="text-sm font-semibold text-white mb-4" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            {t("ISO 9001:2015 Clause Compliance", "امتثال بنود ISO 9001:2015")}
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {clauses.map((c, i) => (
-              <div key={i} className="p-3 rounded-lg border border-white/5">
-                <div className="text-xs text-white/40 mb-1">{isRTL ? c.clauseAr : c.clause}</div>
-                <div className="text-lg font-bold text-teal-400" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{c.score}%</div>
-                <div className="mt-1.5 h-1 bg-white/5 rounded-full overflow-hidden">
-                  <div className="h-full bg-teal-500 rounded-full" style={{ width: `${c.score}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* NCRs */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                {t("Non-Conformance Reports", "تقارير عدم المطابقة")}
-              </h2>
-              <Button size="sm" onClick={() => toast.info(t("Raise NCR — full build", "رفع تقرير عدم مطابقة — قيد التطوير"))} className="h-7 text-[11px] bg-teal-600 hover:bg-teal-500 text-white border-0">
-                <Plus className={`w-3 h-3 ${isRTL ? "ml-1" : "mr-1"}`} /> {t("Raise NCR", "رفع تقرير")}
+        {/* ── NCR List ── */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              {t("Non-Conformance Reports", "تقارير عدم المطابقة")}
+            </h2>
+            <div className="flex gap-2">
+              <Button size="sm" onClick={() => refetch()} variant="outline" className="border-white/20 text-white/70 hover:bg-white/10 bg-transparent h-8 text-xs">
+                <RefreshCw className="w-3 h-3" />
+              </Button>
+              <Button size="sm" onClick={() => setAddOpen(true)} className="bg-teal-600 hover:bg-teal-500 text-white border-0 h-8 text-xs">
+                <Plus className={`w-3 h-3 ${isRTL ? "ml-1" : "mr-1"}`} /> {t("New NCR", "تقرير جديد")}
               </Button>
             </div>
-            <div className="space-y-3">
-              {ncrs.map((n, i) => (
-                <div key={i} className="glass-card border border-amber-500/10 p-4 rounded-xl">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <div className="text-sm font-semibold text-white">{n.id}</div>
-                      <div className="text-xs text-white/40">{isRTL ? n.areaAr : n.area}</div>
-                    </div>
-                    <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-[10px]">
-                      {isRTL ? n.severityAr : n.severity}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-white/50 mb-2">{isRTL ? n.descAr : n.desc}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-white/30">{t("Due:", "الاستحقاق:")} {isRTL ? n.dueAr : n.due}</span>
-                    <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[10px]">
-                      {isRTL ? n.statusAr : n.status}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
 
-          {/* Document Control */}
-          <div>
-            <h2 className="text-sm font-semibold text-white mb-3" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              {t("Document Control", "ضبط الوثائق")}
-            </h2>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-16 text-white/40">
+              <Loader2 className="w-6 h-6 animate-spin mr-2" />
+              {t("Loading NCRs…", "جارٍ تحميل التقارير…")}
+            </div>
+          ) : incidents.length === 0 ? (
+            <div className="glass-card border border-white/5 rounded-xl p-12 text-center">
+              <Award className="w-10 h-10 text-white/20 mx-auto mb-3" />
+              <p className="text-white/40 text-sm">{t("No NCRs yet. Add one to start tracking.", "لا توجد تقارير بعد.")}</p>
+            </div>
+          ) : (
             <div className="space-y-2">
-              {docs.map((d, i) => (
-                <div key={i} className="glass-card border border-white/5 p-3 rounded-xl flex items-center gap-3 hover:border-white/10 transition-colors">
-                  <FileCheck className="w-4 h-4 text-teal-400 shrink-0" />
+              {incidents.map((n, i) => (
+                <motion.div key={n.id} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: Math.min(i * 0.04, 0.4) }}
+                  className="glass-card border border-white/5 p-4 rounded-xl flex items-center gap-4 hover:border-white/10 transition-colors group">
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-white">{isRTL ? d.nameAr : d.name}</div>
-                    <div className="text-[11px] text-white/30">{isRTL ? d.typeAr : d.type} · {t("Rev", "إصدار")} {d.rev}</div>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-sm font-semibold text-white">{isRTL && n.titleAr ? n.titleAr : n.title}</span>
+                      {n.incidentCode && <span className="text-[10px] text-white/30">{n.incidentCode}</span>}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      {n.severity && (
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${severityColor[n.severity] ?? "bg-white/5 text-white/40"}`}>
+                          {n.severity}
+                        </span>
+                      )}
+                      {n.area && <span className="text-xs text-white/30">{n.area}</span>}
+                    </div>
                   </div>
-                  <Badge className={`text-[10px] border ${d.status === "Approved" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20"}`}>
-                    {isRTL ? d.statusAr : d.status}
-                  </Badge>
-                </div>
+                  <Select value={n.status} onValueChange={(v) => updateStatus.mutate({ id: n.id, data: { status: v as typeof n.status } })}>
+                    <SelectTrigger className={`w-32 h-7 text-[11px] border ${statusColor[n.status] ?? ""} bg-transparent`}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#0A0F1E] border-white/10 text-white text-xs">
+                      <SelectItem value="open">{t("Open", "مفتوح")}</SelectItem>
+                      <SelectItem value="in_progress">{t("In Progress", "قيد المعالجة")}</SelectItem>
+                      <SelectItem value="resolved">{t("Resolved", "محلول")}</SelectItem>
+                      <SelectItem value="closed">{t("Closed", "مغلق")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" variant="ghost"
+                    className="opacity-0 group-hover:opacity-100 h-7 w-7 p-0 text-rose-400 hover:bg-rose-500/10 transition-opacity"
+                    onClick={() => { if (confirm(t("Remove this NCR?", "هل تريد حذف هذا التقرير؟"))) deleteIncident.mutate({ id: n.id }); }}>
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── Category Breakdown ── */}
+        {stats && stats.areas && (stats.areas as string[]).length > 0 && (
+          <div className="glass-card border border-white/5 p-4 rounded-xl">
+            <h3 className="text-xs font-semibold text-white/60 mb-3 uppercase tracking-widest">{t("Categories", "الفئات")}</h3>
+            <div className="flex flex-wrap gap-2">
+              {(stats.areas as string[]).map(c => (
+                <Badge key={c} className="text-xs bg-teal-500/10 text-teal-400 border-teal-500/20">{c}</Badge>
               ))}
             </div>
           </div>
+        )}
+      </div>
 
-      {/* AI Module Query Panel */}
+      {/* ── AI QMS Analysis Panel ── */}
       <div className="px-6 pb-6">
         <AIModuleQueryPanel
           module="qms"
-          title={t("QMS Intelligence — ISO 9001 AI", "ذكاء نظام إدارة الجودة")}
-          placeholder={t(
-            "e.g. What ISO 9001 clause applies to our supplier evaluation? Review our QMS documents.",
-            "مثال: ما بند ISO 9001 الذي ينطبق على تقييم الموردين؟"
-          )}
+          title={t("QMS Intelligence — GPT-4o", "ذكاء إدارة الجودة")}
+          placeholder={t("e.g. What are the most common NCR categories? Which items are overdue?", "مثال: ما أكثر فئات عدم المطابقة شيوعًا؟")}
         />
       </div>
-        </div>
-      </div>
+
+      {/* ── Add NCR Dialog ── */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="bg-[#0A0F1E] border-white/10 text-white max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-white">{t("New NCR", "تقرير عدم مطابقة جديد")}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 py-2">
+            <div className="col-span-2">
+              <Label className="text-white/60 text-xs">{t("Title *", "العنوان *")}</Label>
+              <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                className="bg-white/5 border-white/10 text-white mt-1" placeholder="e.g. Document Control Failure" />
+            </div>
+            <div>
+              <Label className="text-white/60 text-xs">{t("NCR Number", "رقم التقرير")}</Label>
+              <Input value={form.ncrNumber} onChange={e => setForm(f => ({ ...f, ncrNumber: e.target.value }))}
+                className="bg-white/5 border-white/10 text-white mt-1" placeholder="NCR-2026-001" />
+            </div>
+            <div>
+              <Label className="text-white/60 text-xs">{t("Category", "الفئة")}</Label>
+              <Input value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                className="bg-white/5 border-white/10 text-white mt-1" placeholder="Document Control" />
+            </div>
+            <div>
+              <Label className="text-white/60 text-xs">{t("Severity", "الخطورة")}</Label>
+              <Select value={form.severity} onValueChange={v => setForm(f => ({ ...f, severity: v as typeof form.severity }))}>
+                <SelectTrigger className="bg-white/5 border-white/10 text-white mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-[#0A0F1E] border-white/10 text-white">
+                  <SelectItem value="critical">{t("Critical", "حرج")}</SelectItem>
+                  <SelectItem value="major">{t("Major", "رئيسي")}</SelectItem>
+                  <SelectItem value="minor">{t("Minor", "ثانوي")}</SelectItem>
+                  <SelectItem value="observation">{t("Observation", "ملاحظة")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-white/60 text-xs">{t("Assigned To", "مُسنَد إلى")}</Label>
+              <Input value={form.assignedTo} onChange={e => setForm(f => ({ ...f, assignedTo: e.target.value }))}
+                className="bg-white/5 border-white/10 text-white mt-1" placeholder="Khalid Hassan" />
+            </div>
+            <div className="col-span-2">
+              <Label className="text-white/60 text-xs">{t("Description", "الوصف")}</Label>
+              <Textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                className="bg-white/5 border-white/10 text-white mt-1 resize-none" rows={3}
+                placeholder={t("Describe the non-conformance…", "صف حالة عدم المطابقة…")} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddOpen(false)} className="border-white/20 text-white/70 bg-transparent hover:bg-white/5">
+              {t("Cancel", "إلغاء")}
+            </Button>
+            <Button onClick={() => {
+              if (!form.title.trim()) { toast.error(t("Title is required", "العنوان مطلوب")); return; }
+              addIncident.mutate(form);
+            }} disabled={addIncident.isPending} className="bg-teal-600 hover:bg-teal-500 text-white border-0">
+              {addIncident.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              {t("Add NCR", "إضافة تقرير")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PortalLayout>
   );
 }

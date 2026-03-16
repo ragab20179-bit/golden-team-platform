@@ -1,4 +1,6 @@
-/**
+import pathlib
+
+content = r"""/**
  * Legal Module — الشؤون القانونية
  * Bilingual: Arabic / English
  * Live data from modules.legal.list + modules.legal.stats via tRPC
@@ -268,3 +270,7 @@ export default function LegalModule() {
     </PortalLayout>
   );
 }
+"""
+
+pathlib.Path('/home/ubuntu/golden-team-platform/client/src/pages/LegalModule.tsx').write_text(content)
+print("LegalModule.tsx written successfully")

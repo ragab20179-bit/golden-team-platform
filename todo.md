@@ -185,3 +185,27 @@
 - [x] Update NEO Core metrics tab to show real cost per request, total spend, token breakdown
 - [x] Write vitest tests for usage tracking procedures (135/135 passing)
 - [x] Save checkpoint
+
+## Phase 15 — Wire 7 Module Pages to Live DB Data
+
+- [ ] Audit all 7 module pages and DB schema for gaps
+- [ ] Add erpRecords and crmContacts tables to schema, push migration
+- [ ] Add legalCases table to schema, push migration
+- [ ] Add qmsIncidents table to schema, push migration
+- [ ] Build tRPC procedures for HR module (list, add, update, delete employees)
+- [ ] Build tRPC procedures for KPI module (list, add, update targets + actuals)
+- [ ] Build tRPC procedures for Procurement module (list, add, update items + POs)
+- [ ] Build tRPC procedures for QMS module (list incidents, add, update, close)
+- [ ] Build tRPC procedures for ERP module (list records, add, update)
+- [ ] Build tRPC procedures for CRM module (list contacts, add, update, pipeline)
+- [ ] Build tRPC procedures for Legal module (list cases, add, update, close)
+- [ ] Wire HRModule.tsx to live employee data (table + stats + add/edit dialog)
+- [ ] Wire KPIModule.tsx to live KPI targets (table + progress bars + add dialog)
+- [ ] Wire ProcurementModule.tsx to live procurement items (table + add dialog)
+- [ ] Wire QMSModule.tsx to live incidents (table + add/close dialog)
+- [ ] Wire ERPModule.tsx to live ERP records (table + add dialog)
+- [ ] Wire CRMModule.tsx to live CRM contacts (pipeline view + add dialog)
+- [ ] Wire LegalModule.tsx to live legal cases (table + add/close dialog)
+- [ ] Write vitest tests for all new procedures
+- [ ] Save checkpoint
+- [ ] Update Drive Vault with GT-NEO-015 document
