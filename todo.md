@@ -155,6 +155,20 @@
 ## Last Updated
 2026-03-16 02:10 UTC — Phase 12 complete, Request & Approval Engine M3 delivered, 115/115 tests passing
 
+## Phase 18 — NEO Chat Bug Fix + AI Usage Dashboard + Demo Data
+- [x] Fix NEO Chat canned-response bug: remove thinking parameter (budget_tokens:128) from invokeLLM
+- [x] Update MANUS_SYSTEM_PROMPT with CONVERSATION RULES for natural greetings and small talk
+- [x] Add getDailyUsage and getRecentCalls procedures to neoModules router
+- [x] Build AI Usage Dashboard page (/portal/neo-usage) with KPI cards, daily charts, module breakdown, recent calls log
+- [x] Add AI Usage nav item to PortalLayout sidebar (TrendingUp icon, pink accent)
+- [x] Register /portal/neo-usage route in App.tsx
+- [x] Create scripts/seed-demo-data.mjs — 68 realistic demo records across all 7 modules
+- [x] Push Phases 4-18 to GitHub (ragab20179-bit/golden-team-platform)
+- [x] 154/154 tests passing, 0 TypeScript errors
+
+## Last Updated
+2026-03-16 08:10 UTC — Phase 18 complete, NEO Chat fixed, AI Usage Dashboard live, demo data seeded, GitHub pushed
+
 ## Phase 13 — Real GPT-4 Integration + 7 AI Module Procedures + Live Metrics
 - [x] Add OPENAI_API_KEY secret
 - [x] Create server/_core/gpt.ts — OpenAI GPT-4o direct helper
