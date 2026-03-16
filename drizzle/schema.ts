@@ -339,3 +339,96 @@ export const neoAiUsage = mysqlTable("neo_ai_usage", {
 
 export type NeoAiUsage = typeof neoAiUsage.$inferSelect;
 export type InsertNeoAiUsage = typeof neoAiUsage.$inferInsert;
+
+// ─── QMS Module — Non-Conformance Reports & Quality Incidents ─────────────────
+export const qmsIncidents = mysqlTable("qms_incidents", {
+  id: int("id").autoincrement().primaryKey(),
+  incidentCode: varchar("incidentCode", { length: 32 }),
+  title: varchar("title", { length: 256 }).notNull(),
+  titleAr: varchar("titleAr", { length: 256 }),
+  area: varchar("area", { length: 128 }),
+  areaAr: varchar("areaAr", { length: 128 }),
+  description: text("description"),
+  severity: mysqlEnum("severity", ["critical", "major", "minor", "observation"]).default("minor").notNull(),
+  status: mysqlEnum("status", ["open", "in_progress", "resolved", "closed"]).default("open").notNull(),
+  assignedTo: varchar("assignedTo", { length: 128 }),
+  rootCause: text("rootCause"),
+  correctiveAction: text("correctiveAction"),
+  dueDate: varchar("dueDate", { length: 32 }),
+  closedAt: timestamp("closedAt"),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type QmsIncident = typeof qmsIncidents.$inferSelect;
+export type InsertQmsIncident = typeof qmsIncidents.$inferInsert;
+
+// ─── ERP Module — Business Records (Sales, Invoices, Inventory) ───────────────
+export const erpRecords = mysqlTable("erp_records", {
+  id: int("id").autoincrement().primaryKey(),
+  recordNumber: varchar("recordNumber", { length: 32 }),
+  type: mysqlEnum("type", ["sale", "invoice", "purchase", "inventory", "expense", "other"]).default("sale").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  titleAr: varchar("titleAr", { length: 256 }),
+  party: varchar("party", { length: 128 }),
+  partyAr: varchar("partyAr", { length: 128 }),
+  amount: bigint("amount", { mode: "number" }),
+  currency: varchar("currency", { length: 8 }).default("SAR"),
+  status: mysqlEnum("status", ["draft", "pending", "approved", "paid", "cancelled"]).default("draft").notNull(),
+  dueDate: varchar("dueDate", { length: 32 }),
+  notes: text("notes"),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type ErpRecord = typeof erpRecords.$inferSelect;
+export type InsertErpRecord = typeof erpRecords.$inferInsert;
+
+// ─── CRM Module — Contacts, Leads & Pipeline ──────────────────────────────────
+export const crmContacts = mysqlTable("crm_contacts", {
+  id: int("id").autoincrement().primaryKey(),
+  fullName: varchar("fullName", { length: 128 }).notNull(),
+  fullNameAr: varchar("fullNameAr", { length: 128 }),
+  company: varchar("company", { length: 128 }),
+  companyAr: varchar("companyAr", { length: 128 }),
+  email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 32 }),
+  type: mysqlEnum("type", ["lead", "prospect", "client", "partner"]).default("lead").notNull(),
+  stage: mysqlEnum("stage", ["new", "contacted", "qualified", "proposal", "negotiation", "won", "lost"]).default("new").notNull(),
+  dealValue: bigint("dealValue", { mode: "number" }),
+  probability: int("probability").default(0),
+  source: varchar("source", { length: 64 }),
+  assignedTo: varchar("assignedTo", { length: 128 }),
+  notes: text("notes"),
+  lastContactDate: varchar("lastContactDate", { length: 32 }),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type CrmContact = typeof crmContacts.$inferSelect;
+export type InsertCrmContact = typeof crmContacts.$inferInsert;
+
+// ─── Legal Module — Contracts & Legal Cases ────────────────────────────────────
+export const legalCases = mysqlTable("legal_cases", {
+  id: int("id").autoincrement().primaryKey(),
+  caseNumber: varchar("caseNumber", { length: 32 }),
+  title: varchar("title", { length: 256 }).notNull(),
+  titleAr: varchar("titleAr", { length: 256 }),
+  type: mysqlEnum("type", ["contract", "dispute", "compliance", "ip", "employment", "other"]).default("contract").notNull(),
+  party: varchar("party", { length: 128 }),
+  partyAr: varchar("partyAr", { length: 128 }),
+  value: bigint("value", { mode: "number" }),
+  status: mysqlEnum("status", ["draft", "active", "expiring_soon", "expired", "closed", "disputed"]).default("draft").notNull(),
+  startDate: varchar("startDate", { length: 32 }),
+  expiryDate: varchar("expiryDate", { length: 32 }),
+  description: text("description"),
+  descriptionAr: text("descriptionAr"),
+  assignedTo: varchar("assignedTo", { length: 128 }),
+  notes: text("notes"),
+  closedAt: timestamp("closedAt"),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type LegalCase = typeof legalCases.$inferSelect;
+export type InsertLegalCase = typeof legalCases.$inferInsert;

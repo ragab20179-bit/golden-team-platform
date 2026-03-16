@@ -1,4 +1,6 @@
-/**
+import pathlib
+
+content = r"""/**
  * CRM Module — إدارة علاقات العملاء
  * Bilingual: Arabic / English
  * Live data from modules.crm.list + modules.crm.stats via tRPC
@@ -260,3 +262,7 @@ export default function CRMModule() {
     </PortalLayout>
   );
 }
+"""
+
+pathlib.Path('/home/ubuntu/golden-team-platform/client/src/pages/CRMModule.tsx').write_text(content)
+print("CRMModule.tsx written successfully")
