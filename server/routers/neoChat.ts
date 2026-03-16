@@ -7,10 +7,13 @@
  * - Message history retrieval
  * - AI routing engine with scoring algorithm from NEO_v2_Technical_Delivery_Pack
  *
- * Routing algorithm:
- *   - Manus: operational tasks, simple actions, navigation, workflow execution
- *   - GPT: analytical, financial, engineering, complex reasoning
- *   - Hybrid: mixed requests requiring both operational + analytical response
+ * DUAL AI ENGINE (real integration):
+ *   - Manus (invokeLLM): gemini-2.5-flash via Manus Forge — operational tasks, 80% of traffic
+ *   - GPT-4o (invokeGPT): OpenAI GPT-4o — analytical, financial, engineering tasks, 20% of traffic
+ *   - Hybrid: calls GPT-4o with combined operational+analytical system prompt
+ *
+ * AI Response Policy: docs/AI_RESPONSE_POLICY.md
+ * All AI responses must be verifiable, cite sources, and disclose uncertainty.
  */
 
 import { z } from "zod";
@@ -19,6 +22,7 @@ import { getDb } from "../db";
 import { neoConversations, neoMessages } from "../../drizzle/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
+import { invokeGPT, isGPTConfigured, buildAnalyticalSystemPrompt } from "../_core/gpt";
 import { TRPCError } from "@trpc/server";
 
 // ─── AI Routing Engine ────────────────────────────────────────────────────────
@@ -57,9 +61,9 @@ const INTERNAL_MAIL_WORDS = [
   "أبلغ", "نبّه", "رسالة إلى", "أعلم",
 ];
 
-type EngineChoice = "manus" | "gpt" | "hybrid";
+export type EngineChoice = "manus" | "gpt" | "hybrid";
 
-interface RoutingDecision {
+export interface RoutingDecision {
   engine: EngineChoice;
   reason: string;
   confidence: number;
@@ -73,7 +77,7 @@ interface RoutingDecision {
   };
 }
 
-function routeMessage(messageText: string, requiresApproval = false, financialAmount = 0): RoutingDecision {
+export function routeMessage(messageText: string, requiresApproval = false, financialAmount = 0): RoutingDecision {
   let manusScore = 0;
   let gptScore = 0;
   let hybridBoost = 0;
@@ -140,6 +144,29 @@ function routeMessage(messageText: string, requiresApproval = false, financialAm
   return { engine, reason, confidence, complexityScore, riskScore, breakdown: { manusScore, gptScore, hybridBoost, keywordHits } };
 }
 
+// ─── System Prompts ───────────────────────────────────────────────────────────
+
+const POLICY_ADDENDUM = `
+ACCURACY POLICY: Only state facts you can verify from the data in this conversation.
+If you cannot verify a claim, say "I cannot confirm this without additional data."
+Cite the specific data source for every numerical figure.
+Label analytical conclusions as "Analysis:" to distinguish from verified facts.
+Do not fabricate statistics, benchmarks, or external references.`;
+
+const MANUS_SYSTEM_PROMPT = `You are NEO, the AI operational assistant of Golden Team Trading Services.
+You help with internal operations, navigation, task management, meeting coordination, and workflow execution.
+Be concise, actionable, and professional. Support both Arabic and English responses based on the user's language.${POLICY_ADDENDUM}`;
+
+const GPT_SYSTEM_PROMPT = `You are NEO, the AI analytical core of Golden Team Trading Services.
+You specialize in financial analysis, engineering evaluation, risk assessment, and strategic recommendations.
+The company manages IT projects and a 33M SAR construction project.
+Be precise, structured, and professional. Support both Arabic and English responses based on the user's language.${POLICY_ADDENDUM}`;
+
+const HYBRID_SYSTEM_PROMPT = `You are NEO, the AI operational and analytical assistant of Golden Team Trading Services.
+Handle both the operational workflow aspects and the analytical evaluation in your response.
+Provide structured output: first the analysis/recommendation, then the next action steps.
+Support both Arabic and English.${POLICY_ADDENDUM}`;
+
 // ─── DB Helpers ───────────────────────────────────────────────────────────────
 
 async function getConversation(id: number, userId: number) {
@@ -161,8 +188,9 @@ export const neoChatRouter = router({
    */
   createConversation: protectedProcedure
     .input(z.object({
-      title: z.string().min(1).max(255),
-      type: z.enum(["direct", "group", "ai"]).default("ai"),
+      title: z.string().min(1).max(200),
+      type: z.enum(["ai", "direct", "group"]).default("ai"),
+      participants: z.array(z.number().int().positive()).optional().default([]),
     }))
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
@@ -171,8 +199,8 @@ export const neoChatRouter = router({
         title: input.title,
         type: input.type,
         createdBy: ctx.user.id,
-        participantIds: [ctx.user.id],
-        lastMessagePreview: "",
+        participantIds: input.participants,
+        lastMessageAt: new Date(),
       });
       const id = (result as any).insertId as number;
       const [conv] = await db.select().from(neoConversations).where(eq(neoConversations.id, id));
@@ -180,21 +208,33 @@ export const neoChatRouter = router({
     }),
 
   /**
-   * List all conversations for the current user (most recent first).
+   * List all conversations for the current user (non-archived, newest first).
    */
   listConversations: protectedProcedure
-    .query(async ({ ctx }) => {
+    .input(z.object({
+      limit: z.number().int().min(1).max(100).default(50),
+      includeArchived: z.boolean().default(false),
+    }).optional())
+    .query(async ({ ctx, input }) => {
       const db = await getDb();
-      if (!db) return [];
-      return db
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+      const limit = input?.limit ?? 50;
+      const includeArchived = input?.includeArchived ?? false;
+      const rows = await db
         .select()
         .from(neoConversations)
-        .where(and(eq(neoConversations.createdBy, ctx.user.id), eq(neoConversations.isArchived, false)))
-        .orderBy(desc(neoConversations.lastMessageAt));
+        .where(
+          includeArchived
+            ? eq(neoConversations.createdBy, ctx.user.id)
+            : and(eq(neoConversations.createdBy, ctx.user.id), eq(neoConversations.isArchived, false))
+        )
+        .orderBy(desc(neoConversations.lastMessageAt))
+        .limit(limit);
+      return rows;
     }),
 
   /**
-   * Get all messages in a conversation (oldest first for display).
+   * Get all messages in a conversation (oldest first).
    */
   getMessages: protectedProcedure
     .input(z.object({
@@ -204,11 +244,9 @@ export const neoChatRouter = router({
     .query(async ({ ctx, input }) => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
-      // Verify ownership
       const conv = await getConversation(input.conversationId, ctx.user.id);
       if (!conv) throw new TRPCError({ code: "NOT_FOUND", message: "Conversation not found" });
-
-      return db
+      const messages = await db
         .select()
         .from(neoMessages)
         .where(and(
@@ -217,11 +255,16 @@ export const neoChatRouter = router({
         ))
         .orderBy(neoMessages.createdAt)
         .limit(input.limit);
+      return messages;
     }),
 
   /**
    * Send a message and get an AI response.
-   * Runs the routing algorithm to decide Manus/GPT/Hybrid, then calls the LLM.
+   *
+   * REAL DUAL-ENGINE ROUTING:
+   * - engine === "gpt" or "hybrid" → OpenAI GPT-4o (invokeGPT)
+   * - engine === "manus" → Manus Forge gemini-2.5-flash (invokeLLM)
+   * - Falls back to Manus if OPENAI_API_KEY is not configured
    */
   sendMessage: protectedProcedure
     .input(z.object({
@@ -277,60 +320,93 @@ export const neoChatRouter = router({
           content: m.body,
         }));
 
-      // 4. Build system prompt based on routing engine
-      const systemPrompt = routing.engine === "gpt"
-        ? `You are NEO, the AI analytical core of Golden Team Trading Services. You specialize in financial analysis, engineering evaluation, risk assessment, and strategic recommendations. The company manages IT projects and a 33M SAR construction project. Be precise, structured, and professional. Support both Arabic and English responses based on the user's language.`
-        : routing.engine === "hybrid"
-        ? `You are NEO, the AI operational and analytical assistant of Golden Team Trading Services. Handle both the operational workflow aspects and the analytical evaluation in your response. Provide structured output: first the analysis/recommendation, then the next action steps. Support both Arabic and English.`
-        : `You are NEO, the AI operational assistant of Golden Team Trading Services. You help with internal operations, navigation, task management, meeting coordination, and workflow execution. Be concise, actionable, and professional. Support both Arabic and English responses based on the user's language.`;
-
-      // 5. Call LLM
+      // 4. Call the correct AI engine based on routing decision
       let aiBody = "";
+      let actualEngine = routing.engine;
+
       try {
-        const response = await invokeLLM({
-          messages: [
-            { role: "system" as const, content: systemPrompt as string },
-            ...historyMessages.map(m => ({ role: m.role, content: m.content as string })),
-            { role: "user" as const, content: input.body as string },
-          ],
-        });
-        const rawContent = response.choices?.[0]?.message?.content;
-        aiBody = typeof rawContent === "string" ? rawContent : "I'm unable to process that request right now. Please try again.";
-      } catch {
-        aiBody = "NEO is temporarily unavailable. Please try again in a moment.";
+        if ((routing.engine === "gpt" || routing.engine === "hybrid") && isGPTConfigured()) {
+          // ── GPT-4o path (OpenAI) ──────────────────────────────────────────
+          const systemPrompt = routing.engine === "hybrid" ? HYBRID_SYSTEM_PROMPT : GPT_SYSTEM_PROMPT;
+          const gptMessages: { role: "system" | "user" | "assistant"; content: string }[] = [
+            { role: "system", content: systemPrompt },
+            ...historyMessages.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
+            { role: "user", content: input.body },
+          ];
+          const gptResult = await invokeGPT({ messages: gptMessages });
+          aiBody = gptResult.content;
+          actualEngine = routing.engine; // gpt or hybrid — confirmed
+        } else {
+          // ── Manus Forge path (gemini-2.5-flash) ──────────────────────────
+          // Also used as fallback if OPENAI_API_KEY is not configured
+          if ((routing.engine === "gpt" || routing.engine === "hybrid") && !isGPTConfigured()) {
+            actualEngine = "manus"; // downgrade: GPT key not available, using Manus
+          }
+          const systemPrompt = routing.engine === "gpt" ? GPT_SYSTEM_PROMPT
+            : routing.engine === "hybrid" ? HYBRID_SYSTEM_PROMPT
+            : MANUS_SYSTEM_PROMPT;
+          const response = await invokeLLM({
+            messages: [
+              { role: "system" as const, content: systemPrompt },
+              ...historyMessages.map(m => ({ role: m.role, content: m.content as string })),
+              { role: "user" as const, content: input.body },
+            ],
+          });
+          const rawContent = response.choices?.[0]?.message?.content;
+          aiBody = typeof rawContent === "string" ? rawContent : "I'm unable to process that request right now. Please try again.";
+        }
+      } catch (err) {
+        // If GPT-4o fails, fall back to Manus Forge
+        if (routing.engine !== "manus") {
+          try {
+            const response = await invokeLLM({
+              messages: [
+                { role: "system" as const, content: MANUS_SYSTEM_PROMPT },
+                { role: "user" as const, content: input.body },
+              ],
+            });
+            const rawContent = response.choices?.[0]?.message?.content;
+            aiBody = typeof rawContent === "string" ? rawContent : "I'm unable to process that request right now. Please try again.";
+            actualEngine = "manus"; // fallback confirmed
+          } catch {
+            aiBody = "NEO is temporarily unavailable. Please try again in a moment.";
+          }
+        } else {
+          aiBody = "NEO is temporarily unavailable. Please try again in a moment.";
+        }
       }
 
-      // 6. Save AI response message
+      // 5. Save AI response message
       const [aiMsgResult] = await db.insert(neoMessages).values({
         conversationId: input.conversationId,
         senderType: "ai",
         senderUserId: null,
         body: aiBody,
-        engine: routing.engine,
+        engine: actualEngine,
         routingScore: routing.breakdown,
         contextUsed: null,
         isRead: false,
       });
       const aiMsgId = (aiMsgResult as any).insertId as number;
 
-      // 7. Update conversation metadata
+      // 6. Update conversation metadata
       await db
         .update(neoConversations)
         .set({
           lastMessageAt: new Date(),
           lastMessagePreview: aiBody.slice(0, 120),
-          lastEngine: routing.engine,
+          lastEngine: actualEngine,
         })
         .where(eq(neoConversations.id, input.conversationId));
 
-      // 8. Return both messages
+      // 7. Return both messages
       const [userMsg] = await db.select().from(neoMessages).where(eq(neoMessages.id, userMsgId));
       const [aiMsg] = await db.select().from(neoMessages).where(eq(neoMessages.id, aiMsgId));
 
       return {
         userMessage: userMsg,
         aiMessage: aiMsg,
-        routing,
+        routing: { ...routing, actualEngine },
       };
     }),
 
@@ -376,6 +452,10 @@ export const neoChatRouter = router({
       financialAmount: z.number().optional().default(0),
     }))
     .query(({ input }) => {
-      return routeMessage(input.messageText, input.requiresApproval, input.financialAmount);
+      const decision = routeMessage(input.messageText, input.requiresApproval, input.financialAmount);
+      return {
+        ...decision,
+        gptAvailable: isGPTConfigured(),
+      };
     }),
 });
