@@ -35,6 +35,7 @@ const NAV_ITEMS_EN = [
   { key: "neoChat",       icon: MessageSquare,   path: "/portal/neo-chat",     color: "text-green-400" },
   { key: "requests",     icon: ClipboardList,   path: "/portal/requests",     color: "text-yellow-400" },
   { key: "neoUsage",     icon: TrendingUp,      path: "/portal/neo-usage",    color: "text-pink-400" },
+  { key: "bidEval",      icon: BarChart3,       path: "/portal/bid-evaluation", color: "text-lime-400" },
 ];
 
 const NAV_LABELS: Record<string, { en: string; ar: string }> = {
@@ -55,6 +56,7 @@ const NAV_LABELS: Record<string, { en: string; ar: string }> = {
   neoChat:     { en: "NEO Chat",        ar: "محادثة NEO" },
   requests:    { en: "Requests",         ar: "الطلبات والموافقات" },
   neoUsage:    { en: "AI Usage",          ar: "استخدام الذكاء" },
+  bidEval:     { en: "Bid Evaluation",    ar: "تقييم العطاءات" },
 };
 
 // NAV_ITEMS exported from navItems.ts to avoid Fast Refresh issues

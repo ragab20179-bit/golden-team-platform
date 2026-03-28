@@ -257,3 +257,22 @@
 
 ## Last Updated
 2026-03-16 09:05 UTC — Phase 19 complete, voice API fully operational with updated voice list
+
+## Phase 20 — Bid Evaluation Matrix Module
+
+- [ ] Design and add DB schema: rfqs, rfqItems, bidSubmissions, bidCriteria, evaluationSessions, evaluationScores tables
+- [ ] Run pnpm db:push to migrate schema
+- [ ] Build FastAPI bid scoring microservice (server/bid_engine/) wrapping bid_evaluation Python library
+- [ ] Add FastAPI startup to Express server via child process
+- [ ] Build tRPC procedures: rfq.create, rfq.list, rfq.get, rfq.updateStatus
+- [ ] Build tRPC procedures: bid.submit, bid.list, bid.get
+- [ ] Build tRPC procedures: evaluation.run, evaluation.getResults, evaluation.award
+- [ ] Build BidEvaluation.tsx portal page with RFQ list view
+- [ ] Build RFQ creation wizard (multi-step: details → items → criteria → publish)
+- [ ] Build bid submission view (public supplier link + internal view)
+- [ ] Build evaluation matrix UI (weighted scoring table, ranked results)
+- [ ] Build award recommendation card with ASTRA AMG governance approval
+- [ ] Add "Bid Evaluation" nav item to PortalLayout sidebar
+- [ ] Register /portal/bid-evaluation route in App.tsx
+- [ ] Write vitest tests for all new tRPC procedures
+- [ ] Save checkpoint and push to GitHub

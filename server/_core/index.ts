@@ -8,6 +8,7 @@ import { registerGoogleAuthRoutes } from "./googleAuth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { startBidEngine } from "../bidEngineProcess";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -66,3 +67,6 @@ async function startServer() {
 }
 
 startServer().catch(console.error);
+
+// Start FastAPI bid scoring engine as a sidecar process
+startBidEngine();
