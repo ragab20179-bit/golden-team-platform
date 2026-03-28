@@ -432,3 +432,131 @@ export const legalCases = mysqlTable("legal_cases", {
 });
 export type LegalCase = typeof legalCases.$inferSelect;
 export type InsertLegalCase = typeof legalCases.$inferInsert;
+
+// ─── Bid Evaluation Matrix — RFQ, Bids, Criteria, Evaluation ──────────────────
+
+/**
+ * RFQ (Request for Quotation) — the procurement event that triggers bid collection.
+ * Lifecycle: draft → published → evaluation → awarded → closed
+ */
+export const rfqs = mysqlTable("rfqs", {
+  id: int("id").autoincrement().primaryKey(),
+  rfqNumber: varchar("rfqNumber", { length: 32 }).notNull().unique(),
+  title: varchar("title", { length: 256 }).notNull(),
+  titleAr: varchar("titleAr", { length: 256 }),
+  description: text("description"),
+  descriptionAr: text("descriptionAr"),
+  category: varchar("category", { length: 64 }),
+  budget: bigint("budget", { mode: "number" }),
+  currency: varchar("currency", { length: 8 }).default("SAR").notNull(),
+  submissionDeadline: varchar("submissionDeadline", { length: 32 }),
+  evaluationDeadline: varchar("evaluationDeadline", { length: 32 }),
+  status: mysqlEnum("status", ["draft", "published", "evaluation", "awarded", "closed", "cancelled"]).default("draft").notNull(),
+  awardedVendor: varchar("awardedVendor", { length: 128 }),
+  awardedAmount: bigint("awardedAmount", { mode: "number" }),
+  awardJustification: text("awardJustification"),
+  astraDecisionId: varchar("astraDecisionId", { length: 64 }),
+  createdBy: int("createdBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type Rfq = typeof rfqs.$inferSelect;
+export type InsertRfq = typeof rfqs.$inferInsert;
+
+/**
+ * RFQ line items — what goods/services are being procured.
+ */
+export const rfqItems = mysqlTable("rfq_items", {
+  id: int("id").autoincrement().primaryKey(),
+  rfqId: int("rfqId").notNull(),
+  itemName: varchar("itemName", { length: 256 }).notNull(),
+  itemNameAr: varchar("itemNameAr", { length: 256 }),
+  description: text("description"),
+  quantity: int("quantity").default(1).notNull(),
+  unit: varchar("unit", { length: 32 }).default("unit").notNull(),
+  estimatedUnitPrice: bigint("estimatedUnitPrice", { mode: "number" }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type RfqItem = typeof rfqItems.$inferSelect;
+export type InsertRfqItem = typeof rfqItems.$inferInsert;
+
+/**
+ * Evaluation criteria — weighted scoring dimensions for a specific RFQ.
+ * Each criterion has a type (price, linear, threshold, direct, formula) and weight.
+ * Weights across all criteria for an RFQ must sum to 1.0.
+ */
+export const bidCriteria = mysqlTable("bid_criteria", {
+  id: int("id").autoincrement().primaryKey(),
+  rfqId: int("rfqId").notNull(),
+  name: varchar("name", { length: 128 }).notNull(),
+  nameAr: varchar("nameAr", { length: 128 }),
+  description: text("description"),
+  criterionType: mysqlEnum("criterionType", ["price", "linear", "threshold", "direct", "formula"]).default("linear").notNull(),
+  weight: int("weight").notNull(),          // integer 1-100, normalised to 0-1 by engine
+  higherIsBetter: boolean("higherIsBetter").default(true).notNull(),
+  minValue: bigint("minValue", { mode: "number" }),
+  maxValue: bigint("maxValue", { mode: "number" }),
+  formula: text("formula"),                 // for formula type: e.g. "100 - abs(value - target) / target * 100"
+  thresholds: json("thresholds"),           // for threshold type: [{lower, upper, score}]
+  inputScale: int("inputScale").default(100), // for direct type: original scale (e.g. 10 → 100)
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type BidCriterion = typeof bidCriteria.$inferSelect;
+export type InsertBidCriterion = typeof bidCriteria.$inferInsert;
+
+/**
+ * Bid submissions — one row per vendor per RFQ.
+ * Vendor scores for each criterion are stored in bidScores.
+ */
+export const bidSubmissions = mysqlTable("bid_submissions", {
+  id: int("id").autoincrement().primaryKey(),
+  rfqId: int("rfqId").notNull(),
+  vendorName: varchar("vendorName", { length: 128 }).notNull(),
+  vendorNameAr: varchar("vendorNameAr", { length: 128 }),
+  vendorEmail: varchar("vendorEmail", { length: 320 }),
+  vendorPhone: varchar("vendorPhone", { length: 32 }),
+  totalBidAmount: bigint("totalBidAmount", { mode: "number" }),
+  currency: varchar("currency", { length: 8 }).default("SAR").notNull(),
+  deliveryDays: int("deliveryDays"),
+  warrantyMonths: int("warrantyMonths"),
+  notes: text("notes"),
+  notesAr: text("notesAr"),
+  status: mysqlEnum("status", ["submitted", "under_review", "shortlisted", "rejected", "awarded"]).default("submitted").notNull(),
+  submittedAt: timestamp("submittedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type BidSubmission = typeof bidSubmissions.$inferSelect;
+export type InsertBidSubmission = typeof bidSubmissions.$inferInsert;
+
+/**
+ * Bid criterion scores — one row per vendor per criterion.
+ * Raw value entered by evaluator; final score computed by the bid engine.
+ */
+export const bidScores = mysqlTable("bid_scores", {
+  id: int("id").autoincrement().primaryKey(),
+  bidId: int("bidId").notNull(),
+  criterionId: int("criterionId").notNull(),
+  rawValue: bigint("rawValue", { mode: "number" }),   // the actual number (price, years, score, etc.)
+  computedScore: int("computedScore"),                // 0-100 score from bid engine
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type BidScore = typeof bidScores.$inferSelect;
+export type InsertBidScore = typeof bidScores.$inferInsert;
+
+/**
+ * Evaluation sessions — one per RFQ evaluation run.
+ * Stores the final ranked results from the bid engine as JSON.
+ */
+export const evaluationSessions = mysqlTable("evaluation_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  rfqId: int("rfqId").notNull(),
+  rankedResults: json("rankedResults"),   // array of {vendorName, finalScore, ranking, criterionScores}
+  engineVersion: varchar("engineVersion", { length: 32 }).default("1.0").notNull(),
+  evaluatedBy: int("evaluatedBy"),
+  evaluatedAt: timestamp("evaluatedAt").defaultNow().notNull(),
+  notes: text("notes"),
+});
+export type EvaluationSession = typeof evaluationSessions.$inferSelect;
+export type InsertEvaluationSession = typeof evaluationSessions.$inferInsert;
