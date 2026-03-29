@@ -30,6 +30,9 @@ import {
 import { Streamdown } from "streamdown";
 import { VoiceChat } from "@/components/VoiceChat";
 import { toast as sonnerToast } from "sonner";
+import FilePreviewCard from "@/components/FilePreviewCard";
+import BulkAnalysisDialog from "@/components/BulkAnalysisDialog";
+import { FileSearch } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -102,6 +105,7 @@ export default function NEOChat() {
   const [isCreatingConv, setIsCreatingConv] = useState(false);
   const [newConvTitle, setNewConvTitle] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [bulkAnalysisOpen, setBulkAnalysisOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -512,6 +516,7 @@ export default function NEOChat() {
                       const engineCfg = msg.engine ? ENGINE_CONFIG[msg.engine as keyof typeof ENGINE_CONFIG] : null;
                       const EngineIcon = engineCfg?.icon;
                       const routingScore = (msg.routingScore ?? null) as RoutingScore | null;
+                      const msgAttachments = (Array.isArray(msg.attachments) ? msg.attachments : []) as Attachment[];
 
                       return (
                         <div key={msg.id} className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
@@ -567,9 +572,9 @@ export default function NEOChat() {
                             </div>
 
                             {/* Attachments */}
-                            {(() => { const atts = Array.isArray(msg.attachments) ? (msg.attachments as Attachment[]) : []; return atts.length > 0 ? (
+                            {msgAttachments.length > 0 ? (
                               <div className="flex flex-wrap gap-1 mt-1">
-                                {atts.map((att, i) => (
+                                {msgAttachments.map((att, i) => (
                                   <a
                                     key={i}
                                     href={att.url}
@@ -579,9 +584,19 @@ export default function NEOChat() {
                                   >
                                     <Paperclip className="w-2.5 h-2.5" />
                                     {att.name}
-                                  </a>                                ))}
+                                  </a>
+                                ))}
                               </div>
-                            ) : null; })()}
+                            ) : null}
+
+                            {/* File Preview Card — shows what NEO read from attached files */}
+                            {!isUser && (msg.contextUsed as any)?.files?.length > 0 ? (
+                              <FilePreviewCard
+                                files={(msg.contextUsed as any).files}
+                                isRTL={isRTL}
+                              />
+                            ) : null}
+
                             {/* Timestamp */}
                             <div className="text-[9px] text-white/25 px-1">
                               {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -672,6 +687,21 @@ export default function NEOChat() {
                   </Tooltip>
                   <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} accept=".pdf,.doc,.docx,.xls,.xlsx,.xlsm,.csv,.pptx,.ppt,.txt,.md,.json,.xml,.png,.jpg,.jpeg,.webp,.tiff,.tif,.bmp,.gif,.heic,.heif,.pages,.numbers,.key,.odt,.ods,.odp,.rtf,.dwg,.dxf" />
 
+                  {/* Bulk Analysis button */}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-10 w-10 p-0 text-white/40 hover:text-amber-400 hover:bg-amber-400/10 flex-shrink-0"
+                        onClick={() => setBulkAnalysisOpen(true)}
+                      >
+                        <FileSearch className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{t("Analyse Documents", "تحليل المستندات")}</TooltipContent>
+                  </Tooltip>
+
                   {/* Textarea */}
                   <div className="flex-1 relative">
                     <textarea
@@ -751,6 +781,12 @@ export default function NEOChat() {
           )}
         </div>
       </div>
+      {/* Bulk Analysis Dialog */}
+      <BulkAnalysisDialog
+        open={bulkAnalysisOpen}
+        onOpenChange={setBulkAnalysisOpen}
+        isRTL={isRTL}
+      />
     </TooltipProvider>
   );
 }

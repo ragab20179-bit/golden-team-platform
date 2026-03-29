@@ -297,3 +297,10 @@
 - [x] Update UniversalFileUpload with PPTX/Pages/Numbers/RTF categories
 - [x] Write vitest tests for fileParser (14 tests, all passing)
 - [x] TypeScript: 0 errors, 190/190 tests passing
+
+## Phase 21 — Login Fix + File Preview + Persistent Context + Bulk Analysis
+- [x] Fix Employee Portal login flow (confirmed working by user)
+- [x] File preview card in NEO Chat — collapsible card showing extracted file content below AI response
+- [x] Persistent file context across turns — store uploadIds with conversation for follow-up messages
+- [x] Bulk document analysis mode — dedicated button for multi-file comparison/summary reports
+- [x] Write vitest tests for all new features (24 new tests, 214 total passing)

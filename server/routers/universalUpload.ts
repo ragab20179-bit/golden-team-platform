@@ -80,6 +80,50 @@ export function getUploadedFileContext(uploadIds: string[], userId: number): str
   return parts.join("\n\n---\n\n");
 }
 
+/**
+ * Get structured metadata for uploaded files — used for file preview cards in chat.
+ * Returns an array of file info objects with name, category, summary, and truncated content.
+ */
+export function getUploadedFileMetadata(uploadIds: string[], userId: number): Array<{
+  uploadId: string;
+  fileName: string;
+  mimeType: string;
+  category: string;
+  summary: string | null;
+  extractedTextPreview: string;
+  sizeBytes: number;
+  fileUrl: string | null;
+}> {
+  const results: Array<{
+    uploadId: string;
+    fileName: string;
+    mimeType: string;
+    category: string;
+    summary: string | null;
+    extractedTextPreview: string;
+    sizeBytes: number;
+    fileUrl: string | null;
+  }> = [];
+  for (const uploadId of uploadIds) {
+    const session = sessions.get(uploadId);
+    if (!session || session.userId !== userId || session.status !== "complete") continue;
+    const result = session.parsedResult as any;
+    if (!result) continue;
+    const text = result.extractedText || result.text || "";
+    results.push({
+      uploadId,
+      fileName: session.fileName,
+      mimeType: session.mimeType,
+      category: result.category || "unknown",
+      summary: result.summary || null,
+      extractedTextPreview: text.length > 500 ? text.slice(0, 500) + "..." : text,
+      sizeBytes: session.fileSize,
+      fileUrl: session.fileUrl || null,
+    });
+  }
+  return results;
+}
+
 // ─── Session Cleanup (2h TTL) ─────────────────────────────────────────────────
 
 setInterval(() => {

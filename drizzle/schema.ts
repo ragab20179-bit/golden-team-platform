@@ -183,6 +183,7 @@ export const neoConversations = mysqlTable("neo_conversations", {
   participantIds: json("participantIds"), // array of user IDs
   lastMessageAt: timestamp("lastMessageAt").defaultNow(),
   lastMessagePreview: varchar("lastMessagePreview", { length: 256 }),
+  fileUploadIds: json("fileUploadIds").$type<string[]>(),  // accumulated uploadIds across all turns
   isArchived: boolean("isArchived").notNull().default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

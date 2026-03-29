@@ -24,7 +24,7 @@ import { eq, desc, and } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { invokeGPT, isGPTConfigured, buildAnalyticalSystemPrompt } from "../_core/gpt";
 import { TRPCError } from "@trpc/server";
-import { getUploadedFileContext } from "./universalUpload";
+import { getUploadedFileContext, getUploadedFileMetadata } from "./universalUpload";
 
 // ─── AI Routing Engine ────────────────────────────────────────────────────────
 
@@ -330,13 +330,28 @@ export const neoChatRouter = router({
           content: m.body,
         }));
 
-      // 4a. Inject file context from universal uploads (if any)
+      // 4a. Persistent file context — merge new uploadIds with conversation-level accumulated ones
+      const existingUploadIds: string[] = Array.isArray(conv.fileUploadIds) ? conv.fileUploadIds : [];
+      const newUploadIds = input.uploadIds ?? [];
+      const allUploadIds = Array.from(new Set([...existingUploadIds, ...newUploadIds]));
+
+      // Update conversation with accumulated uploadIds if new ones were added
+      if (newUploadIds.length > 0) {
+        await db
+          .update(neoConversations)
+          .set({ fileUploadIds: allUploadIds })
+          .where(eq(neoConversations.id, input.conversationId));
+      }
+
+      // Inject file context from ALL accumulated uploads (persistent across turns)
       let enrichedBody = input.body;
-      if (input.uploadIds && input.uploadIds.length > 0) {
-        const fileContext = getUploadedFileContext(input.uploadIds, ctx.user.id);
+      let fileMetadata: ReturnType<typeof getUploadedFileMetadata> = [];
+      if (allUploadIds.length > 0) {
+        const fileContext = getUploadedFileContext(allUploadIds, ctx.user.id);
         if (fileContext) {
           enrichedBody = `${input.body}\n\n---\n**Attached Files Context:**\n${fileContext}`;
         }
+        fileMetadata = getUploadedFileMetadata(allUploadIds, ctx.user.id);
       }
 
       // 4. Call the correct AI engine based on routing decision
@@ -395,7 +410,7 @@ export const neoChatRouter = router({
         }
       }
 
-      // 5. Save AI response message
+      // 5. Save AI response message (with file metadata in contextUsed for preview cards)
       const [aiMsgResult] = await db.insert(neoMessages).values({
         conversationId: input.conversationId,
         senderType: "ai",
@@ -403,7 +418,7 @@ export const neoChatRouter = router({
         body: aiBody,
         engine: actualEngine,
         routingScore: routing.breakdown,
-        contextUsed: null,
+        contextUsed: fileMetadata.length > 0 ? { files: fileMetadata } : null,
         isRead: false,
       });
       const aiMsgId = (aiMsgResult as any).insertId as number;
@@ -475,6 +490,68 @@ export const neoChatRouter = router({
       return {
         ...decision,
         gptAvailable: isGPTConfigured(),
+      };
+    }),
+
+  /**
+   * Bulk Document Analysis — accepts multiple uploadIds and returns a structured
+   * comparison/summary report. Used by the "Analyse Documents" button in NEO Chat.
+   */
+  bulkAnalyze: protectedProcedure
+    .input(z.object({
+      uploadIds: z.array(z.string()).min(1).max(20),
+      analysisType: z.enum(["comparison", "summary", "contract_review", "tender_evaluation"]).default("summary"),
+      customPrompt: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Gather file context from all uploads
+      const fileContext = getUploadedFileContext(input.uploadIds, ctx.user.id);
+      const fileMetadata = getUploadedFileMetadata(input.uploadIds, ctx.user.id);
+
+      if (!fileContext || fileMetadata.length === 0) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "No valid parsed files found for the provided upload IDs." });
+      }
+
+      const analysisPrompts: Record<string, string> = {
+        comparison: `You are a document analysis expert. Compare the following ${fileMetadata.length} documents. Identify:\n1. Key similarities and differences\n2. Conflicting information\n3. Unique content in each document\n4. Overall assessment\n\nPresent your analysis in a structured markdown format with clear sections and a comparison table.`,
+        summary: `You are a document analysis expert. Provide a comprehensive summary of the following ${fileMetadata.length} documents. For each document:\n1. Key points and main topics\n2. Important data/figures mentioned\n3. Action items or recommendations\n\nThen provide an overall synthesis combining insights from all documents.`,
+        contract_review: `You are a legal document analyst. Review the following ${fileMetadata.length} documents for:\n1. Key terms and conditions\n2. Obligations and liabilities\n3. Risk areas and red flags\n4. Missing clauses or gaps\n5. Recommendations\n\nPresent findings in a structured format with risk ratings (High/Medium/Low).`,
+        tender_evaluation: `You are a procurement evaluation expert. Analyze the following ${fileMetadata.length} tender/bid documents for:\n1. Compliance with requirements\n2. Technical capability assessment\n3. Financial comparison\n4. Strengths and weaknesses of each submission\n5. Ranking recommendation\n\nPresent as a structured evaluation matrix.`,
+      };
+
+      const systemPrompt = analysisPrompts[input.analysisType] || analysisPrompts.summary;
+      const userPrompt = input.customPrompt
+        ? `${input.customPrompt}\n\n---\n\n${fileContext}`
+        : `Analyze these documents:\n\n${fileContext}`;
+
+      let analysisResult = "";
+      try {
+        if (isGPTConfigured()) {
+          const gptResult = await invokeGPT({
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
+            ],
+          });
+          analysisResult = gptResult.content;
+        } else {
+          const response = await invokeLLM({
+            messages: [
+              { role: "system" as const, content: systemPrompt },
+              { role: "user" as const, content: userPrompt },
+            ],
+          });
+          const rawContent = response.choices?.[0]?.message?.content;
+          analysisResult = typeof rawContent === "string" ? rawContent : "Analysis could not be completed.";
+        }
+      } catch {
+        analysisResult = "Bulk analysis failed. Please try again.";
+      }
+
+      return {
+        analysis: analysisResult,
+        filesAnalyzed: fileMetadata,
+        analysisType: input.analysisType,
       };
     }),
 });

@@ -1,0 +1,1 @@
+ALTER TABLE `neo_conversations` ADD `fileUploadIds` json;
