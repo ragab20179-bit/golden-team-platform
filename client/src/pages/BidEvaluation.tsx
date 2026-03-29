@@ -4,7 +4,7 @@
  *   RFQ Creation → Criteria Setup → Bid Submission → Scoring → Award
  */
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import PortalLayout from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +23,6 @@ import {
   FileText, Plus, Scale, Trophy, ChevronRight,
   ClipboardList, Users, BarChart3, RefreshCw, Gavel, Clock,
   Send, Copy, Check, X, RotateCcw, Link2, UserPlus,
-  Award, Sparkles, ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -375,19 +374,6 @@ function RFQDetail({ rfq, onBack }: { rfq: RFQ; onBack: () => void }) {
   const { data: submissions, refetch: refetchSubmissions } = trpc.bidEvaluation.getSubmissions.useQuery({ rfqId: rfq.id });
   const { data: evalSession } = trpc.bidEvaluation.getEvaluation.useQuery({ rfqId: rfq.id });
 
-  // Award + Odoo PO state
-  const [showAwardDialog, setShowAwardDialog] = useState(false);
-  const [awardResult, setAwardResult] = useState<{
-    odooPOId: number | null; odooPOName: string | null;
-    odooUrl: string | null; odooError: string | null;
-  } | null>(null);
-
-  // AI Memo state
-  const [showMemoDialog, setShowMemoDialog] = useState(false);
-  const [memoContent, setMemoContent] = useState<string | null>(null);
-  const [memoMeta, setMemoMeta] = useState<{ rfqNumber: string; winner: string | null; preparedBy: string } | null>(null);
-  const memoRef = useRef<HTMLDivElement>(null);
-
   const evaluate = trpc.bidEvaluation.evaluate.useMutation({
     onSuccess: () => {
       toast.success("Evaluation complete — results ready");
@@ -396,37 +382,11 @@ function RFQDetail({ rfq, onBack }: { rfq: RFQ; onBack: () => void }) {
     onError: (err) => toast.error(`Evaluation failed: ${err.message}`),
   });
 
-  const awardRFQ = trpc.bidEvaluation.awardRFQ.useMutation({
-    onSuccess: (data) => {
-      setAwardResult(data);
-      setShowAwardDialog(true);
-      utils.bidEvaluation.listRFQs.invalidate();
-      utils.bidEvaluation.getSubmissions.invalidate({ rfqId: rfq.id });
-      if (data.odooPOName) toast.success(`Awarded! Odoo PO: ${data.odooPOName}`);
-      else if (data.odooError) toast.warning("Awarded. Odoo PO creation failed — see details.");
-      else toast.success("RFQ awarded successfully.");
-    },
-    onError: (err) => toast.error(`Award failed: ${err.message}`),
-  });
-
-  const generateMemo = trpc.bidEvaluation.generateAwardMemo.useMutation({
-    onSuccess: (data) => {
-      const memoText = typeof data.memo === "string" ? data.memo : JSON.stringify(data.memo);
-      setMemoContent(memoText);
-      setMemoMeta({ rfqNumber: data.rfqNumber, winner: data.winner, preparedBy: data.preparedBy });
-      setShowMemoDialog(true);
-    },
-    onError: (err) => toast.error(`Memo generation failed: ${err.message}`),
-  });
-
   const rankedResults: EvalResult[] = evalSession?.rankedResults
     ? (JSON.parse(evalSession.rankedResults) as EvalResult[])
     : [];
 
   const typedEvalSession = evalSession as EvalSession | null | undefined;
-  const winner = rankedResults[0];
-  const winnerSubmission = (submissions as Submission[] | undefined)
-    ?.find(s => s.supplierName === winner?.supplierName);
 
   return (
     <div className="space-y-6">
@@ -586,126 +546,9 @@ function RFQDetail({ rfq, onBack }: { rfq: RFQ; onBack: () => void }) {
                 <p className="text-sm text-white/80 leading-relaxed">{typedEvalSession.aiJustification}</p>
               </div>
             )}
-
-            {/* Award + AI Memo Action Buttons */}
-            {winner && rfq.status !== "awarded" && (
-              <div className="flex gap-3 pt-2">
-                <Button
-                  onClick={() => {
-                    if (!winnerSubmission) return toast.error("Cannot identify winning submission");
-                    awardRFQ.mutate({ rfqId: rfq.id, supplierId: winnerSubmission.id, createOdooPO: true });
-                  }}
-                  disabled={awardRFQ.isPending}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white gap-2 font-semibold"
-                >
-                  <Award className="w-4 h-4" />
-                  {awardRFQ.isPending ? "Awarding & Creating PO..." : `Award to ${winner.supplierName}`}
-                </Button>
-                <Button
-                  onClick={() => generateMemo.mutate({ rfqId: rfq.id, language: "both" })}
-                  disabled={generateMemo.isPending}
-                  variant="outline"
-                  className="flex-1 border-purple-500/40 text-purple-400 hover:bg-purple-500/10 bg-transparent gap-2"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  {generateMemo.isPending ? "Generating Memo..." : "AI Award Memo"}
-                </Button>
-              </div>
-            )}
-
-            {/* Re-generate memo if already awarded */}
-            {rfq.status === "awarded" && (
-              <Button
-                onClick={() => generateMemo.mutate({ rfqId: rfq.id, language: "both" })}
-                disabled={generateMemo.isPending}
-                variant="outline"
-                className="w-full border-purple-500/40 text-purple-400 hover:bg-purple-500/10 bg-transparent gap-2"
-              >
-                <Sparkles className="w-4 h-4" />
-                {generateMemo.isPending ? "Generating Memo..." : "Generate Award Memo"}
-              </Button>
-            )}
           </CardContent>
         </Card>
       )}
-
-      {/* Award Result Dialog */}
-      <Dialog open={showAwardDialog} onOpenChange={setShowAwardDialog}>
-        <DialogContent className="bg-[#0A0F1E] border-white/10 text-white max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              <Award className="w-5 h-5 text-emerald-400" /> Award Confirmed
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-              <p className="text-sm text-emerald-400 font-medium">RFQ awarded to {winner?.supplierName}</p>
-              <p className="text-xs text-white/50 mt-1">Status updated to Awarded in portal database.</p>
-            </div>
-            {awardResult?.odooPOName && (
-              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                <p className="text-xs text-blue-400 font-medium mb-1">Odoo Purchase Order Created</p>
-                <p className="text-sm text-white font-bold">{awardResult.odooPOName}</p>
-                {awardResult.odooUrl && (
-                  <a href={awardResult.odooUrl} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 mt-2">
-                    <ExternalLink className="w-3 h-3" /> View in Odoo
-                  </a>
-                )}
-              </div>
-            )}
-            {awardResult?.odooError && (
-              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
-                <p className="text-xs text-red-400 font-medium mb-1">Odoo PO Creation Failed</p>
-                <p className="text-xs text-white/50">{awardResult.odooError}</p>
-                <p className="text-xs text-white/40 mt-1">The award was saved locally. Create the PO manually in Odoo.</p>
-              </div>
-            )}
-            <Button onClick={() => setShowAwardDialog(false)} className="w-full bg-white/10 hover:bg-white/20 text-white">
-              Close
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* AI Award Memo Dialog */}
-      <Dialog open={showMemoDialog} onOpenChange={setShowMemoDialog}>
-        <DialogContent className="bg-[#0A0F1E] border-white/10 text-white max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
-          <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="text-white flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-400" /> Award Recommendation Memo
-            </DialogTitle>
-            {memoMeta && (
-              <p className="text-xs text-white/40">
-                {memoMeta.rfqNumber} · Recommended: {memoMeta.winner ?? "N/A"} · Prepared by: {memoMeta.preparedBy}
-              </p>
-            )}
-          </DialogHeader>
-          <div className="flex-1 overflow-y-auto mt-2">
-            <div ref={memoRef} className="p-4 bg-white/5 rounded-xl border border-white/10 text-sm text-white/80 leading-relaxed whitespace-pre-wrap font-mono text-xs">
-              {memoContent ?? ""}
-            </div>
-          </div>
-          <div className="flex gap-3 pt-4 flex-shrink-0">
-            <Button
-              onClick={() => {
-                if (memoContent) {
-                  navigator.clipboard.writeText(memoContent);
-                  toast.success("Memo copied to clipboard");
-                }
-              }}
-              variant="outline"
-              className="flex-1 border-white/20 text-white/70 bg-transparent gap-2"
-            >
-              <Copy className="w-4 h-4" /> Copy Memo
-            </Button>
-            <Button onClick={() => setShowMemoDialog(false)} className="flex-1 bg-white/10 hover:bg-white/20 text-white">
-              Close
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       {/* Supplier Invite Management */}
       <InvitePanel rfqId={rfq.id} />
     </div>

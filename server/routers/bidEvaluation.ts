@@ -10,8 +10,6 @@ import {
   rfqs, rfqItems, bidCriteria, bidSubmissions, bidScores, evaluationSessions,
 } from "../../drizzle/schema";
 import { eq, desc } from "drizzle-orm";
-import { odooCreate, odooSearchRead } from "../odoo";
-import { invokeLLM } from "../_core/llm";
 
 const BID_ENGINE_URL = process.env.BID_ENGINE_URL ?? "http://localhost:8001";
 
@@ -387,200 +385,14 @@ export const bidEvaluationRouter = router({
     .input(z.object({
       rfqId: z.number().int(),
       supplierId: z.number().int(),
-      createOdooPO: z.boolean().default(true),
     }))
-    .mutation(async ({ input, ctx }) => {
+    .mutation(async ({ input }) => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
-
-      // 1. Mark RFQ and winning bid as awarded in local DB
       await db.update(rfqs).set({ status: "awarded" }).where(eq(rfqs.id, input.rfqId));
       await db.update(bidSubmissions)
         .set({ status: "awarded" })
         .where(eq(bidSubmissions.id, input.supplierId));
-
-      // 2. Fetch all data needed for Odoo PO
-      const rfqRows = await db.select().from(rfqs).where(eq(rfqs.id, input.rfqId)).limit(1);
-      const rfqData = rfqRows[0];
-      const winnerRows = await db.select().from(bidSubmissions)
-        .where(eq(bidSubmissions.id, input.supplierId)).limit(1);
-      const winner = winnerRows[0];
-      const items = await db.select().from(rfqItems).where(eq(rfqItems.rfqId, input.rfqId));
-
-      let odooPOId: number | null = null;
-      let odooPOName: string | null = null;
-      let odooError: string | null = null;
-
-      // 3. Create Purchase Order in Odoo via XML-RPC (if requested)
-      if (input.createOdooPO && rfqData && winner) {
-        try {
-          // Find or create partner in Odoo by supplier name/email
-          let partnerId: number | null = null;
-          if (winner.supplierEmail) {
-            const partners = await odooSearchRead<{ id: number }>("res.partner", [
-              ["email", "=", winner.supplierEmail],
-            ], ["id"], { limit: 1 });
-            if (partners.length > 0) partnerId = partners[0].id;
-          }
-          if (!partnerId) {
-            const partners = await odooSearchRead<{ id: number }>("res.partner", [
-              ["name", "ilike", winner.supplierName],
-            ], ["id"], { limit: 1 });
-            if (partners.length > 0) partnerId = partners[0].id;
-          }
-          if (!partnerId) {
-            // Create new partner in Odoo
-            partnerId = await odooCreate("res.partner", {
-              name: winner.supplierName,
-              email: winner.supplierEmail ?? "",
-              supplier_rank: 1,
-              comment: `Auto-created from Golden Team Bid Evaluation — RFQ ${rfqData.rfqNumber}`,
-            });
-          }
-
-          // Build order lines from RFQ items
-          const orderLines = items.length > 0
-            ? items.map(item => [0, 0, {
-                name: item.description,
-                product_qty: item.quantity ?? 1,
-                price_unit: item.estimatedPrice ?? 0,
-                date_planned: new Date().toISOString().slice(0, 10),
-              }])
-            : [[0, 0, {
-                name: rfqData.title,
-                product_qty: 1,
-                price_unit: winner.totalPrice ?? 0,
-                date_planned: new Date().toISOString().slice(0, 10),
-              }]];
-
-          // Create the PO
-          odooPOId = await odooCreate("purchase.order", {
-            partner_id: partnerId,
-            name: `GT-PO-${rfqData.rfqNumber}`,
-            notes: `Auto-generated from Golden Team Bid Evaluation.\nRFQ: ${rfqData.rfqNumber}\nAwarded to: ${winner.supplierName}\nCreated by: ${ctx.user?.name ?? "system"}`,
-            order_line: orderLines,
-          });
-
-          // Fetch the PO name Odoo assigned
-          if (odooPOId) {
-            const poRows = await odooSearchRead<{ id: number; name: string }>("purchase.order", [
-              ["id", "=", odooPOId],
-            ], ["id", "name"], { limit: 1 });
-            odooPOName = poRows[0]?.name ?? `PO-${odooPOId}`;
-          }
-        } catch (err) {
-          // Non-fatal: log the error but don't block the award
-          odooError = err instanceof Error ? err.message : String(err);
-          console.error("[awardRFQ] Odoo PO creation failed:", odooError);
-        }
-      }
-
-      return {
-        success: true,
-        odooPOId,
-        odooPOName,
-        odooError,
-        odooUrl: odooPOId ? `https://goldenteam.odoo.com/odoo/purchase/${odooPOId}` : null,
-      };
-    }),
-
-  // ── NEO AI Award Justification Memo ─────────────────────────────────────────
-  generateAwardMemo: protectedProcedure
-    .input(z.object({
-      rfqId: z.number().int(),
-      language: z.enum(["en", "ar", "both"]).default("both"),
-    }))
-    .mutation(async ({ input, ctx }) => {
-      const db = await getDb();
-      if (!db) throw new Error("Database not available");
-
-      // Fetch all data for the memo
-      const rfqRows = await db.select().from(rfqs).where(eq(rfqs.id, input.rfqId)).limit(1);
-      const rfqData = rfqRows[0];
-      if (!rfqData) throw new Error("RFQ not found");
-
-      const criteria = await db.select().from(bidCriteria).where(eq(bidCriteria.rfqId, input.rfqId));
-      const submissions = await db.select().from(bidSubmissions)
-        .where(eq(bidSubmissions.rfqId, input.rfqId))
-        .orderBy(desc(bidSubmissions.submittedAt));
-      const evalRows = await db.select().from(evaluationSessions)
-        .where(eq(evaluationSessions.rfqId, input.rfqId))
-        .orderBy(desc(evaluationSessions.evaluatedAt))
-        .limit(1);
-      const evalSession = evalRows[0];
-
-      const rankedResults = evalSession?.rankedResults
-        ? JSON.parse(evalSession.rankedResults as string) as Array<{
-            rank: number; supplierName: string; totalScore: number;
-            technicalScore: number; economicScore: number;
-          }>
-        : [];
-
-      const winner = rankedResults[0];
-      const winnerBid = submissions.find(s => s.supplierName === winner?.supplierName);
-
-      // Build structured context for the LLM
-      const criteriaList = criteria.map(c =>
-        `- ${c.name} (weight: ${c.weight}%, stage: ${c.stage}, type: ${c.scoringType})`
-      ).join("\n");
-
-      const rankingTable = rankedResults.map(r =>
-        `${r.rank}. ${r.supplierName} — Total: ${r.totalScore.toFixed(1)}/100 | Technical: ${r.technicalScore.toFixed(1)} | Economic: ${r.economicScore.toFixed(1)}`
-      ).join("\n");
-
-      const winnerDetails = winnerBid
-        ? `Price: ${winnerBid.totalPrice ? `SAR ${winnerBid.totalPrice.toLocaleString()}` : "Not specified"} | Delivery: ${winnerBid.deliveryDays ? `${winnerBid.deliveryDays} days` : "Not specified"}`
-        : "";
-
-      const today = new Date().toLocaleDateString("en-SA", { year: "numeric", month: "long", day: "numeric" });
-      const preparedBy = ctx.user?.name ?? "Procurement Officer";
-
-      const systemPrompt = `You are a senior procurement officer at Golden Team Trading Services (شركة الفريق الذهبي للخدمات التجارية), a Saudi Arabian enterprise. 
-You write formal, professional procurement award recommendation memos in both Arabic and English.
-Your memos follow Saudi government procurement best practices and NCAR guidelines.
-Always use formal business Arabic (فصحى تجارية) and professional English.
-Structure the memo with: header, executive summary, evaluation methodology, ranking table, winner justification, recommendation, and signature block.`;
-
-      const userPrompt = `Generate a formal bid award recommendation memo for the following procurement:
-
-RFQ Number: ${rfqData.rfqNumber}
-RFQ Title: ${rfqData.title}
-Date: ${today}
-Prepared by: ${preparedBy}
-Total Bidders: ${submissions.length}
-
-Evaluation Criteria:
-${criteriaList}
-
-Technical Weight: ${rfqData.technicalWeight}% | Economic Weight: ${rfqData.economicWeight}%
-
-Ranking Results:
-${rankingTable}
-
-Recommended Supplier: ${winner?.supplierName ?? "N/A"}
-${winnerDetails}
-
-Language: ${input.language === "both" ? "Write the full memo in BOTH Arabic (first) and English (second), clearly separated" : input.language === "ar" ? "Write in Arabic only" : "Write in English only"}
-
-Format the memo professionally with clear sections, formal letterhead style, and management sign-off block.`;
-
-      const response = await invokeLLM({
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-      });
-
-      const memo = response.choices[0]?.message?.content ?? "";
-
-      return {
-        memo,
-        rfqNumber: rfqData.rfqNumber,
-        rfqTitle: rfqData.title,
-        winner: winner?.supplierName ?? null,
-        totalBidders: submissions.length,
-        generatedAt: new Date(),
-        preparedBy,
-      };
+      return { success: true };
     }),
 });

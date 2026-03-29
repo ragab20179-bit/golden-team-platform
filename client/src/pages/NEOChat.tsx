@@ -25,10 +25,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import {
   MessageSquare, Plus, Send, Paperclip, X, Bot, User,
   Zap, Brain, Layers, Archive, Loader2, ChevronRight,
-  Cpu, Sparkles, AlertCircle, Mic,
+  Cpu, Sparkles, AlertCircle, Mic, CheckCircle2, FileText,
 } from "lucide-react";
 import { Streamdown } from "streamdown";
 import { VoiceChat } from "@/components/VoiceChat";
+import { toast as sonnerToast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -37,6 +38,16 @@ interface Attachment {
   url: string;
   mimeType: string;
   sizeBytes: number;
+}
+
+/** Tracks a file being uploaded through the universal upload pipeline */
+interface PendingUpload {
+  id: string;
+  file: File;
+  uploadId?: string;
+  status: "uploading" | "parsing" | "ready" | "error";
+  progress: number;
+  errorMessage?: string;
 }
 
 // ─── Engine badge config ──────────────────────────────────────────────────────
@@ -86,6 +97,7 @@ export default function NEOChat() {
   const [voiceModeOpen, setVoiceModeOpen] = useState(false);
   const [messageInput, setMessageInput] = useState("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isCreatingConv, setIsCreatingConv] = useState(false);
   const [newConvTitle, setNewConvTitle] = useState("");
@@ -157,40 +169,107 @@ export default function NEOChat() {
     e.preventDefault();
     setIsDragging(false);
     const files = Array.from(e.dataTransfer.files);
-    files.forEach(file => {
-      // For now, attach as metadata (actual upload would go through S3)
-      setAttachments(prev => [...prev, {
-        name: file.name,
-        url: URL.createObjectURL(file),
-        mimeType: file.type,
-        sizeBytes: file.size,
-      }]);
-    });
+    files.forEach(file => uploadFileThroughPipeline(file));
   }, []);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
-    files.forEach(file => {
-      setAttachments(prev => [...prev, {
-        name: file.name,
-        url: URL.createObjectURL(file),
-        mimeType: file.type,
-        sizeBytes: file.size,
-      }]);
-    });
+    files.forEach(file => uploadFileThroughPipeline(file));
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }, []);
+
+  /**
+   * Upload a file through the universal upload pipeline (chunked -> S3 -> parse).
+   * Uses trpc.useUtils().client for direct async calls outside React render.
+   */
+  const uploadFileThroughPipeline = useCallback(async (file: File) => {
+    const localId = `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const CHUNK_SIZE = 5 * 1024 * 1024; // 5 MB
+    const totalChunks = Math.max(1, Math.ceil(file.size / CHUNK_SIZE));
+    const client = utils.client;
+
+    setPendingUploads(prev => [...prev, {
+      id: localId, file, status: "uploading", progress: 0,
+    }]);
+
+    try {
+      // Step 1: Initiate
+      const initiated = await client.universalUpload.initiate.mutate({
+        fileName: file.name,
+        mimeType: file.type || "application/octet-stream",
+        fileSize: file.size,
+        totalChunks,
+        context: "global",
+      });
+      const { uploadId } = initiated;
+      setPendingUploads(prev => prev.map(u => u.id === localId ? { ...u, uploadId } : u));
+
+      // Step 2: Upload chunks
+      for (let i = 0; i < totalChunks; i++) {
+        const start = i * CHUNK_SIZE;
+        const end = Math.min(start + CHUNK_SIZE, file.size);
+        const slice = file.slice(start, end);
+        const arrayBuffer = await slice.arrayBuffer();
+        const base64 = btoa(Array.from(new Uint8Array(arrayBuffer), b => String.fromCharCode(b)).join(''));
+        await client.universalUpload.uploadChunk.mutate({ uploadId, chunkIndex: i, chunkData: base64 });
+        const progress = Math.round(((i + 1) / totalChunks) * 80);
+        setPendingUploads(prev => prev.map(u => u.id === localId ? { ...u, progress } : u));
+      }
+
+      // Step 3: Finalize
+      await client.universalUpload.finalize.mutate({ uploadId });
+      setPendingUploads(prev => prev.map(u => u.id === localId ? { ...u, status: "parsing", progress: 85 } : u));
+
+      // Step 4: Poll for parse completion
+      let attempts = 0;
+      const poll = async (): Promise<void> => {
+        const status = await client.universalUpload.getStatus.query({ uploadId });
+        if (status.status === "complete") {
+          setPendingUploads(prev => prev.map(u => u.id === localId ? { ...u, status: "ready", progress: 100 } : u));
+          sonnerToast.success(`${file.name} parsed and ready`);
+        } else if (status.status === "error") {
+          setPendingUploads(prev => prev.map(u => u.id === localId ? { ...u, status: "error", errorMessage: status.errorMessage } : u));
+          sonnerToast.error(`Failed to parse ${file.name}`);
+        } else if (attempts < 30) {
+          attempts++;
+          await new Promise(r => setTimeout(r, 2000));
+          return poll();
+        } else {
+          setPendingUploads(prev => prev.map(u => u.id === localId ? { ...u, status: "error", errorMessage: "Parsing timed out" } : u));
+        }
+      };
+      await poll();
+    } catch (err: any) {
+      setPendingUploads(prev => prev.map(u => u.id === localId ? { ...u, status: "error", errorMessage: err.message } : u));
+      sonnerToast.error(`Upload failed: ${err.message}`);
+    }
+  }, [utils]);
+
 
   // ─── Send message ────────────────────────────────────────────────────────────
 
   const handleSend = useCallback(async () => {
     if (!messageInput.trim() || !activeConvId || isSending) return;
+    // Block send if any uploads are still in progress
+    const hasUploading = pendingUploads.some(u => u.status === "uploading" || u.status === "parsing");
+    if (hasUploading) {
+      sonnerToast.warning(t("Wait for files to finish uploading", "انتظر حتى تنتهي رفع الملفات"));
+      return;
+    }
     setIsSending(true);
+    // Collect uploadIds from completed uploads
+    const uploadIds = pendingUploads
+      .filter(u => u.status === "ready" && u.uploadId)
+      .map(u => u.uploadId!);
     sendMessageMutation.mutate({
       conversationId: activeConvId,
       body: messageInput.trim(),
       attachments,
+      uploadIds,
     });
-  }, [messageInput, activeConvId, isSending, attachments, sendMessageMutation]);
+    // Clear pending uploads after send
+    setPendingUploads([]);
+  }, [messageInput, activeConvId, isSending, attachments, pendingUploads, sendMessageMutation, t]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -549,14 +628,26 @@ export default function NEOChat() {
                   </div>
                 )}
 
-                {/* Attachment previews */}
-                {attachments.length > 0 && (
+                {/* Pending uploads — real-time progress */}
+                {pendingUploads.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-3">
-                    {attachments.map((att, i) => (
-                      <div key={i} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/15 text-xs text-white/70">
-                        <Paperclip className="w-3 h-3 text-amber-400/70" />
-                        <span className="max-w-[120px] truncate">{att.name}</span>
-                        <button onClick={() => setAttachments(prev => prev.filter((_, idx) => idx !== i))} className="text-white/30 hover:text-white/70">
+                    {pendingUploads.map((pu) => (
+                      <div key={pu.id} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs
+                        ${pu.status === "ready" ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+                          : pu.status === "error" ? "bg-red-500/10 border-red-500/30 text-red-300"
+                          : "bg-white/5 border-white/15 text-white/70"}`}>
+                        {pu.status === "ready" ? <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                          : pu.status === "error" ? <AlertCircle className="w-3 h-3 text-red-400" />
+                          : <Loader2 className="w-3 h-3 animate-spin text-amber-400" />}
+                        <span className="max-w-[120px] truncate">{pu.file.name}</span>
+                        {pu.status !== "ready" && pu.status !== "error" && (
+                          <span className="text-[10px] text-white/40">{pu.progress}%</span>
+                        )}
+                        {pu.status === "parsing" && (
+                          <span className="text-[10px] text-amber-400/70">{t("Parsing...", "جاري التحليل...")}</span>
+                        )}
+                        <button onClick={() => setPendingUploads(prev => prev.filter(u => u.id !== pu.id))}
+                          className="text-white/30 hover:text-white/70 ml-1">
                           <X className="w-3 h-3" />
                         </button>
                       </div>
@@ -579,7 +670,7 @@ export default function NEOChat() {
                     </TooltipTrigger>
                     <TooltipContent>{t("Attach file", "إرفاق ملف")}</TooltipContent>
                   </Tooltip>
-                  <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} />
+                  <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileSelect} accept=".pdf,.doc,.docx,.xls,.xlsx,.xlsm,.csv,.pptx,.ppt,.txt,.md,.json,.xml,.png,.jpg,.jpeg,.webp,.tiff,.tif,.bmp,.gif,.heic,.heif,.pages,.numbers,.key,.odt,.ods,.odp,.rtf,.dwg,.dxf" />
 
                   {/* Textarea */}
                   <div className="flex-1 relative">

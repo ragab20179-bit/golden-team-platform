@@ -268,9 +268,32 @@
 - [ ] Write vitest tests for odoo router (odoo.test.ts)
 - [ ] 182+ tests passing, 0 TypeScript errors
 
-## Phase 23 — Odoo PO Auto-Creation + NEO AI Bid Memo
-- [ ] Add awardBid procedure to bidEvaluation router — creates purchase.order in Odoo via XML-RPC, marks bid as awarded in DB
-- [ ] Add generateAwardMemo procedure to bidEvaluation router — calls invokeLLM for Arabic/English formal award memo
-- [ ] Update BidEvaluation page — Award button with Odoo PO confirmation dialog, AI Memo button with rendered memo dialog
-- [ ] Write vitest tests for both new procedures
-- [ ] 176+ tests passing, 0 TypeScript errors
+## Phase 20 — Universal File Upload + Advanced OCR for NEO Chat (2026-03-29)
+- [x] Upgrade fileParser.ts: add PPTX parser (LibreOffice headless)
+- [x] Upgrade fileParser.ts: add Pages/Numbers/ODT/RTF parser (LibreOffice headless)
+- [x] Upgrade fileParser.ts: add Tesseract OCR (Arabic + English) for scanned PDFs and images
+- [x] Upgrade fileParser.ts: add GPT-4 Vision fallback for complex images
+- [x] Upgrade fileParser.ts: add sharp image preprocessing before OCR
+- [x] Install system deps: tesseract-ocr, tesseract-ocr-ara, libreoffice, pdftoppm (poppler-utils)
+- [x] Install npm dep: sharp (image preprocessing)
+- [x] Add uploadIds parameter to neoChat.sendMessage tRPC procedure
+- [x] Inject parsed file context into AI prompt via getUploadedFileContext
+- [x] Wire real chunked upload pipeline into NEOChat.tsx (uploadFileThroughPipeline)
+- [x] Add PendingUpload interface and state to NEOChat.tsx
+- [x] Update file input accept attribute to include all supported formats
+- [x] Update UniversalFileUpload component with PPTX/Pages/Numbers/RTF categories
+- [x] Write vitest tests for fileParser (14 tests, all passing)
+- [x] TypeScript: 0 errors, 190/190 tests passing
+
+## Phase 20 (2026-03-29) — Universal File Upload + Advanced OCR for NEO Chat
+- [x] Upgrade fileParser.ts: PPTX, Pages, Numbers, ODT, RTF parsers (LibreOffice headless)
+- [x] Upgrade fileParser.ts: Tesseract OCR (Arabic + English) for scanned PDFs and images
+- [x] Upgrade fileParser.ts: GPT-4 Vision fallback + sharp image preprocessing
+- [x] Install system deps: tesseract-ocr, tesseract-ocr-ara, libreoffice, pdftoppm
+- [x] Install npm dep: sharp (image preprocessing)
+- [x] Add uploadIds to neoChat.sendMessage + inject parsed file context into AI prompt
+- [x] Wire real chunked upload pipeline into NEOChat.tsx (uploadFileThroughPipeline)
+- [x] Add PendingUpload interface + state + file input accept all formats
+- [x] Update UniversalFileUpload with PPTX/Pages/Numbers/RTF categories
+- [x] Write vitest tests for fileParser (14 tests, all passing)
+- [x] TypeScript: 0 errors, 190/190 tests passing

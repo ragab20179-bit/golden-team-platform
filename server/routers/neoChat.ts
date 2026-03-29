@@ -24,6 +24,7 @@ import { eq, desc, and } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { invokeGPT, isGPTConfigured, buildAnalyticalSystemPrompt } from "../_core/gpt";
 import { TRPCError } from "@trpc/server";
+import { getUploadedFileContext } from "./universalUpload";
 
 // ─── AI Routing Engine ────────────────────────────────────────────────────────
 
@@ -286,6 +287,8 @@ export const neoChatRouter = router({
       // Optional hints for routing
       requiresApproval: z.boolean().optional().default(false),
       financialAmount: z.number().optional().default(0),
+      // Universal file upload IDs (parsed content injected into AI context)
+      uploadIds: z.array(z.string()).optional().default([]),
     }))
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
@@ -327,6 +330,15 @@ export const neoChatRouter = router({
           content: m.body,
         }));
 
+      // 4a. Inject file context from universal uploads (if any)
+      let enrichedBody = input.body;
+      if (input.uploadIds && input.uploadIds.length > 0) {
+        const fileContext = getUploadedFileContext(input.uploadIds, ctx.user.id);
+        if (fileContext) {
+          enrichedBody = `${input.body}\n\n---\n**Attached Files Context:**\n${fileContext}`;
+        }
+      }
+
       // 4. Call the correct AI engine based on routing decision
       let aiBody = "";
       let actualEngine = routing.engine;
@@ -338,7 +350,7 @@ export const neoChatRouter = router({
           const gptMessages: { role: "system" | "user" | "assistant"; content: string }[] = [
             { role: "system", content: systemPrompt },
             ...historyMessages.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
-            { role: "user", content: input.body },
+            { role: "user", content: enrichedBody },
           ];
           const gptResult = await invokeGPT({ messages: gptMessages });
           aiBody = gptResult.content;
@@ -356,7 +368,7 @@ export const neoChatRouter = router({
             messages: [
               { role: "system" as const, content: systemPrompt },
               ...historyMessages.map(m => ({ role: m.role, content: m.content as string })),
-              { role: "user" as const, content: input.body },
+              { role: "user" as const, content: enrichedBody },
             ],
           });
           const rawContent = response.choices?.[0]?.message?.content;
@@ -369,7 +381,7 @@ export const neoChatRouter = router({
             const response = await invokeLLM({
               messages: [
                 { role: "system" as const, content: MANUS_SYSTEM_PROMPT },
-                { role: "user" as const, content: input.body },
+                { role: "user" as const, content: enrichedBody },
               ],
             });
             const rawContent = response.choices?.[0]?.message?.content;
