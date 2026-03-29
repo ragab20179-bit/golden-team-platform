@@ -267,3 +267,10 @@
 - [ ] Register /portal/odoo route in App.tsx
 - [ ] Write vitest tests for odoo router (odoo.test.ts)
 - [ ] 182+ tests passing, 0 TypeScript errors
+
+## Phase 23 — Odoo PO Auto-Creation + NEO AI Bid Memo
+- [ ] Add awardBid procedure to bidEvaluation router — creates purchase.order in Odoo via XML-RPC, marks bid as awarded in DB
+- [ ] Add generateAwardMemo procedure to bidEvaluation router — calls invokeLLM for Arabic/English formal award memo
+- [ ] Update BidEvaluation page — Award button with Odoo PO confirmation dialog, AI Memo button with rendered memo dialog
+- [ ] Write vitest tests for both new procedures
+- [ ] 176+ tests passing, 0 TypeScript errors
