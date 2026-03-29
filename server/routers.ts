@@ -10,6 +10,7 @@ import { neoChatRouter } from "./routers/neoChat";
 import { requestsRouter } from "./routers/requests";
 import { neoModulesRouter } from "./routers/neoModules";
 import { neoVoiceRouter } from "./routers/neoVoice";
+import { odooRouter } from "./routers/odoo";
 import { bidEvaluationRouter } from "./routers/bidEvaluation";
 import {
   insertAstraDecision,
@@ -147,7 +148,10 @@ export const appRouter = router({
   // ─── NEO AI Modules — 7 Specialized AI Engines + Live Metrics ─────────────────────────
   neoModules: neoModulesRouter,
   neoVoice: neoVoiceRouter,
-  // ─── Bid Evaluation Matrix ─────────────────────────────────────────────────
+  // ─── Odoo Integration — Purchase, Accounting, Inventory, CRM, Project ────────
+  odoo: odooRouter,
+
+  // ─── Bid Evaluation Matrix — RFQ, Criteria, Bids, Scoring, Award ─────────────
   bidEvaluation: bidEvaluationRouter,
 });
 export type AppRouter = typeof appRouter;

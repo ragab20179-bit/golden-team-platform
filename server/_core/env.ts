@@ -10,4 +10,6 @@ export const ENV = {
   openAiApiKey: process.env.OPENAI_API_KEY ?? "",
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+  odooApiKey: process.env.ODOO_API_KEY ?? "",
+  odooUsername: process.env.ODOO_USERNAME ?? "",
 };

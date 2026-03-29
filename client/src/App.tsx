@@ -41,6 +41,7 @@ import DriveVault from "./pages/DriveVault";
 import NEOChat from "./pages/NEOChat";
 import Requests from "./pages/Requests";
 import NEOUsage from "./pages/NEOUsage";
+import OdooDashboard from "./pages/OdooDashboard";
 import BidEvaluation from "./pages/BidEvaluation";
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -66,6 +67,7 @@ function Router() {
       <Route path="/portal/neo-chat" component={NEOChat} />
       <Route path="/portal/requests" component={Requests} />
       <Route path="/portal/neo-usage" component={NEOUsage} />
+      <Route path="/portal/odoo" component={OdooDashboard} />
       <Route path="/portal/bid-evaluation" component={BidEvaluation} />
       <Route path="/neo-architecture" component={NEOArchitecture} />
       <Route path="/architecture" component={Architecture} />
