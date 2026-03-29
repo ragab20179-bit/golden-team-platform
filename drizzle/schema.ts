@@ -507,3 +507,21 @@ export const evaluationSessions = mysqlTable("evaluation_sessions", {
   evaluatedBy: varchar("evaluatedBy", { length: 200 }),
 });
 export type EvaluationSession = typeof evaluationSessions.$inferSelect;
+
+// ─── Supplier Invites — one-time token for public bid submission ──────────────
+export const supplierInvites = mysqlTable("supplier_invites", {
+  id: int("id").autoincrement().primaryKey(),
+  rfqId: int("rfqId").notNull(),
+  token: varchar("token", { length: 128 }).notNull().unique(),
+  supplierEmail: varchar("supplierEmail", { length: 300 }).notNull(),
+  supplierName: varchar("supplierName", { length: 300 }).notNull(),
+  supplierCompany: varchar("supplierCompany", { length: 300 }),
+  status: varchar("status", { length: 30 }).notNull().default("pending"), // pending | submitted | expired | revoked
+  expiresAt: timestamp("expiresAt").notNull(),
+  submittedAt: timestamp("submittedAt"),
+  submissionId: int("submissionId"),
+  invitedBy: varchar("invitedBy", { length: 200 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SupplierInvite = typeof supplierInvites.$inferSelect;
+export type InsertSupplierInvite = typeof supplierInvites.$inferInsert;

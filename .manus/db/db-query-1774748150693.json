@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS `supplier_invites` (\n  `id` int AUTO_INCREMENT PRIMARY KEY,\n  `rfqId` int NOT NULL,\n  `token` varchar(128) NOT NULL UNIQUE,\n  `supplierEmail` varchar(300) NOT NULL,\n  `supplierName` varchar(300) NOT NULL,\n  `supplierCompany` varchar(300),\n  `status` varchar(30) NOT NULL DEFAULT 'pending',\n  `expiresAt` timestamp NOT NULL,\n  `submittedAt` timestamp,\n  `submissionId` int,\n  `invitedBy` varchar(200),\n  `createdAt` timestamp NOT NULL DEFAULT (now())\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2mD6aiBNkQCVbug.9c95bdeb5d97 --database J23mrANZtynYBnxwEV4vcJ --execute CREATE TABLE IF NOT EXISTS `supplier_invites` (\n  `id` int AUTO_INCREMENT PRIMARY KEY,\n  `rfqId` int NOT NULL,\n  `token` varchar(128) NOT NULL UNIQUE,\n  `supplierEmail` varchar(300) NOT NULL,\n  `supplierName` varchar(300) NOT NULL,\n  `supplierCompany` varchar(300),\n  `status` varchar(30) NOT NULL DEFAULT 'pending',\n  `expiresAt` timestamp NOT NULL,\n  `submittedAt` timestamp,\n  `submissionId` int,\n  `invitedBy` varchar(200),\n  `createdAt` timestamp NOT NULL DEFAULT (now())\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1754
+}

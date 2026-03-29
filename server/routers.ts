@@ -12,6 +12,7 @@ import { neoModulesRouter } from "./routers/neoModules";
 import { neoVoiceRouter } from "./routers/neoVoice";
 import { odooRouter } from "./routers/odoo";
 import { bidEvaluationRouter } from "./routers/bidEvaluation";
+import { supplierBidPortalRouter } from "./routers/supplierBidPortal";
 import {
   insertAstraDecision,
   getAstraDecisions,
@@ -153,5 +154,8 @@ export const appRouter = router({
 
   // ─── Bid Evaluation Matrix — RFQ, Criteria, Bids, Scoring, Award ─────────────
   bidEvaluation: bidEvaluationRouter,
+
+  // ─── Supplier Bid Portal — Public one-time token bid submission ───────────────
+  supplierBidPortal: supplierBidPortalRouter,
 });
 export type AppRouter = typeof appRouter;

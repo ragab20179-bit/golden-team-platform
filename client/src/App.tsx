@@ -43,6 +43,7 @@ import Requests from "./pages/Requests";
 import NEOUsage from "./pages/NEOUsage";
 import OdooDashboard from "./pages/OdooDashboard";
 import BidEvaluation from "./pages/BidEvaluation";
+import SupplierBidPortal from "./pages/SupplierBidPortal";
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -69,6 +70,8 @@ function Router() {
       <Route path="/portal/neo-usage" component={NEOUsage} />
       <Route path="/portal/odoo" component={OdooDashboard} />
       <Route path="/portal/bid-evaluation" component={BidEvaluation} />
+      {/* Public supplier bid portal — no auth required */}
+      <Route path="/rfq/:token" component={SupplierBidPortal} />
       <Route path="/neo-architecture" component={NEOArchitecture} />
       <Route path="/architecture" component={Architecture} />
       <Route path="/project-plan" component={ProjectPlan} />
