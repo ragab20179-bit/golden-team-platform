@@ -22,6 +22,7 @@ import {
 import {
   FileText, Plus, Scale, Trophy, ChevronRight,
   ClipboardList, Users, BarChart3, RefreshCw, Gavel, Clock,
+  Send, Copy, Check, X, RotateCcw, Link2, UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -548,7 +549,197 @@ function RFQDetail({ rfq, onBack }: { rfq: RFQ; onBack: () => void }) {
           </CardContent>
         </Card>
       )}
+      {/* Supplier Invite Management */}
+      <InvitePanel rfqId={rfq.id} />
     </div>
+  );
+}
+
+// ── Invite Panel ───────────────────────────────────────────────────────────────
+interface InviteRecord {
+  id: number;
+  token: string;
+  supplierName: string;
+  supplierEmail: string;
+  supplierCompany: string | null;
+  status: string;
+  expiresAt: Date;
+  submittedAt: Date | null;
+  createdAt: Date;
+}
+
+function InvitePanel({ rfqId }: { rfqId: number }) {
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [company, setCompany] = useState("");
+  const [expiryDays, setExpiryDays] = useState("7");
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+
+  const { data: invites, refetch: refetchInvites } = trpc.supplierBidPortal.listInvites.useQuery({ rfqId });
+  const inviteSupplier = trpc.supplierBidPortal.inviteSupplier.useMutation({
+    onSuccess: () => {
+      refetchInvites();
+      setOpen(false);
+      setEmail(""); setName(""); setCompany("");
+      toast.success("Invite link generated");
+    },
+    onError: (e: { message: string }) => toast.error(e.message),
+  });
+  const revokeInvite = trpc.supplierBidPortal.revokeInvite.useMutation({
+    onSuccess: () => { refetchInvites(); toast.success("Invite revoked"); },
+  });
+  const resendInvite = trpc.supplierBidPortal.resendInvite.useMutation({
+    onSuccess: (data: { token: string }) => {
+      refetchInvites();
+      const link = `${window.location.origin}/rfq/${data.token}`;
+      navigator.clipboard.writeText(link);
+      toast.success("New link generated and copied");
+    },
+  });
+
+  const copyLink = (token: string) => {
+    const link = `${window.location.origin}/rfq/${token}`;
+    navigator.clipboard.writeText(link);
+    setCopiedToken(token);
+    setTimeout(() => setCopiedToken(null), 2000);
+    toast.success("Bid link copied to clipboard");
+  };
+
+  const statusColor = (s: string) => {
+    if (s === "submitted") return "text-green-400 bg-green-500/10 border-green-500/20";
+    if (s === "pending") return "text-amber-400 bg-amber-500/10 border-amber-500/20";
+    if (s === "expired") return "text-white/30 bg-white/5 border-white/10";
+    if (s === "revoked") return "text-red-400 bg-red-500/10 border-red-500/20";
+    return "text-white/50 bg-white/5 border-white/10";
+  };
+
+  return (
+    <Card className="bg-white/5 border-white/10">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm text-white/70 flex items-center gap-2">
+            <Link2 className="w-4 h-4 text-amber-400" />
+            Supplier Invites ({invites?.length ?? 0})
+          </CardTitle>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 gap-1">
+                <UserPlus className="w-3.5 h-3.5" /> Invite Supplier
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-[#0A0F1E] border-white/10 text-white">
+              <DialogHeader>
+                <DialogTitle>Invite Supplier to Submit Bid</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-1.5">
+                  <Label className="text-white/70 text-xs">Supplier Name *</Label>
+                  <Input value={name} onChange={e => setName(e.target.value)}
+                    placeholder="e.g. Gulf Systems Co."
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-white/70 text-xs">Email Address *</Label>
+                  <Input value={email} onChange={e => setEmail(e.target.value)}
+                    type="email" placeholder="contact@supplier.com"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-white/70 text-xs">Company (optional)</Label>
+                  <Input value={company} onChange={e => setCompany(e.target.value)}
+                    placeholder="Company name"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-white/70 text-xs">Link Expiry</Label>
+                  <Select value={expiryDays} onValueChange={setExpiryDays}>
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#0A0F1E] border-white/10 text-white">
+                      <SelectItem value="3">3 days</SelectItem>
+                      <SelectItem value="7">7 days</SelectItem>
+                      <SelectItem value="14">14 days</SelectItem>
+                      <SelectItem value="30">30 days</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={() => inviteSupplier.mutate({
+                    rfqId,
+                    supplierEmail: email,
+                    supplierName: name,
+                    supplierCompany: company || undefined,
+                    expiryDays: parseInt(expiryDays),
+                  })}
+                  disabled={inviteSupplier.isPending || !email || !name}
+                  className="w-full bg-amber-500 hover:bg-amber-400 text-[#05080F] font-semibold gap-2">
+                  <Send className="w-4 h-4" />
+                  {inviteSupplier.isPending ? "Generating..." : "Generate Invite Link"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {!invites?.length ? (
+          <p className="text-xs text-white/30 py-4 text-center">
+            No invites yet — click "Invite Supplier" to generate a one-time bid link
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {(invites as InviteRecord[]).map((inv) => (
+              <div key={inv.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-white truncate">{inv.supplierName}</span>
+                    <Badge className={`text-xs border ${statusColor(inv.status)}`}>{inv.status}</Badge>
+                  </div>
+                  <div className="text-xs text-white/40 mt-0.5 truncate">
+                    {inv.supplierEmail}
+                    {inv.supplierCompany ? ` · ${inv.supplierCompany}` : ""}
+                    {" · "}
+                    {inv.status === "submitted" && inv.submittedAt
+                      ? `Submitted ${new Date(inv.submittedAt).toLocaleDateString()}`
+                      : `Expires ${new Date(inv.expiresAt).toLocaleDateString()}`}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 ml-3 flex-shrink-0">
+                  {inv.status === "pending" && (
+                    <>
+                      <Button size="sm" variant="ghost"
+                        onClick={() => copyLink(inv.token)}
+                        className="h-7 px-2 text-white/50 hover:text-white hover:bg-white/10">
+                        {copiedToken === inv.token
+                          ? <Check className="w-3.5 h-3.5 text-green-400" />
+                          : <Copy className="w-3.5 h-3.5" />}
+                      </Button>
+                      <Button size="sm" variant="ghost"
+                        onClick={() => revokeInvite.mutate({ inviteId: inv.id })}
+                        className="h-7 px-2 text-white/30 hover:text-red-400 hover:bg-red-500/10">
+                        <X className="w-3.5 h-3.5" />
+                      </Button>
+                    </>
+                  )}
+                  {(inv.status === "expired" || inv.status === "revoked") && (
+                    <Button size="sm" variant="ghost"
+                      onClick={() => resendInvite.mutate({ inviteId: inv.id, expiryDays: 7 })}
+                      className="h-7 px-2 text-white/30 hover:text-amber-400 hover:bg-amber-500/10">
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
+                  {inv.status === "submitted" && (
+                    <Check className="w-4 h-4 text-green-400" />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
