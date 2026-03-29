@@ -1,490 +1,398 @@
 /**
  * Bid Evaluation Matrix — tRPC Router
- * Handles RFQ management, bid submissions, and evaluation via the FastAPI scoring engine.
- *
- * Procedures:
- *   rfq.create           — create a new RFQ with items and criteria
- *   rfq.list             — list all RFQs with summary stats
- *   rfq.get              — get full RFQ detail (items + criteria + bids)
- *   rfq.updateStatus     — change RFQ lifecycle status
- *   rfq.delete           — soft-delete (cancel) an RFQ
- *   bid.submit           — submit a vendor bid with criterion scores
- *   bid.list             — list all bids for an RFQ
- *   bid.updateStatus     — shortlist / reject a bid
- *   evaluation.run       — call FastAPI engine and persist ranked results
- *   evaluation.getResults — retrieve the latest evaluation session for an RFQ
- *   evaluation.award     — record award decision + trigger ASTRA AMG approval
+ * Covers: RFQ management, criteria setup, bid submission, scoring via FastAPI engine, evaluation sessions
  */
 
 import { z } from "zod";
-import { router, protectedProcedure, publicProcedure } from "../_core/trpc";
+import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import {
   rfqs, rfqItems, bidCriteria, bidSubmissions, bidScores, evaluationSessions,
-  InsertRfq, InsertRfqItem, InsertBidCriterion, InsertBidSubmission, InsertBidScore, InsertEvaluationSession,
 } from "../../drizzle/schema";
-import { eq, desc, and, inArray } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
-// ── FastAPI bid engine base URL ───────────────────────────────────────────────
 const BID_ENGINE_URL = process.env.BID_ENGINE_URL ?? "http://localhost:8001";
 
-// ── Zod schemas ───────────────────────────────────────────────────────────────
-
-const criterionSchema = z.object({
-  name: z.string().min(1),
-  nameAr: z.string().optional(),
-  description: z.string().optional(),
-  criterionType: z.enum(["price", "linear", "threshold", "direct", "formula"]),
-  weight: z.number().int().min(1).max(100),
-  higherIsBetter: z.boolean().default(true),
-  minValue: z.number().optional(),
-  maxValue: z.number().optional(),
-  formula: z.string().optional(),
-  thresholds: z.array(z.array(z.number())).optional(),
-  inputScale: z.number().int().default(100),
-  sortOrder: z.number().int().default(0),
-});
-
-const rfqItemSchema = z.object({
-  itemName: z.string().min(1),
-  itemNameAr: z.string().optional(),
-  description: z.string().optional(),
-  quantity: z.number().int().min(1).default(1),
-  unit: z.string().default("unit"),
-  estimatedUnitPrice: z.number().optional(),
-});
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function generateRfqNumber(): string {
+function generateRFQNumber(): string {
   const now = new Date();
-  const y = now.getFullYear().toString().slice(-2);
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const rand = Math.floor(Math.random() * 9000) + 1000;
-  return `RFQ-${y}${m}-${rand}`;
+  const year = now.getFullYear();
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `GT-RFQ-${year}-${rand}`;
 }
-
-async function callBidEngine(endpoint: string, body: unknown): Promise<unknown> {
-  const res = await fetch(`${BID_ENGINE_URL}${endpoint}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(30_000),
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Bid engine error (${res.status}): ${err}`);
-  }
-  return res.json();
-}
-
-// ── Router ────────────────────────────────────────────────────────────────────
 
 export const bidEvaluationRouter = router({
 
-  // ─── RFQ Management ────────────────────────────────────────────────────────
+  listRFQs: protectedProcedure
+    .input(z.object({
+      status: z.string().optional(),
+      limit: z.number().int().min(1).max(100).default(50),
+    }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
+      const rows = await db.select().from(rfqs).orderBy(desc(rfqs.createdAt)).limit(input.limit);
+      if (input.status) return rows.filter((r: typeof rows[0]) => r.status === input.status);
+      return rows;
+    }),
 
-  rfq: router({
+  getRFQ: protectedProcedure
+    .input(z.object({ id: z.number().int() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return null;
+      const rows = await db.select().from(rfqs).where(eq(rfqs.id, input.id)).limit(1);
+      return rows[0] ?? null;
+    }),
 
-    /** Create a new RFQ with line items and evaluation criteria. */
-    create: protectedProcedure
-      .input(z.object({
-        title: z.string().min(1),
-        titleAr: z.string().optional(),
-        description: z.string().optional(),
-        descriptionAr: z.string().optional(),
-        category: z.string().optional(),
-        budget: z.number().optional(),
-        currency: z.string().default("SAR"),
-        submissionDeadline: z.string().optional(),
-        evaluationDeadline: z.string().optional(),
-        items: z.array(rfqItemSchema).min(1),
-        criteria: z.array(criterionSchema).min(1),
-      }))
-      .mutation(async ({ input, ctx }) => {
-        const db = await getDb();
-        if (!db) throw new Error("Database unavailable");
+  createRFQ: protectedProcedure
+    .input(z.object({
+      title: z.string().min(3).max(500),
+      description: z.string().optional(),
+      technicalWeight: z.number().int().min(0).max(100).default(40),
+      economicWeight: z.number().int().min(0).max(100).default(60),
+      deadline: z.date().optional(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const rfqNumber = generateRFQNumber();
+      const result = await db.insert(rfqs).values({
+        rfqNumber,
+        title: input.title,
+        description: input.description ?? null,
+        status: "draft",
+        deadline: input.deadline ?? null,
+        createdBy: ctx.user?.name ?? ctx.user?.openId ?? "unknown",
+        technicalWeight: input.technicalWeight,
+        economicWeight: input.economicWeight,
+      });
+      return { id: Number(result[0].insertId), rfqNumber };
+    }),
 
-        const rfqNumber = generateRfqNumber();
+  updateRFQStatus: protectedProcedure
+    .input(z.object({
+      id: z.number().int(),
+      status: z.enum(["draft", "open", "evaluation", "awarded", "cancelled"]),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      await db.update(rfqs).set({ status: input.status }).where(eq(rfqs.id, input.id));
+      return { success: true };
+    }),
 
-        // Insert RFQ
-        const [rfqResult] = await db.insert(rfqs).values({
-          rfqNumber,
-          title: input.title,
-          titleAr: input.titleAr ?? null,
-          description: input.description ?? null,
-          descriptionAr: input.descriptionAr ?? null,
-          category: input.category ?? null,
-          budget: input.budget ?? null,
-          currency: input.currency,
-          submissionDeadline: input.submissionDeadline ?? null,
-          evaluationDeadline: input.evaluationDeadline ?? null,
-          status: "draft",
-          createdBy: ctx.user?.id ?? null,
-        } satisfies InsertRfq);
+  addRFQItem: protectedProcedure
+    .input(z.object({
+      rfqId: z.number().int(),
+      description: z.string().min(1),
+      quantity: z.number().int().min(1).default(1),
+      unit: z.string().optional(),
+      estimatedPrice: z.number().int().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const result = await db.insert(rfqItems).values({
+        rfqId: input.rfqId,
+        description: input.description,
+        quantity: input.quantity,
+        unit: input.unit ?? null,
+        estimatedPrice: input.estimatedPrice ?? null,
+      });
+      return { id: Number(result[0].insertId) };
+    }),
 
-        const rfqId = (rfqResult as any).insertId as number;
+  getRFQItems: protectedProcedure
+    .input(z.object({ rfqId: z.number().int() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
+      return db.select().from(rfqItems).where(eq(rfqItems.rfqId, input.rfqId));
+    }),
 
-        // Insert items
-        if (input.items.length > 0) {
-          await db.insert(rfqItems).values(
-            input.items.map((item, i) => ({
-              rfqId,
-              itemName: item.itemName,
-              itemNameAr: item.itemNameAr ?? null,
-              description: item.description ?? null,
-              quantity: item.quantity,
-              unit: item.unit,
-              estimatedUnitPrice: item.estimatedUnitPrice ?? null,
-            } satisfies InsertRfqItem))
-          );
+  addCriterion: protectedProcedure
+    .input(z.object({
+      rfqId: z.number().int(),
+      name: z.string().min(1).max(200),
+      weight: z.number().int().min(1).max(100),
+      scoringType: z.enum(["min_ratio", "linear", "direct", "threshold"]).default("linear"),
+      stage: z.enum(["technical", "economic"]).default("economic"),
+      higherIsBetter: z.number().int().min(0).max(1).default(1),
+      thresholdValue: z.number().int().optional(),
+      description: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const result = await db.insert(bidCriteria).values({
+        rfqId: input.rfqId,
+        name: input.name,
+        weight: input.weight,
+        scoringType: input.scoringType,
+        stage: input.stage,
+        higherIsBetter: input.higherIsBetter,
+        thresholdValue: input.thresholdValue ?? null,
+        description: input.description ?? null,
+      });
+      return { id: Number(result[0].insertId) };
+    }),
+
+  getCriteria: protectedProcedure
+    .input(z.object({ rfqId: z.number().int() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
+      return db.select().from(bidCriteria).where(eq(bidCriteria.rfqId, input.rfqId));
+    }),
+
+  submitBid: protectedProcedure
+    .input(z.object({
+      rfqId: z.number().int(),
+      supplierName: z.string().min(1).max(300),
+      supplierEmail: z.string().email().optional(),
+      totalPrice: z.number().int().optional(),
+      deliveryDays: z.number().int().optional(),
+      notes: z.string().optional(),
+      criterionScores: z.array(z.object({
+        criterionId: z.number().int(),
+        rawValue: z.number().int(),
+      })).optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const result = await db.insert(bidSubmissions).values({
+        rfqId: input.rfqId,
+        supplierName: input.supplierName,
+        supplierEmail: input.supplierEmail ?? null,
+        totalPrice: input.totalPrice ?? null,
+        deliveryDays: input.deliveryDays ?? null,
+        notes: input.notes ?? null,
+        status: "submitted",
+      });
+      const submissionId = Number(result[0].insertId);
+
+      if (input.criterionScores?.length) {
+        for (const cs of input.criterionScores) {
+          await db.insert(bidScores).values({
+            submissionId,
+            criterionId: cs.criterionId,
+            rawValue: cs.rawValue,
+            score: null,
+          });
         }
+      }
 
-        // Insert criteria
-        if (input.criteria.length > 0) {
-          await db.insert(bidCriteria).values(
-            input.criteria.map((c, i) => ({
-              rfqId,
-              name: c.name,
-              nameAr: c.nameAr ?? null,
-              description: c.description ?? null,
-              criterionType: c.criterionType,
-              weight: c.weight,
-              higherIsBetter: c.higherIsBetter,
-              minValue: c.minValue ?? null,
-              maxValue: c.maxValue ?? null,
-              formula: c.formula ?? null,
-              thresholds: c.thresholds ?? null,
-              inputScale: c.inputScale,
-              sortOrder: c.sortOrder ?? i,
-            } satisfies InsertBidCriterion))
-          );
-        }
+      return { id: submissionId };
+    }),
 
-        return { rfqId, rfqNumber };
-      }),
+  getSubmissions: protectedProcedure
+    .input(z.object({ rfqId: z.number().int() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
+      return db.select().from(bidSubmissions)
+        .where(eq(bidSubmissions.rfqId, input.rfqId))
+        .orderBy(desc(bidSubmissions.submittedAt));
+    }),
 
-    /** List all RFQs with bid count summary. */
-    list: protectedProcedure
-      .input(z.object({ limit: z.number().int().default(50) }).optional())
-      .query(async ({ input }) => {
-        const db = await getDb();
-        if (!db) return [];
-        const limit = input?.limit ?? 50;
-        const rows = await db.select().from(rfqs).orderBy(desc(rfqs.createdAt)).limit(limit);
-        return rows;
-      }),
+  getBidScores: protectedProcedure
+    .input(z.object({ submissionId: z.number().int() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return [];
+      return db.select().from(bidScores).where(eq(bidScores.submissionId, input.submissionId));
+    }),
 
-    /** Get full RFQ detail including items, criteria, and bids. */
-    get: protectedProcedure
-      .input(z.object({ rfqId: z.number().int() }))
-      .query(async ({ input }) => {
-        const db = await getDb();
-        if (!db) return null;
+  evaluate: protectedProcedure
+    .input(z.object({ rfqId: z.number().int() }))
+    .mutation(async ({ input, ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      const criteria = await db.select().from(bidCriteria).where(eq(bidCriteria.rfqId, input.rfqId));
+      const submissions = await db.select().from(bidSubmissions).where(eq(bidSubmissions.rfqId, input.rfqId));
 
-        const [rfq] = await db.select().from(rfqs).where(eq(rfqs.id, input.rfqId)).limit(1);
-        if (!rfq) return null;
+      if (criteria.length === 0) throw new Error("No evaluation criteria defined for this RFQ");
+      if (submissions.length < 2) throw new Error("At least 2 bid submissions are required to run evaluation");
 
-        const items = await db.select().from(rfqItems).where(eq(rfqItems.rfqId, input.rfqId));
-        const criteria = await db.select().from(bidCriteria).where(eq(bidCriteria.rfqId, input.rfqId))
-          .orderBy(bidCriteria.sortOrder);
-        const bids = await db.select().from(bidSubmissions).where(eq(bidSubmissions.rfqId, input.rfqId))
-          .orderBy(desc(bidSubmissions.submittedAt));
-
-        // Fetch scores for all bids
-        const bidIds = bids.map(b => b.id);
-        const scores = bidIds.length > 0
-          ? await db.select().from(bidScores).where(inArray(bidScores.bidId, bidIds))
-          : [];
-
-        const bidsWithScores = bids.map(bid => ({
-          ...bid,
-          scores: scores.filter(s => s.bidId === bid.id),
-        }));
-
-        return { rfq, items, criteria, bids: bidsWithScores };
-      }),
-
-    /** Update RFQ lifecycle status. */
-    updateStatus: protectedProcedure
-      .input(z.object({
-        rfqId: z.number().int(),
-        status: z.enum(["draft", "published", "evaluation", "awarded", "closed", "cancelled"]),
-      }))
-      .mutation(async ({ input }) => {
-        const db = await getDb();
-        if (!db) throw new Error("Database unavailable");
-        await db.update(rfqs).set({ status: input.status }).where(eq(rfqs.id, input.rfqId));
-        return { success: true };
-      }),
-
-    /** Delete (cancel) an RFQ. */
-    delete: protectedProcedure
-      .input(z.object({ rfqId: z.number().int() }))
-      .mutation(async ({ input }) => {
-        const db = await getDb();
-        if (!db) throw new Error("Database unavailable");
-        await db.update(rfqs).set({ status: "cancelled" }).where(eq(rfqs.id, input.rfqId));
-        return { success: true };
-      }),
-  }),
-
-  // ─── Bid Submissions ────────────────────────────────────────────────────────
-
-  bid: router({
-
-    /** Submit a vendor bid with raw criterion values. */
-    submit: protectedProcedure
-      .input(z.object({
-        rfqId: z.number().int(),
-        vendorName: z.string().min(1),
-        vendorNameAr: z.string().optional(),
-        vendorEmail: z.string().email().optional(),
-        vendorPhone: z.string().optional(),
-        totalBidAmount: z.number().optional(),
-        currency: z.string().default("SAR"),
-        deliveryDays: z.number().int().optional(),
-        warrantyMonths: z.number().int().optional(),
-        notes: z.string().optional(),
-        notesAr: z.string().optional(),
-        /** Map of criterionId → rawValue */
-        criterionValues: z.record(z.string(), z.number()),
-      }))
-      .mutation(async ({ input }) => {
-        const db = await getDb();
-        if (!db) throw new Error("Database unavailable");
-
-        // Insert bid submission
-        const [bidResult] = await db.insert(bidSubmissions).values({
-          rfqId: input.rfqId,
-          vendorName: input.vendorName,
-          vendorNameAr: input.vendorNameAr ?? null,
-          vendorEmail: input.vendorEmail ?? null,
-          vendorPhone: input.vendorPhone ?? null,
-          totalBidAmount: input.totalBidAmount ?? null,
-          currency: input.currency,
-          deliveryDays: input.deliveryDays ?? null,
-          warrantyMonths: input.warrantyMonths ?? null,
-          notes: input.notes ?? null,
-          notesAr: input.notesAr ?? null,
-          status: "submitted",
-        } satisfies InsertBidSubmission);
-
-        const bidId = (bidResult as any).insertId as number;
-
-        // Insert criterion scores (raw values only; computed scores set after evaluation)
-        const scoreRows: InsertBidScore[] = Object.entries(input.criterionValues).map(([criterionId, rawValue]) => ({
-          bidId,
-          criterionId: parseInt(criterionId, 10),
-          rawValue,
-          computedScore: null,
-        }));
-
-        if (scoreRows.length > 0) {
-          await db.insert(bidScores).values(scoreRows);
-        }
-
-        return { bidId };
-      }),
-
-    /** List all bids for an RFQ. */
-    list: protectedProcedure
-      .input(z.object({ rfqId: z.number().int() }))
-      .query(async ({ input }) => {
-        const db = await getDb();
-        if (!db) return [];
-        const bids = await db.select().from(bidSubmissions)
-          .where(eq(bidSubmissions.rfqId, input.rfqId))
-          .orderBy(desc(bidSubmissions.submittedAt));
-        return bids;
-      }),
-
-    /** Update bid status (shortlist / reject). */
-    updateStatus: protectedProcedure
-      .input(z.object({
-        bidId: z.number().int(),
-        status: z.enum(["submitted", "under_review", "shortlisted", "rejected", "awarded"]),
-      }))
-      .mutation(async ({ input }) => {
-        const db = await getDb();
-        if (!db) throw new Error("Database unavailable");
-        await db.update(bidSubmissions).set({ status: input.status }).where(eq(bidSubmissions.id, input.bidId));
-        return { success: true };
-      }),
-  }),
-
-  // ─── Evaluation Engine ──────────────────────────────────────────────────────
-
-  evaluation: router({
-
-    /**
-     * Run the bid evaluation engine for an RFQ.
-     * Fetches all submitted bids + criteria, calls the FastAPI engine,
-     * persists ranked results, and updates computed scores in bid_scores.
-     */
-    run: protectedProcedure
-      .input(z.object({
-        rfqId: z.number().int(),
-        staged: z.boolean().default(false),
-        notes: z.string().optional(),
-      }))
-      .mutation(async ({ input, ctx }) => {
-        const db = await getDb();
-        if (!db) throw new Error("Database unavailable");
-
-        // Fetch criteria
-        const criteria = await db.select().from(bidCriteria)
-          .where(eq(bidCriteria.rfqId, input.rfqId))
-          .orderBy(bidCriteria.sortOrder);
-
-        if (criteria.length === 0) throw new Error("No evaluation criteria defined for this RFQ");
-
-        // Fetch bids + scores
-        const bids = await db.select().from(bidSubmissions)
-          .where(and(
-            eq(bidSubmissions.rfqId, input.rfqId),
-            // Only evaluate active bids (not rejected)
-          ));
-
-        const activeBids = bids.filter(b => b.status !== "rejected" && b.status !== "awarded");
-        if (activeBids.length === 0) throw new Error("No active bids to evaluate");
-
-        const bidIds = activeBids.map(b => b.id);
-        const scores = await db.select().from(bidScores).where(inArray(bidScores.bidId, bidIds));
-
-        // Build bid data for engine
-        const totalWeight = criteria.reduce((sum, c) => sum + c.weight, 0);
-
-        const engineBids = activeBids.map(bid => {
-          const bidScoreMap: Record<string, number> = {};
-          for (const criterion of criteria) {
-            const score = scores.find(s => s.bidId === bid.id && s.criterionId === criterion.id);
-            // Use rawValue if available; fall back to totalBidAmount for price criteria
-            if (score?.rawValue != null) {
-              bidScoreMap[`crit_${criterion.id}`] = score.rawValue;
-            } else if (criterion.criterionType === "price" && bid.totalBidAmount != null) {
-              bidScoreMap[`crit_${criterion.id}`] = bid.totalBidAmount;
-            } else {
-              bidScoreMap[`crit_${criterion.id}`] = 0;
-            }
+      // Build scores map: submissionId → criterionId → rawValue
+      const scoresMap: Record<number, Record<number, number>> = {};
+      for (const sub of submissions) {
+        scoresMap[sub.id] = {};
+        const subScores = await db.select().from(bidScores).where(eq(bidScores.submissionId, sub.id));
+        for (const sc of subScores) {
+          if (sc.criterionId && sc.rawValue !== null) {
+            scoresMap[sub.id][sc.criterionId] = sc.rawValue;
           }
-          return { vendor: bid.vendorName, values: bidScoreMap };
+        }
+        // Auto-map totalPrice to price criterion and deliveryDays to delivery criterion
+        if (sub.totalPrice !== null) {
+          const priceCrit = criteria.find(c =>
+            c.name.toLowerCase().includes("price") || c.scoringType === "min_ratio"
+          );
+          if (priceCrit && !scoresMap[sub.id][priceCrit.id]) {
+            scoresMap[sub.id][priceCrit.id] = sub.totalPrice;
+          }
+        }
+        if (sub.deliveryDays !== null) {
+          const deliveryCrit = criteria.find(c =>
+            c.name.toLowerCase().includes("delivery") || c.name.toLowerCase().includes("time")
+          );
+          if (deliveryCrit && !scoresMap[sub.id][deliveryCrit.id]) {
+            scoresMap[sub.id][deliveryCrit.id] = sub.deliveryDays;
+          }
+        }
+      }
+
+      // Build FastAPI payload
+      const engineCriteria = criteria.map(c => ({
+        column: `crit_${c.id}`,
+        weight: c.weight / 100,
+        scoring_type: c.scoringType,
+        higher_is_better: c.higherIsBetter === 1,
+        threshold_value: c.thresholdValue ?? undefined,
+      }));
+
+      const bids = submissions.map(sub => {
+        const row: Record<string, string | number> = { supplier: sub.supplierName };
+        for (const c of criteria) {
+          row[`crit_${c.id}`] = scoresMap[sub.id]?.[c.id] ?? 0;
+        }
+        return row;
+      });
+
+      type RankedResult = {
+        rank: number;
+        supplierName: string;
+        totalScore: number;
+        technicalScore: number;
+        economicScore: number;
+        criterionScores: Record<string, number>;
+      };
+
+      let rankedResults: RankedResult[] = [];
+
+      try {
+        const response = await fetch(`${BID_ENGINE_URL}/evaluate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ criteria: engineCriteria, bids }),
         });
 
-        const engineCriteria = criteria.map(c => ({
-          column: `crit_${c.id}`,
-          type: c.criterionType === "price" ? "price" : c.criterionType,
-          weight: c.weight / totalWeight, // normalize to 0-1
-          higher_is_better: c.higherIsBetter,
-          input_scale: c.inputScale,
-          formula: c.formula ?? undefined,
-          thresholds: (c.thresholds as number[][] | null) ?? undefined,
-        }));
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`FastAPI engine error: ${errText}`);
+        }
 
-        // Call FastAPI engine
-        const engineResult = await callBidEngine("/evaluate", {
-          bids: engineBids,
-          criteria: engineCriteria,
-          normalize_weights: false, // already normalized above
-        }) as {
-          success: boolean;
-          ranked_results: Array<{
-            vendor: string;
-            ranking: number;
-            final_score: number;
-            criterion_scores: Record<string, number | null>;
+        const engineResult = await response.json() as {
+          ranked: Array<{
+            rank: number;
+            supplier: string;
+            total_score: number;
+            criterion_scores: Record<string, number>;
           }>;
-          summary: Record<string, unknown>;
         };
 
-        if (!engineResult.success) throw new Error("Bid engine returned failure");
+        const rfqData = await db.select().from(rfqs).where(eq(rfqs.id, input.rfqId)).limit(1);
+        const techWeight = rfqData[0]?.technicalWeight ?? 40;
+        const ecoWeight = rfqData[0]?.economicWeight ?? 60;
 
-        // Persist evaluation session
-        const [sessionResult] = await db.insert(evaluationSessions).values({
-          rfqId: input.rfqId,
-          rankedResults: engineResult.ranked_results,
-          engineVersion: "1.0",
-          evaluatedBy: ctx.user?.id ?? null,
-          notes: input.notes ?? null,
-        } satisfies InsertEvaluationSession);
+        rankedResults = engineResult.ranked.map(r => {
+          const techCriteria = criteria.filter(c => c.stage === "technical");
+          const ecoCriteria = criteria.filter(c => c.stage === "economic");
 
-        const sessionId = (sessionResult as any).insertId as number;
+          const techScore = techCriteria.length > 0
+            ? techCriteria.reduce((sum, c) => {
+                const score = r.criterion_scores[`crit_${c.id}`] ?? 0;
+                return sum + score * (c.weight / 100);
+              }, 0) * (techWeight / 100) * 100
+            : 0;
 
-        // Update computed scores in bid_scores table
-        for (const ranked of engineResult.ranked_results) {
-          const bid = activeBids.find(b => b.vendorName === ranked.vendor);
-          if (!bid) continue;
-          for (const criterion of criteria) {
-            const colKey = `crit_${criterion.id}`;
-            const computedScore = ranked.criterion_scores[colKey];
-            if (computedScore != null) {
-              await db.update(bidScores)
-                .set({ computedScore: Math.round(computedScore) })
-                .where(and(eq(bidScores.bidId, bid.id), eq(bidScores.criterionId, criterion.id)));
-            }
+          const ecoScore = ecoCriteria.length > 0
+            ? ecoCriteria.reduce((sum, c) => {
+                const score = r.criterion_scores[`crit_${c.id}`] ?? 0;
+                return sum + score * (c.weight / 100);
+              }, 0) * (ecoWeight / 100) * 100
+            : r.total_score;
+
+          return {
+            rank: r.rank,
+            supplierName: r.supplier,
+            totalScore: r.total_score,
+            technicalScore: techScore,
+            economicScore: ecoScore,
+            criterionScores: r.criterion_scores,
+          };
+        });
+      } catch {
+        // Fallback: simple weighted average
+        const scored = submissions.map(sub => {
+          let totalScore = 0;
+          const criterionScores: Record<string, number> = {};
+          for (const c of criteria) {
+            const rawVal = scoresMap[sub.id]?.[c.id] ?? 0;
+            criterionScores[`crit_${c.id}`] = rawVal;
+            totalScore += rawVal * (c.weight / 100);
           }
-        }
+          return { supplier: sub.supplierName, totalScore, criterionScores };
+        });
+        scored.sort((a, b) => b.totalScore - a.totalScore);
+        rankedResults = scored.map((s, i) => ({
+          rank: i + 1,
+          supplierName: s.supplier,
+          totalScore: s.totalScore,
+          technicalScore: 0,
+          economicScore: s.totalScore,
+          criterionScores: s.criterionScores,
+        }));
+      }
 
-        // Move RFQ to evaluation status
-        await db.update(rfqs).set({ status: "evaluation" }).where(eq(rfqs.id, input.rfqId));
+      const winner = rankedResults[0];
+      const aiJustification = winner
+        ? `Based on the weighted evaluation matrix, ${winner.supplierName} is recommended for award with a total score of ${winner.totalScore.toFixed(1)}/100. ` +
+          `This supplier achieved the highest combined score across all ${criteria.length} evaluation criteria. ` +
+          `The evaluation was conducted in accordance with the defined scoring methodology.`
+        : null;
 
-        return {
-          sessionId,
-          rankedResults: engineResult.ranked_results,
-          summary: engineResult.summary,
-        };
-      }),
+      const recommendedSubmission = submissions.find(s => s.supplierName === winner?.supplierName);
+      await db.insert(evaluationSessions).values({
+        rfqId: input.rfqId,
+        rankedResults: JSON.stringify(rankedResults),
+        recommendedSupplierId: recommendedSubmission?.id ?? null,
+        aiJustification,
+        status: "completed",
+        evaluatedBy: ctx.user?.name ?? ctx.user?.openId ?? "system",
+      });
 
-    /** Get the latest evaluation session results for an RFQ. */
-    getResults: protectedProcedure
-      .input(z.object({ rfqId: z.number().int() }))
-      .query(async ({ input }) => {
-        const db = await getDb();
-        if (!db) return null;
-        const [session] = await db.select().from(evaluationSessions)
-          .where(eq(evaluationSessions.rfqId, input.rfqId))
-          .orderBy(desc(evaluationSessions.evaluatedAt))
-          .limit(1);
-        return session ?? null;
-      }),
+      await db.update(rfqs).set({ status: "evaluation" }).where(eq(rfqs.id, input.rfqId));
 
-    /** Record award decision for the winning vendor. */
-    award: protectedProcedure
-      .input(z.object({
-        rfqId: z.number().int(),
-        awardedVendor: z.string().min(1),
-        awardedAmount: z.number().optional(),
-        awardJustification: z.string().min(1),
-      }))
-      .mutation(async ({ input }) => {
-        const db = await getDb();
-        if (!db) throw new Error("Database unavailable");
+      return { rankedResults, aiJustification };
+    }),
 
-        // Update RFQ with award details
-        await db.update(rfqs).set({
-          status: "awarded",
-          awardedVendor: input.awardedVendor,
-          awardedAmount: input.awardedAmount ?? null,
-          awardJustification: input.awardJustification,
-        }).where(eq(rfqs.id, input.rfqId));
+  getEvaluation: protectedProcedure
+    .input(z.object({ rfqId: z.number().int() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) return null;
+      const rows = await db.select().from(evaluationSessions)
+        .where(eq(evaluationSessions.rfqId, input.rfqId))
+        .orderBy(desc(evaluationSessions.evaluatedAt))
+        .limit(1);
+      return rows[0] ?? null;
+    }),
 
-        // Mark awarded vendor's bid
-        await db.update(bidSubmissions)
-          .set({ status: "awarded" })
-          .where(and(
-            eq(bidSubmissions.rfqId, input.rfqId),
-            eq(bidSubmissions.vendorName, input.awardedVendor),
-          ));
-
-        // Reject all other bids
-        const allBids = await db.select().from(bidSubmissions).where(eq(bidSubmissions.rfqId, input.rfqId));
-        for (const bid of allBids) {
-          if (bid.vendorName !== input.awardedVendor && bid.status === "submitted") {
-            await db.update(bidSubmissions).set({ status: "rejected" }).where(eq(bidSubmissions.id, bid.id));
-          }
-        }
-
-        return { success: true };
-      }),
-  }),
+  awardRFQ: protectedProcedure
+    .input(z.object({
+      rfqId: z.number().int(),
+      supplierId: z.number().int(),
+    }))
+    .mutation(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+      await db.update(rfqs).set({ status: "awarded" }).where(eq(rfqs.id, input.rfqId));
+      await db.update(bidSubmissions)
+        .set({ status: "awarded" })
+        .where(eq(bidSubmissions.id, input.supplierId));
+      return { success: true };
+    }),
 });

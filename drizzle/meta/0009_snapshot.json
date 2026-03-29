@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "4bad42e7-e019-46e4-9654-071378f12547",
+  "id": "1e9ab228-d6f9-4d98-b218-c31c025bfbf6",
   "prevId": "7fdf89e4-ab94-48f6-8406-4c69dfda2df2",
   "tables": {
     "approval_actions": {
@@ -443,32 +443,10 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar(128)",
+          "type": "varchar(200)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
-        },
-        "nameAr": {
-          "name": "nameAr",
-          "type": "varchar(128)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "criterionType": {
-          "name": "criterionType",
-          "type": "enum('price','linear','threshold','direct','formula')",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'linear'"
         },
         "weight": {
           "name": "weight",
@@ -477,65 +455,43 @@
           "notNull": true,
           "autoincrement": false
         },
+        "scoringType": {
+          "name": "scoringType",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'linear'"
+        },
+        "stage": {
+          "name": "stage",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'economic'"
+        },
         "higherIsBetter": {
           "name": "higherIsBetter",
-          "type": "boolean",
+          "type": "tinyint",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": true
+          "default": 1
         },
-        "minValue": {
-          "name": "minValue",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "maxValue": {
-          "name": "maxValue",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "formula": {
-          "name": "formula",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "thresholds": {
-          "name": "thresholds",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "inputScale": {
-          "name": "inputScale",
+        "thresholdValue": {
+          "name": "thresholdValue",
           "type": "int",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false,
-          "default": 100
+          "autoincrement": false
         },
-        "sortOrder": {
-          "name": "sortOrder",
-          "type": "int",
+        "description": {
+          "name": "description",
+          "type": "varchar(500)",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(now())"
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -561,8 +517,8 @@
           "notNull": true,
           "autoincrement": true
         },
-        "bidId": {
-          "name": "bidId",
+        "submissionId": {
+          "name": "submissionId",
           "type": "int",
           "primaryKey": false,
           "notNull": true,
@@ -577,34 +533,17 @@
         },
         "rawValue": {
           "name": "rawValue",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "computedScore": {
-          "name": "computedScore",
           "type": "int",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp",
+        "score": {
+          "name": "score",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(now())"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "onUpdate": true,
-          "default": "(now())"
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -637,58 +576,29 @@
           "notNull": true,
           "autoincrement": false
         },
-        "vendorName": {
-          "name": "vendorName",
-          "type": "varchar(128)",
+        "supplierName": {
+          "name": "supplierName",
+          "type": "varchar(300)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "vendorNameAr": {
-          "name": "vendorNameAr",
-          "type": "varchar(128)",
+        "supplierEmail": {
+          "name": "supplierEmail",
+          "type": "varchar(300)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "vendorEmail": {
-          "name": "vendorEmail",
-          "type": "varchar(320)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "vendorPhone": {
-          "name": "vendorPhone",
-          "type": "varchar(32)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "totalBidAmount": {
-          "name": "totalBidAmount",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "currency": {
-          "name": "currency",
-          "type": "varchar(8)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'SAR'"
-        },
-        "deliveryDays": {
-          "name": "deliveryDays",
+        "totalPrice": {
+          "name": "totalPrice",
           "type": "int",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "warrantyMonths": {
-          "name": "warrantyMonths",
+        "deliveryDays": {
+          "name": "deliveryDays",
           "type": "int",
           "primaryKey": false,
           "notNull": false,
@@ -701,16 +611,9 @@
           "notNull": false,
           "autoincrement": false
         },
-        "notesAr": {
-          "name": "notesAr",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "status": {
           "name": "status",
-          "type": "enum('submitted','under_review','shortlisted','rejected','awarded')",
+          "type": "varchar(30)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
@@ -722,15 +625,6 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(now())"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "onUpdate": true,
           "default": "(now())"
         }
       },
@@ -1043,25 +937,32 @@
         },
         "rankedResults": {
           "name": "rankedResults",
-          "type": "json",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "engineVersion": {
-          "name": "engineVersion",
-          "type": "varchar(32)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'1.0'"
-        },
-        "evaluatedBy": {
-          "name": "evaluatedBy",
+        "recommendedSupplierId": {
+          "name": "recommendedSupplierId",
           "type": "int",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "aiJustification": {
+          "name": "aiJustification",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pending'"
         },
         "evaluatedAt": {
           "name": "evaluatedAt",
@@ -1071,9 +972,9 @@
           "autoincrement": false,
           "default": "(now())"
         },
-        "notes": {
-          "name": "notes",
-          "type": "text",
+        "evaluatedBy": {
+          "name": "evaluatedBy",
+          "type": "varchar(200)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -2327,25 +2228,11 @@
           "notNull": true,
           "autoincrement": false
         },
-        "itemName": {
-          "name": "itemName",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "itemNameAr": {
-          "name": "itemNameAr",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "description": {
           "name": "description",
-          "type": "text",
+          "type": "varchar(500)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "quantity": {
@@ -2358,26 +2245,17 @@
         },
         "unit": {
           "name": "unit",
-          "type": "varchar(32)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'unit'"
-        },
-        "estimatedUnitPrice": {
-          "name": "estimatedUnitPrice",
-          "type": "bigint",
+          "type": "varchar(50)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp",
+        "estimatedPrice": {
+          "name": "estimatedPrice",
+          "type": "int",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(now())"
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},
@@ -2405,23 +2283,16 @@
         },
         "rfqNumber": {
           "name": "rfqNumber",
-          "type": "varchar(32)",
+          "type": "varchar(50)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "title": {
           "name": "title",
-          "type": "varchar(256)",
+          "type": "varchar(500)",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "titleAr": {
-          "name": "titleAr",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "description": {
@@ -2431,91 +2302,43 @@
           "notNull": false,
           "autoincrement": false
         },
-        "descriptionAr": {
-          "name": "descriptionAr",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "category": {
-          "name": "category",
-          "type": "varchar(64)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "budget": {
-          "name": "budget",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "currency": {
-          "name": "currency",
-          "type": "varchar(8)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'SAR'"
-        },
-        "submissionDeadline": {
-          "name": "submissionDeadline",
-          "type": "varchar(32)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "evaluationDeadline": {
-          "name": "evaluationDeadline",
-          "type": "varchar(32)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "status": {
           "name": "status",
-          "type": "enum('draft','published','evaluation','awarded','closed','cancelled')",
+          "type": "varchar(30)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": "'draft'"
         },
-        "awardedVendor": {
-          "name": "awardedVendor",
-          "type": "varchar(128)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "awardedAmount": {
-          "name": "awardedAmount",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "awardJustification": {
-          "name": "awardJustification",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "astraDecisionId": {
-          "name": "astraDecisionId",
-          "type": "varchar(64)",
+        "deadline": {
+          "name": "deadline",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
         "createdBy": {
           "name": "createdBy",
-          "type": "int",
+          "type": "varchar(200)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "technicalWeight": {
+          "name": "technicalWeight",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 40
+        },
+        "economicWeight": {
+          "name": "economicWeight",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 60
         },
         "createdAt": {
           "name": "createdAt",
