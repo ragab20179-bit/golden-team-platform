@@ -331,7 +331,7 @@ export const neoChatRouter = router({
         }));
 
       // 4a. Persistent file context — merge new uploadIds with conversation-level accumulated ones
-      const existingUploadIds: string[] = Array.isArray(conv.fileUploadIds) ? conv.fileUploadIds : [];
+      const existingUploadIds: string[] = Array.isArray((conv as any).fileUploadIds) ? (conv as any).fileUploadIds : [];
       const newUploadIds = input.uploadIds ?? [];
       const allUploadIds = Array.from(new Set([...existingUploadIds, ...newUploadIds]));
 
@@ -339,7 +339,7 @@ export const neoChatRouter = router({
       if (newUploadIds.length > 0) {
         await db
           .update(neoConversations)
-          .set({ fileUploadIds: allUploadIds })
+          .set({ fileUploadIds: allUploadIds } as any)
           .where(eq(neoConversations.id, input.conversationId));
       }
 

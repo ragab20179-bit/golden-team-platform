@@ -18,7 +18,7 @@ export interface ChatMessage {
 interface NEOChatContextType {
   messages: ChatMessage[];
   isTyping: boolean;
-  sendMessage: (text: string, lang?: "en" | "ar") => void;
+  sendMessage: (text: string, lang?: "en" | "ar", uploadIds?: string[]) => void;
   clearMessages: () => void;
   addSystemMessage: (content: string) => void;
 }
@@ -120,7 +120,7 @@ export function NEOChatProvider({ children }: { children: ReactNode }) {
   ]);
   const [isTyping, setIsTyping] = useState(false);
 
-  const sendMessage = useCallback((text: string, lang: "en" | "ar" = "en") => {
+  const sendMessage = useCallback((text: string, lang: "en" | "ar" = "en", uploadIds?: string[]) => {
     if (!text.trim()) return;
 
     const userMsg: ChatMessage = {

@@ -304,3 +304,12 @@
 - [x] Persistent file context across turns — store uploadIds with conversation for follow-up messages
 - [x] Bulk document analysis mode — dedicated button for multi-file comparison/summary reports
 - [x] Write vitest tests for all new features (24 new tests, 214 total passing)
+
+## 2026-03-30 — Universal File Upload in All AI Chat Windows
+- [x] Add uploadIds support to all 7 neoModules backend procedures (financial, risk, decision, problems, qms, BI, chat)
+- [x] Upgrade AIModuleQueryPanel with file upload drop zone, drag-and-drop, bin icon, and uploadIds
+- [x] Upgrade NEOChatWindow with file upload drop zone, drag-and-drop, bin icon, and uploadIds
+- [x] Verify file upload works in all 7 module pages (Procurement, CRM, ERP, HR, KPI, Legal, QMS)
+- [x] Verify file upload works in MeetingModule and Portal Dashboard
+- [x] TypeScript clean (0 errors, confirmed via fresh tsc --noEmit)
+- [x] Write vitest tests for uploadIds in neoModules (13 new tests, 227 total passing)

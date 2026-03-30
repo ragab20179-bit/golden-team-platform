@@ -47,6 +47,7 @@ import {
   neoAiUsage,
 } from "../../drizzle/schema";
 import { eq, desc, sql, gte, sum } from "drizzle-orm";
+import { getUploadedFileContext } from "./universalUpload";
 
 // ─── Cost calculation ─────────────────────────────────────────────────────────
 
@@ -167,6 +168,7 @@ export const neoModulesRouter = router({
     .input(z.object({
       query: z.string().min(1).max(2000).describe("Financial question or analysis request"),
       limit: z.number().int().min(1).max(100).default(20),
+      uploadIds: z.array(z.string()).optional().describe("IDs of uploaded files to include as context"),
     }))
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
@@ -198,7 +200,10 @@ PROCUREMENT DATA (source: procurement_items table, ${totalItems} records fetched
 - Sample records: ${items.slice(0, 5).map(i => `${i.itemName} (${i.supplier ?? "N/A"}) — ${i.totalPrice?.toLocaleString() ?? "N/A"} SAR [${i.status}]`).join("; ")}
 `.trim();
 
-      const systemPrompt = buildAnalyticalSystemPrompt("Financial", contextSummary);
+      // Inject uploaded file context if present
+      const fileContext = input.uploadIds?.length ? getUploadedFileContext(input.uploadIds, ctx.user.id) : "";
+      const fullContext = fileContext ? `${contextSummary}\n\n--- UPLOADED FILE CONTENT ---\n${fileContext}` : contextSummary;
+      const systemPrompt = buildAnalyticalSystemPrompt("Financial", fullContext);
       const aiResult = await callAnalyticalAI(systemPrompt, input.query);
 
       // Log usage (non-fatal)
@@ -241,6 +246,7 @@ PROCUREMENT DATA (source: procurement_items table, ${totalItems} records fetched
     .input(z.object({
       query: z.string().min(1).max(2000).describe("Risk assessment question"),
       limit: z.number().int().min(1).max(50).default(20),
+      uploadIds: z.array(z.string()).optional().describe("IDs of uploaded files to include as context"),
     }))
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
@@ -271,7 +277,10 @@ RISK DATA (source: requests + astra_decisions tables):
 - High-value request details: ${highValueRequests.slice(0, 3).map(r => `${r.requestNumber}: ${r.title} — ${r.amountSar?.toLocaleString()} SAR [${r.status}]`).join("; ") || "None"}
 `.trim();
 
-      const systemPrompt = buildAnalyticalSystemPrompt("Risk Management", contextSummary);
+      // Inject uploaded file context if present
+      const fileContext = input.uploadIds?.length ? getUploadedFileContext(input.uploadIds, ctx.user.id) : "";
+      const fullContext = fileContext ? `${contextSummary}\n\n--- UPLOADED FILE CONTENT ---\n${fileContext}` : contextSummary;
+      const systemPrompt = buildAnalyticalSystemPrompt("Risk Management", fullContext);
       const aiResult = await callAnalyticalAI(systemPrompt, input.query);
 
       const costUsd = aiResult.engine === "gpt"
@@ -313,6 +322,7 @@ RISK DATA (source: requests + astra_decisions tables):
     .input(z.object({
       query: z.string().min(1).max(2000).describe("Decision scenario or question"),
       domain: z.string().optional().describe("Business domain (e.g. Finance, HR, Procurement)"),
+      uploadIds: z.array(z.string()).optional().describe("IDs of uploaded files to include as context"),
     }))
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
@@ -341,7 +351,10 @@ ASTRA AMG POLICY DATA (source: astra_policy_rules table, ${policyRules.length} t
 - Recent decisions (last 10): ${recentDecisions.map(d => `${d.domain}/${d.action} → ${d.outcome} (${d.reasonCode})`).join("; ") || "None"}
 `.trim();
 
-      const systemPrompt = buildAnalyticalSystemPrompt("Decision-Making", contextSummary);
+      // Inject uploaded file context if present
+      const fileContext = input.uploadIds?.length ? getUploadedFileContext(input.uploadIds, ctx.user.id) : "";
+      const fullContext = fileContext ? `${contextSummary}\n\n--- UPLOADED FILE CONTENT ---\n${fileContext}` : contextSummary;
+      const systemPrompt = buildAnalyticalSystemPrompt("Decision-Making", fullContext);
       const aiResult = await callAnalyticalAI(systemPrompt, input.query);
 
       const costUsd = aiResult.engine === "gpt"
@@ -384,6 +397,7 @@ ASTRA AMG POLICY DATA (source: astra_policy_rules table, ${policyRules.length} t
       query: z.string().min(1).max(3000).describe("Problem statement or scenario to analyze"),
       includeKpi: z.boolean().default(true),
       includeProcurement: z.boolean().default(true),
+      uploadIds: z.array(z.string()).optional().describe("IDs of uploaded files to include as context"),
     }))
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
@@ -413,7 +427,10 @@ ASTRA AMG POLICY DATA (source: astra_policy_rules table, ${policyRules.length} t
 
       const contextSummary = contextParts.length > 0 ? contextParts.join("\n") : "No specific DB context available for this query.";
 
-      const systemPrompt = buildAnalyticalSystemPrompt("Critical Thinking", contextSummary);
+      // Inject uploaded file context if present
+      const fileContext = input.uploadIds?.length ? getUploadedFileContext(input.uploadIds, ctx.user.id) : "";
+      const fullContext = fileContext ? `${contextSummary}\n\n--- UPLOADED FILE CONTENT ---\n${fileContext}` : contextSummary;
+      const systemPrompt = buildAnalyticalSystemPrompt("Critical Thinking", fullContext);
       const aiResult = await callAnalyticalAI(systemPrompt, input.query);
 
       const costUsd = aiResult.engine === "gpt"
@@ -454,6 +471,7 @@ ASTRA AMG POLICY DATA (source: astra_policy_rules table, ${policyRules.length} t
     .input(z.object({
       query: z.string().min(1).max(2000).describe("QMS question or compliance request"),
       isoClause: z.string().optional().describe("Specific ISO 9001:2015 clause (e.g. '8.5.1')"),
+      uploadIds: z.array(z.string()).optional().describe("IDs of uploaded files to include as context"),
     }))
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
@@ -489,7 +507,10 @@ QMS DOCUMENT DATA (source: vault_files table):
 ${input.isoClause ? `- Requested ISO clause: ${input.isoClause}` : ""}
 `.trim();
 
-      const systemPrompt = buildAnalyticalSystemPrompt("QMS", contextSummary);
+      // Inject uploaded file context if present
+      const fileContext = input.uploadIds?.length ? getUploadedFileContext(input.uploadIds, ctx.user.id) : "";
+      const fullContext = fileContext ? `${contextSummary}\n\n--- UPLOADED FILE CONTENT ---\n${fileContext}` : contextSummary;
+      const systemPrompt = buildAnalyticalSystemPrompt("QMS", fullContext);
       const aiResult = await callAnalyticalAI(systemPrompt, input.query);
 
       const costUsd = aiResult.engine === "gpt"
@@ -531,6 +552,7 @@ ${input.isoClause ? `- Requested ISO clause: ${input.isoClause}` : ""}
     .input(z.object({
       query: z.string().min(1).max(2000).describe("Business intelligence question"),
       focus: z.enum(["kpi", "hr", "procurement", "all"]).default("all"),
+      uploadIds: z.array(z.string()).optional().describe("IDs of uploaded files to include as context"),
     }))
     .mutation(async ({ input, ctx }) => {
       const db = await getDb();
@@ -572,7 +594,10 @@ ${input.isoClause ? `- Requested ISO clause: ${input.isoClause}` : ""}
         ? contextParts.join("\n")
         : "No business data available in the database yet. Please import data using the bulk import wizard.";
 
-      const systemPrompt = buildAnalyticalSystemPrompt("Business Management", contextSummary);
+      // Inject uploaded file context if present
+      const fileContext = input.uploadIds?.length ? getUploadedFileContext(input.uploadIds, ctx.user.id) : "";
+      const fullContext = fileContext ? `${contextSummary}\n\n--- UPLOADED FILE CONTENT ---\n${fileContext}` : contextSummary;
+      const systemPrompt = buildAnalyticalSystemPrompt("Business Management", fullContext);
       const aiResult = await callAnalyticalAI(systemPrompt, input.query);
 
       const costUsd = aiResult.engine === "gpt"
@@ -613,6 +638,7 @@ ${input.isoClause ? `- Requested ISO clause: ${input.isoClause}` : ""}
     .input(z.object({
       query: z.string().min(1).max(5000).describe("Operational question or task request"),
       language: z.enum(["en", "ar"]).default("en"),
+      uploadIds: z.array(z.string()).optional().describe("IDs of uploaded files to include as context"),
     }))
     .mutation(async ({ input, ctx }) => {
       const systemPrompt = `You are NEO, the operational AI assistant of Golden Team Trading Services.
@@ -621,11 +647,17 @@ Be concise, actionable, and professional.
 ${input.language === "ar" ? "Respond in Arabic." : "Respond in English."}
 ACCURACY POLICY: Only state facts you can verify. If unsure, say "I cannot confirm this." Do not fabricate data.`;
 
+      // Inject uploaded file context if present
+      const fileContext = input.uploadIds?.length ? getUploadedFileContext(input.uploadIds, ctx.user.id) : "";
+      const enrichedQuery = fileContext
+        ? `${input.query}\n\n--- ATTACHED FILE CONTENT ---\n${fileContext}`
+        : input.query;
+
       const startMs = Date.now();
       const response = await invokeLLM({
         messages: [
           { role: "system" as const, content: systemPrompt },
-          { role: "user" as const, content: input.query },
+          { role: "user" as const, content: enrichedQuery },
         ],
       });
       const latencyMs = Date.now() - startMs;
