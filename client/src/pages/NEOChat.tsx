@@ -28,7 +28,7 @@ import {
   Cpu, Sparkles, AlertCircle, Mic, CheckCircle2, FileText,
 } from "lucide-react";
 import { Streamdown } from "streamdown";
-import { VoiceChat } from "@/components/VoiceChat";
+import { VoiceChatWS } from "@/components/VoiceChatWS";
 import { toast as sonnerToast } from "sonner";
 import FilePreviewCard from "@/components/FilePreviewCard";
 import BulkAnalysisDialog from "@/components/BulkAnalysisDialog";
@@ -305,7 +305,7 @@ export default function NEOChat() {
         {/* ── Voice Mode Panel (slide-in overlay) ── */}
         {voiceModeOpen && (
           <div className="absolute inset-y-0 right-0 w-80 z-30 shadow-2xl shadow-black/50">
-            <VoiceChat onClose={() => setVoiceModeOpen(false)} />
+            <VoiceChatWS onClose={() => setVoiceModeOpen(false)} />
           </div>
         )}
 

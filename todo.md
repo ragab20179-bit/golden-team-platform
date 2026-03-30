@@ -313,3 +313,20 @@
 - [x] Verify file upload works in MeetingModule and Portal Dashboard
 - [x] TypeScript clean (0 errors, confirmed via fresh tsc --noEmit)
 - [x] Write vitest tests for uploadIds in neoModules (13 new tests, 227 total passing)
+
+## Real-Time WebSocket Audio Conversation for NEO Chat
+- [x] Audit current WebRTC voice implementation and identify gaps
+- [x] Build WebSocket server endpoint for bidirectional audio streaming to OpenAI Realtime API
+- [x] Implement server-side WebSocket relay: browser audio -> server WS -> OpenAI Realtime WS -> server -> browser (616 lines)
+- [x] Build frontend audio capture (AudioWorklet PCM16 24kHz) with WebSocket streaming
+- [x] Build frontend audio playback from WebSocket audio chunks (AudioContext queue)
+- [x] Integrate live transcript display (user + assistant) via WebSocket events
+- [x] Integrate function-calling tools (KPI, vault search, requests, raise request) via WebSocket
+- [x] Add voice selector (10 voices), language selector (auto/en/ar), mute/unmute controls
+- [x] Add VAD (Voice Activity Detection) visual indicators (pulse animations)
+- [x] Add session duration timer and token usage tracking + cost calculation
+- [x] Wire VoiceChatWS into NEO Chat page (replaced old WebRTC VoiceChat)
+- [x] Write vitest tests for WebSocket voice relay (33 new tests)
+- [x] TypeScript clean (0 errors, confirmed via fresh tsc --noEmit)
+- [x] 260 total tests passing
+- [x] Save checkpoint
