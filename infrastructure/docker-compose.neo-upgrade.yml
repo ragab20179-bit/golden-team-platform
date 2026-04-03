@@ -1,0 +1,206 @@
+###############################################################################
+# NEO AI Core Upgrade — Master docker-compose.yml
+# Architecture: Ambient AI + LangGraph Redis + Trading Engines
+# 
+# Bridges the existing Golden Team platform with the new Trading AI features
+###############################################################################
+
+name: neo-ai-core-upgrade
+
+networks:
+  neo-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+  data-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
+  integration-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  trading-models:
+  kafka-data:
+
+services:
+  # ---------------------------------------------------------------------------
+  # 1. ASTRA Node.js Orchestrator (LangGraph.js + TypeScript Monolith)
+  # ---------------------------------------------------------------------------
+  astra-orchestrator:
+    build:
+      context: ./khobar-building-ai-system
+      dockerfile: ../astra-node-orchestrator.Dockerfile
+      target: production
+    container_name: astra-orchestrator
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/neo
+      REDIS_URL: redis://redis:6379/0
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      MANUS_API_KEY: ${MANUS_API_KEY}
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: ${MINIO_ROOT_USER}
+      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET}
+      PYTHON_SIDECAR_URL: http://python-trading-sidecar:8001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - neo-internal
+      - data-internal
+      - integration-internal
+
+  # ---------------------------------------------------------------------------
+  # 2. Python Trading Sidecar (FastAPI + OpenBB + NautilusTrader + Freqtrade)
+  # ---------------------------------------------------------------------------
+  python-trading-sidecar:
+    build:
+      context: ./khobar-building-ai-system/server/python_service
+      dockerfile: ../../../python-trading-sidecar.Dockerfile
+      target: production
+    container_name: python-trading-sidecar
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8001:8001"
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/neo
+      OPENBB_PAT: ${OPENBB_PAT}
+      IBKR_GATEWAY: ${IBKR_GATEWAY}
+      BINANCE_API_KEY: ${BINANCE_API_KEY}
+      BINANCE_SECRET: ${BINANCE_SECRET}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    volumes:
+      - trading-models:/app/models
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - neo-internal
+      - data-internal
+
+  # ---------------------------------------------------------------------------
+  # 3. Redis 7.2 (Context Memory, Ambient Agent Streams, Cache)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7.2-alpine
+    container_name: neo-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    networks:
+      - neo-internal
+      - data-internal
+    ports:
+      - "127.0.0.1:6379:6379"
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # 4. PostgreSQL 16 (Vector DB + Relational Data)
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: neo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-neo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: neo
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - data-internal
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-neo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # 5. MinIO (S3) for Source of Truth files and Cold Context Memory
+  # ---------------------------------------------------------------------------
+  minio:
+    image: minio/minio:latest
+    container_name: neo-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-neominio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio-data:/data
+    networks:
+      - data-internal
+      - neo-internal
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # 6. OpenTelemetry Collector (Observability)
+  # ---------------------------------------------------------------------------
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.96.0
+    container_name: neo-otel
+    command: ["--config=/etc/otel/config.yaml"]
+    ports:
+      - "127.0.0.1:4317:4317"
+    networks:
+      - neo-internal
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # 7. Kafka (Durable Audit Log)
+  # ---------------------------------------------------------------------------
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: neo-kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      CLUSTER_ID: "NEO_TRADING_CLUSTER_01"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - data-internal
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
