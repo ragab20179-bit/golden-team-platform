@@ -222,9 +222,9 @@ export function AIModuleQueryPanel({
       const initResult = await client.universalUpload.initiate.mutate({
         fileName: file.name,
         mimeType: file.type || "application/octet-stream",
-        sizeBytes: file.size,
+        fileSize: file.size,
         totalChunks,
-        context: `ai-module-${module}`,
+        context: "global",
       });
       const uploadId = initResult.uploadId;
 
@@ -242,7 +242,7 @@ export function AIModuleQueryPanel({
         await client.universalUpload.uploadChunk.mutate({
           uploadId,
           chunkIndex: i,
-          data: base64,
+          chunkData: base64,
         });
         const progress = Math.round(((i + 1) / totalChunks) * 80);
         setPendingUploads(prev =>

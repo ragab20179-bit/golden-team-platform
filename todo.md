@@ -330,3 +330,19 @@
 - [x] TypeScript clean (0 errors, confirmed via fresh tsc --noEmit)
 - [x] 260 total tests passing
 - [x] Save checkpoint
+
+## 2026-04-03 — Universal File Upload Bug Fixes + Advanced Parsing Upgrade
+- [x] Fix AIModuleQueryPanel.tsx: field name `data` → `chunkData` (matching backend schema)
+- [x] Fix AIModuleQueryPanel.tsx: field name `sizeBytes` → `fileSize` (matching backend schema)
+- [x] Fix AIModuleQueryPanel.tsx: context value `ai-module-*` → `global`
+- [x] Fix NEOChatWindow.tsx: field name `data` → `chunkData` (matching backend schema)
+- [x] Fix NEOChatWindow.tsx: field name `sizeBytes` → `fileSize` (matching backend schema)
+- [x] Fix NEOChatWindow.tsx: context value `neo-chat-window` → `global`
+- [x] Upgrade fileParser.ts: add Tesseract OCR (Arabic + English) for images and scanned PDFs
+- [x] Upgrade fileParser.ts: add sharp image preprocessing before OCR
+- [x] Upgrade fileParser.ts: add PPTX/PPT parser via LibreOffice headless
+- [x] Upgrade fileParser.ts: add Pages/Numbers/ODT/RTF parser via LibreOffice headless
+- [x] Upgrade fileParser.ts: add scanned PDF OCR fallback (pdftoppm → Tesseract)
+- [x] Update detectCategory for new file types (PPTX, Pages, Numbers, RTF, ODT, ODS, ODP, HEIC, HEIF)
+- [x] Write/update vitest tests for all fixes (281/281 passing)
+- [ ] Save checkpoint

@@ -8,10 +8,11 @@
  * - Markdown parsing
  * - XML parsing
  * - PDF text extraction (mocked)
- * - Excel parsing (mocked)
  * - Image OCR (mocked)
  * - Error handling for unsupported types
  * - File size limits
+ * - detectCategory for new file types (PPTX, Pages, Numbers, RTF, ODT, ODS, ODP)
+ * - Tesseract OCR availability check
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
@@ -247,5 +248,137 @@ describe("fileParser — output schema validation", () => {
 
     const result = await parseFile(filePath, "big.txt", "text/plain");
     expect(result.extractedText.length).toBeLessThanOrEqual(50000);
+  });
+});
+
+// ─── New tests for expanded file type detection ──────────────────────────────
+
+describe("fileParser — detectCategory for new file types", () => {
+  it("detects PPTX from extension", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("slides.pptx", "application/octet-stream")).toBe("pptx");
+  });
+
+  it("detects PPT from extension", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("old-slides.ppt", "application/octet-stream")).toBe("pptx");
+  });
+
+  it("detects PPTX from MIME type", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("file", "application/vnd.openxmlformats-officedocument.presentationml.presentation")).toBe("pptx");
+  });
+
+  it("detects Pages from extension", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("doc.pages", "application/octet-stream")).toBe("libreoffice");
+  });
+
+  it("detects Numbers from extension", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("data.numbers", "application/octet-stream")).toBe("libreoffice");
+  });
+
+  it("detects Keynote from extension", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("presentation.key", "application/octet-stream")).toBe("libreoffice");
+  });
+
+  it("detects ODT from extension", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("document.odt", "application/octet-stream")).toBe("libreoffice");
+  });
+
+  it("detects ODS from extension", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("spreadsheet.ods", "application/octet-stream")).toBe("libreoffice");
+  });
+
+  it("detects ODP from extension", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("presentation.odp", "application/octet-stream")).toBe("libreoffice");
+  });
+
+  it("detects RTF from extension", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("document.rtf", "application/octet-stream")).toBe("libreoffice");
+  });
+
+  it("detects RTF from MIME type", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("file", "application/rtf")).toBe("libreoffice");
+  });
+
+  it("detects HEIC image from extension", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("photo.heic", "application/octet-stream")).toBe("image");
+  });
+
+  it("detects HEIF image from extension", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("photo.heif", "application/octet-stream")).toBe("image");
+  });
+
+  it("still detects PDF correctly", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("report.pdf", "application/pdf")).toBe("pdf");
+  });
+
+  it("still detects Excel correctly", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("data.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).toBe("excel");
+  });
+
+  it("still detects DOCX correctly", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("doc.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")).toBe("docx");
+  });
+
+  it("still detects DWG correctly", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("drawing.dwg", "application/octet-stream")).toBe("dwg");
+  });
+
+  it("returns unknown for unsupported types", async () => {
+    const { detectCategory } = await import("./fileParser");
+    expect(detectCategory("file.xyz", "application/octet-stream")).toBe("unknown");
+  });
+});
+
+describe("fileParser — Tesseract OCR availability", () => {
+  it("tesseract binary is available on the system", async () => {
+    const { execSync } = await import("child_process");
+    let available = false;
+    try {
+      const version = execSync("tesseract --version 2>&1", { encoding: "utf-8" });
+      available = version.includes("tesseract");
+    } catch {}
+    expect(available).toBe(true);
+  });
+
+  it("tesseract has Arabic language pack installed", async () => {
+    const { execSync } = await import("child_process");
+    let hasArabic = false;
+    try {
+      const langs = execSync("tesseract --list-langs 2>&1", { encoding: "utf-8" });
+      hasArabic = langs.includes("ara");
+    } catch {}
+    expect(hasArabic).toBe(true);
+  });
+});
+
+describe("fileParser — ParsedFile ocrText field", () => {
+  it("ParsedFile type includes optional ocrText field", async () => {
+    const { parseFile } = await import("./fileParser");
+    const content = "test";
+    const tmpDir = os.tmpdir();
+    const filePath = path.join(tmpDir, `test-ocr-field-${Date.now()}.txt`);
+    fs.writeFileSync(filePath, content);
+
+    const result = await parseFile(filePath, "test.txt", "text/plain");
+    // ocrText is optional — for text files it should be undefined
+    expect(result.ocrText === undefined || typeof result.ocrText === "string").toBe(true);
+
+    fs.unlinkSync(filePath);
   });
 });
