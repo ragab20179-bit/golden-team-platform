@@ -1,6 +1,6 @@
 /**
- * Golden Team Trading Services — Corporate Website (Public)
- * Design: "Prestige Dark" — Deep navy/charcoal, gold accents, Space Grotesk + Playfair Display
+ * شركة الفريق الذهبي للإستثمار — Corporate Website (Public)
+ * Design: "Prestige Dark" — Official brand: Teal #0A323C + Olive #5A6446 + Gold #FADC96
  * This is the CLIENT-FACING company website. The Employee Portal is a completely separate world.
  * Three main service pillars: IT Solutions | ASTRA PM | Business Consultancy
  * Bilingual: Arabic / English — semantic trade language (not literal)
@@ -22,7 +22,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { t } from "@/lib/i18n";
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-hero-clean-dubai_424dffdd.jpeg";
-const GT_LOGO_MAIN = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt_main_logo_4ff8866b.png";
+const GT_LOGO_MAIN = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt_logo_official_d0b30b07.png";
 const IT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-it-solutions-kBJmggmFapCwtnocCUjwuj.webp";
 const ASTRA_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-astra-pm-HFtSuwmFhd8RXqX7n7bRpw.webp";
 const CONSULT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-consulting-NxW47h5uQRtwgqAX4Dbu4R.webp";
@@ -52,26 +52,28 @@ export default function Home() {
 
   return (
     <div
-      className="min-h-screen bg-[#05080F] text-white font-sans overflow-x-hidden"
+      className="min-h-screen text-white font-sans overflow-x-hidden"
+      style={{ background: "#050E10" }}
       dir={isRTL ? "rtl" : "ltr"}
     >
 
       {/* ── Navigation ── */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-[#05080F]/95 backdrop-blur-md border-b border-white/10 shadow-xl" : "bg-transparent"}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "backdrop-blur-md border-b shadow-xl" : "bg-transparent"}`}
+        style={scrolled ? { background: "rgba(5,14,16,0.96)", borderColor: "rgba(200,168,48,0.12)" } : {}}>
         <div className="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between py-4">
           {/* Logo */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
             <img
               src={GT_LOGO_MAIN}
               alt="Golden Team"
-              className="h-12 w-auto object-contain"
+              className="h-10 w-auto object-contain"
             />
             <div>
-              <div className="text-white font-bold text-sm leading-tight font-display">
-                {isRTL ? "الفريق الذهبي" : "GOLDEN TEAM"}
+              <div className="text-white font-bold text-sm leading-tight" style={{ fontFamily: "'Cairo', 'Space Grotesk', sans-serif" }}>
+                {isRTL ? "شركة الفريق الذهبي للإستثمار" : "Golden Team Co. for Investment"}
               </div>
-              <div className="text-amber-400/70 text-[10px] tracking-widest uppercase">
-                {isRTL ? "للخدمات التجارية" : "Trading Services"}
+              <div className="text-[10px] tracking-widest uppercase" style={{ color: "#FADC96", opacity: 0.6 }}>
+                {isRTL ? "شركة إبداعية" : "Creative Company"}
               </div>
             </div>
           </div>
@@ -85,7 +87,7 @@ export default function Home() {
               { label: L.nav.about, path: "/about" },
               { label: L.nav.contact, path: "/contact" },
             ].map(({ label, path }) => (
-              <button key={path} onClick={() => setLocation(path)} className="text-white/60 hover:text-amber-400 transition-colors duration-200 tracking-wide">
+              <button key={path} onClick={() => setLocation(path)} className="text-white/60 hover:text-[#FADC96] transition-colors duration-200 tracking-wide">
                 {label}
               </button>
             ))}
@@ -95,7 +97,7 @@ export default function Home() {
             {/* Language Switcher */}
             <button
               onClick={toggleLang}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 text-white/50 hover:text-amber-400 hover:border-amber-400/40 transition-all text-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 text-white/50 hover:text-[#FADC96] hover:border-[#C8A830]/40 transition-all text-xs"
               title={lang === "en" ? "Switch to Arabic" : "التبديل إلى الإنجليزية"}
             >
               <Languages className="w-3.5 h-3.5" />
@@ -105,7 +107,7 @@ export default function Home() {
               variant="outline"
               size="sm"
               onClick={() => setLocation("/login")}
-              className="border-amber-400/40 text-amber-400 hover:bg-amber-400/10 hover:border-amber-400 bg-transparent text-xs tracking-widest uppercase"
+              className="border-[#C8A830]/40 text-[#FADC96] hover:bg-[#FADC96]/10 hover:border-[#C8A830] bg-transparent text-xs tracking-widest uppercase"
             >
               {G.employeePortal}
             </Button>
@@ -139,12 +141,12 @@ export default function Home() {
               <button
                 key={path}
                 onClick={() => { setLocation(path); setMobileOpen(false); }}
-                className={`text-white/70 hover:text-amber-400 text-sm py-2 border-b border-white/5 ${isRTL ? "text-right" : "text-left"}`}
+                className={`text-white/70 hover:text-[#FADC96] text-sm py-2 border-b border-white/5 ${isRTL ? "text-right" : "text-left"}`}
               >
                 {label}
               </button>
             ))}
-            <Button onClick={() => setLocation("/login")} className="mt-2 bg-amber-500 hover:bg-amber-400 text-[#05080F] font-semibold">
+            <Button onClick={() => setLocation("/login")} className="mt-2 bg-[#C8A830] hover:bg-[#FADC96] text-[#050E10] font-semibold">
               {G.employeePortal}
             </Button>
           </div>
@@ -171,7 +173,7 @@ export default function Home() {
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 text-center pt-24 pb-16">
           <motion.div initial="hidden" animate="show" variants={stagger}>
-            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-400/30 bg-amber-400/10 text-amber-400 text-xs tracking-widest uppercase mb-8">
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#C8A830]/30 bg-[#FADC96]/10 text-[#FADC96] text-xs tracking-widest uppercase mb-8">
               <Zap className="w-3 h-3" />
               {L.hero.badge}
             </motion.div>
@@ -179,7 +181,7 @@ export default function Home() {
             <motion.h1 variants={fadeUp} className={`font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.05] mb-6 ${isRTL ? "font-arabic" : ""}`}>
               <span className="text-white">{L.hero.headline1}</span>
               <br />
-              <span className="bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#FADC96] via-[#FADC96] to-[#C8A830] bg-clip-text text-transparent">
                 {L.hero.headline2}
               </span>
             </motion.h1>
@@ -195,7 +197,7 @@ export default function Home() {
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button
                 size="lg"
-                className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold text-base px-8 py-6 shadow-xl shadow-amber-500/30 transition-all duration-300"
+                className="bg-[#C8A830] hover:bg-[#FADC96] text-[#050E10] font-bold text-base px-8 py-6 shadow-xl shadow-[#C8A830]/30 transition-all duration-300"
                 onClick={() => setLocation("/it-solutions")}
               >
                 {L.hero.ctaPrimary} <ArrowRight className={`${isRTL ? "mr-2 rotate-180" : "ml-2"} w-5 h-5`} />
@@ -223,12 +225,12 @@ export default function Home() {
       </section>
 
       {/* ── Stats Bar ── */}
-      <section className="bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-amber-500/10 border-y border-amber-400/20 py-10">
+      <section className="bg-gradient-to-r from-[#C8A830]/10 via-[#FADC96]/5 to-[#C8A830]/10 border-y border-[#C8A830]/20 py-10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {(L.stats as Array<{value: string; label: string}>).map(({ value, label }) => (
               <div key={label} className="text-center">
-                <div className="font-display text-3xl md:text-4xl font-bold text-amber-400 mb-1">{value}</div>
+                <div className="font-display text-3xl md:text-4xl font-bold text-[#FADC96] mb-1">{value}</div>
                 <div className="text-white/50 text-sm tracking-wide">{label}</div>
               </div>
             ))}
@@ -240,7 +242,7 @@ export default function Home() {
       <section id="it-solutions" className="py-28 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <img src={IT_IMG} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#05080F] via-[#05080F]/80 to-[#05080F]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#050E10] via-[#050E10]/80 to-[#050E10]" />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-6">
           <motion.div
@@ -269,7 +271,7 @@ export default function Home() {
             </motion.div>
             <motion.div variants={fadeUp} className="relative rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/20 border border-white/10">
               <img src={IT_IMG} alt="IT Solutions" className="w-full h-72 object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#05080F]/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050E10]/60 to-transparent" />
             </motion.div>
           </motion.div>
 
@@ -297,7 +299,7 @@ export default function Home() {
       </section>
 
       {/* ── ASTRA PM ── */}
-      <section id="astra-pm" className="py-28 bg-gradient-to-b from-[#05080F] via-[#080D1A] to-[#05080F] relative overflow-hidden">
+      <section id="astra-pm" className="py-28 bg-gradient-to-b from-[#050E10] via-[#091820] to-[#050E10] relative overflow-hidden">
         {/* Violet glow */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full opacity-10" style={{ background: "radial-gradient(circle, rgba(139,92,246,0.4) 0%, transparent 70%)" }} />
         <div className="relative z-10 max-w-7xl mx-auto px-6">
@@ -307,9 +309,9 @@ export default function Home() {
           >
             <motion.div variants={fadeUp} className="order-2 lg:order-1 relative rounded-2xl overflow-hidden shadow-2xl shadow-violet-500/20 border border-white/10">
               <img src={ASTRA_IMG} alt="ASTRA PM" className="w-full h-72 object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#05080F]/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050E10]/60 to-transparent" />
               <div className="absolute bottom-4 left-4 right-4">
-                <div className="flex items-center gap-2 bg-[#05080F]/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-violet-400/20">
+                <div className="flex items-center gap-2 bg-[#050E10]/80 backdrop-blur-sm rounded-lg px-4 py-2 border border-violet-400/20">
                   <div className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
                   <span className="text-violet-300 text-xs font-medium">{L.astraSection.liveBadge}</span>
                 </div>
@@ -375,7 +377,7 @@ export default function Home() {
       <section id="consultancy" className="py-28 relative overflow-hidden">
         <div className="absolute inset-0 opacity-15">
           <img src={CONSULT_IMG} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#05080F] via-[#05080F]/70 to-[#05080F]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#050E10] via-[#050E10]/70 to-[#050E10]" />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-6">
           <motion.div
@@ -383,18 +385,18 @@ export default function Home() {
             className="grid lg:grid-cols-2 gap-16 items-center mb-20"
           >
             <motion.div variants={fadeUp}>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-400/30 bg-amber-400/10 text-amber-400 text-xs tracking-widest uppercase mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#C8A830]/30 bg-[#FADC96]/10 text-[#FADC96] text-xs tracking-widest uppercase mb-6">
                 <Briefcase className="w-3 h-3" /> {L.consultSection.badge}
               </div>
               <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
                 {L.consultSection.headline1}<br />
-                <span className="text-amber-400">{L.consultSection.headline2}</span>
+                <span className="text-[#FADC96]">{L.consultSection.headline2}</span>
               </h2>
               <p className="text-white/60 text-lg leading-relaxed mb-8">
                 {L.consultSection.body}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold px-6">
+                <Button className="bg-[#C8A830] hover:bg-[#FADC96] text-[#050E10] font-bold px-6">
                   {L.consultSection.ctaPrimary} <ChevronRight className={`${isRTL ? "mr-1 rotate-180" : "ml-1"} w-4 h-4`} />
                 </Button>
                 <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 bg-transparent px-6">
@@ -402,9 +404,9 @@ export default function Home() {
                 </Button>
               </div>
             </motion.div>
-            <motion.div variants={fadeUp} className="relative rounded-2xl overflow-hidden shadow-2xl shadow-amber-500/10 border border-white/10">
+            <motion.div variants={fadeUp} className="relative rounded-2xl overflow-hidden shadow-2xl shadow-[#C8A830]/10 border border-white/10">
               <img src={CONSULT_IMG} alt="Business Consultancy" className="w-full h-72 object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#05080F]/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050E10]/60 to-transparent" />
             </motion.div>
           </motion.div>
 
@@ -417,10 +419,10 @@ export default function Home() {
               return (
                 <motion.div
                   key={idx} variants={fadeUp}
-                  className="group p-6 rounded-xl border border-white/8 bg-white/3 hover:bg-amber-500/8 hover:border-amber-400/30 transition-all duration-300"
+                  className="group p-6 rounded-xl border border-white/8 bg-white/3 hover:bg-[#C8A830]/8 hover:border-[#C8A830]/30 transition-all duration-300"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-amber-500/15 border border-amber-400/20 flex items-center justify-center mb-4 group-hover:bg-amber-500/25 transition-colors">
-                    <Icon className="w-6 h-6 text-amber-400" />
+                  <div className="w-12 h-12 rounded-xl bg-[#C8A830]/15 border border-[#C8A830]/20 flex items-center justify-center mb-4 group-hover:bg-[#C8A830]/25 transition-colors">
+                    <Icon className="w-6 h-6 text-[#FADC96]" />
                   </div>
                   <h3 className="font-display font-semibold text-white mb-2 text-lg">{title}</h3>
                   <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
@@ -432,14 +434,14 @@ export default function Home() {
       </section>
 
       {/* ── About / Why Golden Team ── */}
-      <section id="about" className="py-28 bg-gradient-to-b from-[#05080F] to-[#080D1A]">
+      <section id="about" className="py-28 bg-gradient-to-b from-[#050E10] to-[#091820]">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-16">
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/20 bg-white/5 text-white/60 text-xs tracking-widest uppercase mb-6">
               {L.about.badge}
             </motion.div>
             <motion.h2 variants={fadeUp} className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
-              {L.about.headline1}<br /><span className="text-amber-400">{L.about.headline2}</span>
+              {L.about.headline1}<br /><span className="text-[#FADC96]">{L.about.headline2}</span>
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 text-lg max-w-3xl mx-auto">
               {L.about.body}
@@ -464,7 +466,7 @@ export default function Home() {
             {(L.testimonials as Array<{name: string; role: string; text: string}>).map(({ name, role, text }) => (
               <motion.div key={name} variants={fadeUp} className="p-6 rounded-xl border border-white/8 bg-white/3">
                 <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}
+                  {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-[#FADC96] text-[#FADC96]" />)}
                 </div>
                 <p className="text-white/60 text-sm leading-relaxed mb-6 italic">"{text}"</p>
                 <div>
@@ -479,11 +481,11 @@ export default function Home() {
 
       {/* ── CTA Banner ── */}
       <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-500/15 via-amber-400/8 to-amber-500/15 border-y border-amber-400/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#C8A830]/15 via-[#FADC96]/8 to-[#C8A830]/15 border-y border-[#C8A830]/20" />
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}>
             <motion.h2 variants={fadeUp} className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
-              {L.cta.headline1}<br /><span className="text-amber-400">{L.cta.headline2}</span>
+              {L.cta.headline1}<br /><span className="text-[#FADC96]">{L.cta.headline2}</span>
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/60 text-lg mb-10">
               {L.cta.body}
@@ -491,7 +493,7 @@ export default function Home() {
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button
                 size="lg"
-                className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-bold px-10 py-6 text-base shadow-xl shadow-amber-500/30"
+                className="bg-[#C8A830] hover:bg-[#FADC96] text-[#050E10] font-bold px-10 py-6 text-base shadow-xl shadow-[#C8A830]/30"
                 onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
               >
                 {L.cta.ctaPrimary} <ArrowRight className={`${isRTL ? "mr-2 rotate-180" : "ml-2"} w-5 h-5`} />
@@ -510,7 +512,7 @@ export default function Home() {
       </section>
 
       {/* ── Contact ── */}
-      <section id="contact" className="py-28 bg-[#080D1A]">
+      <section id="contact" className="py-28 bg-[#091820]">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={stagger} className="text-center mb-16">
             <motion.h2 variants={fadeUp} className="font-display text-4xl md:text-5xl font-bold text-white mb-4">
@@ -531,8 +533,8 @@ export default function Home() {
               { Icon: MapPin, ...L.contact.cards[2] },
             ].map(({ Icon, label, value, sub }) => (
               <motion.div key={label} variants={fadeUp} className="text-center p-8 rounded-xl border border-white/8 bg-white/3">
-                <div className="w-14 h-14 rounded-full bg-amber-500/15 border border-amber-400/20 flex items-center justify-center mx-auto mb-4">
-                  <Icon className="w-6 h-6 text-amber-400" />
+                <div className="w-14 h-14 rounded-full bg-[#C8A830]/15 border border-[#C8A830]/20 flex items-center justify-center mx-auto mb-4">
+                  <Icon className="w-6 h-6 text-[#FADC96]" />
                 </div>
                 <div className="text-white/40 text-xs tracking-widest uppercase mb-2">{label}</div>
                 <div className="text-white font-semibold mb-1">{value}</div>
@@ -544,7 +546,7 @@ export default function Home() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-white/8 bg-[#05080F] py-12">
+      <footer className="border-t border-white/8 bg-[#050E10] py-12">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-10 mb-12">
             <div className="md:col-span-2">
@@ -554,7 +556,7 @@ export default function Home() {
                   <div className="text-white font-bold font-display">
                     {isRTL ? "الفريق الذهبي" : "GOLDEN TEAM"}
                   </div>
-                  <div className="text-amber-400/60 text-[10px] tracking-widest uppercase">
+                  <div className="text-[#FADC96]/60 text-[10px] tracking-widest uppercase">
                     {isRTL ? "للخدمات التجارية" : "Trading Services"}
                   </div>
                 </div>
@@ -595,7 +597,7 @@ export default function Home() {
               {/* Language toggle in footer */}
               <button
                 onClick={toggleLang}
-                className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/15 text-white/30 hover:text-amber-400 hover:border-amber-400/30 transition-all text-xs"
+                className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/15 text-white/30 hover:text-[#FADC96] hover:border-[#C8A830]/30 transition-all text-xs"
               >
                 <Languages className="w-3 h-3" />
                 {lang === "en" ? "عربي" : "English"}

@@ -1,6 +1,6 @@
 /**
  * Portal Layout — Persistent dark sidebar + main content area
- * Design: "Neural Depth" — deep space dark, glass morphism, bioluminescent accents
+ * Design: "Prestige Dark" — Golden Team brand identity (teal #0A323C + olive #5A6446 + gold #FADC96)
  * Bilingual: Arabic / English — semantic trade language
  */
 import { useState } from "react";
@@ -18,25 +18,25 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 // Navigation items — labels translated dynamically
 const NAV_ITEMS_EN = [
-  { key: "dashboard",     icon: LayoutDashboard, path: "/portal",              color: "text-blue-400" },
-  { key: "hr",            icon: Users,           path: "/portal/hr",           color: "text-cyan-400" },
-  { key: "erp",           icon: Database,        path: "/portal/erp",          color: "text-emerald-400" },
-  { key: "crm",           icon: UserCheck,       path: "/portal/crm",          color: "text-violet-400" },
-  { key: "kpi",           icon: BarChart3,       path: "/portal/kpi",          color: "text-amber-400" },
-  { key: "procurement",   icon: ShoppingCart,    path: "/portal/procurement",  color: "text-orange-400" },
-  { key: "qms",           icon: FileCheck,       path: "/portal/qms",          color: "text-teal-400" },
-  { key: "legal",         icon: Scale,           path: "/portal/legal",        color: "text-rose-400" },
-  { key: "comms",         icon: MessageSquare,   path: "/portal/comms",        color: "text-sky-400" },
-  { key: "audit",         icon: ScrollText,      path: "/portal/audit",        color: "text-slate-400" },
-  { key: "governance",    icon: Shield,          path: "/portal/governance",   color: "text-red-400" },
-  { key: "meetings",      icon: Mic,             path: "/portal/meetings",     color: "text-blue-300" },
-  { key: "neoCore",       icon: Cpu,             path: "/portal/neo-core",     color: "text-violet-300" },
-  { key: "vault",         icon: HardDrive,       path: "/portal/vault",        color: "text-amber-300" },
-  { key: "neoChat",       icon: MessageSquare,   path: "/portal/neo-chat",     color: "text-green-400" },
-  { key: "requests",     icon: ClipboardList,   path: "/portal/requests",     color: "text-yellow-400" },
-  { key: "neoUsage",     icon: TrendingUp,      path: "/portal/neo-usage",    color: "text-pink-400" },
-  { key: "odoo",         icon: Building2,       path: "/portal/odoo",          color: "text-purple-400" },
-  { key: "bidEval",      icon: Scale,           path: "/portal/bid-evaluation", color: "text-amber-500" },
+  { key: "dashboard",     icon: LayoutDashboard, path: "/portal",              color: "text-[#FADC96]" },
+  { key: "hr",            icon: Users,           path: "/portal/hr",           color: "text-[#FADC96]" },
+  { key: "erp",           icon: Database,        path: "/portal/erp",          color: "text-[#FADC96]" },
+  { key: "crm",           icon: UserCheck,       path: "/portal/crm",          color: "text-[#FADC96]" },
+  { key: "kpi",           icon: BarChart3,       path: "/portal/kpi",          color: "text-[#FADC96]" },
+  { key: "procurement",   icon: ShoppingCart,    path: "/portal/procurement",  color: "text-[#FADC96]" },
+  { key: "qms",           icon: FileCheck,       path: "/portal/qms",          color: "text-[#FADC96]" },
+  { key: "legal",         icon: Scale,           path: "/portal/legal",        color: "text-[#FADC96]" },
+  { key: "comms",         icon: MessageSquare,   path: "/portal/comms",        color: "text-[#FADC96]" },
+  { key: "audit",         icon: ScrollText,      path: "/portal/audit",        color: "text-[#FADC96]" },
+  { key: "governance",    icon: Shield,          path: "/portal/governance",   color: "text-[#FADC96]" },
+  { key: "meetings",      icon: Mic,             path: "/portal/meetings",     color: "text-[#FADC96]" },
+  { key: "neoCore",       icon: Cpu,             path: "/portal/neo-core",     color: "text-[#FADC96]" },
+  { key: "vault",         icon: HardDrive,       path: "/portal/vault",        color: "text-[#FADC96]" },
+  { key: "neoChat",       icon: MessageSquare,   path: "/portal/neo-chat",     color: "text-[#FADC96]" },
+  { key: "requests",     icon: ClipboardList,   path: "/portal/requests",     color: "text-[#FADC96]" },
+  { key: "neoUsage",     icon: TrendingUp,      path: "/portal/neo-usage",    color: "text-[#FADC96]" },
+  { key: "odoo",         icon: Building2,       path: "/portal/odoo",          color: "text-[#FADC96]" },
+  { key: "bidEval",      icon: Scale,           path: "/portal/bid-evaluation", color: "text-[#FADC96]" },
 ];
 
 const NAV_LABELS: Record<string, { en: string; ar: string }> = {
@@ -87,13 +87,17 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className={`flex items-center gap-3 px-4 py-5 border-b border-white/5 ${collapsed ? "justify-center" : ""}`}>
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center font-bold text-sm text-black shrink-0">GT</div>
+        <img
+          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt_logo_official_d0b30b07.png"
+          alt="Golden Team Logo"
+          className="w-9 h-9 rounded-lg shrink-0 object-contain bg-white/5 p-0.5"
+        />
         {!collapsed && (
           <div>
-            <div className="font-bold text-sm leading-tight text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-              {isRTL ? "الفريق الذهبي" : "Golden Team"}
+            <div className="font-bold text-xs leading-tight text-white" style={{ fontFamily: "'Cairo', 'Space Grotesk', sans-serif" }}>
+              {isRTL ? "شركة الفريق الذهبي للإستثمار" : "Golden Team Co. for Investment"}
             </div>
-            <div className="text-[10px] text-white/30">
+            <div className="text-[10px] text-[#FADC96]/50">
               {isRTL ? "بوابة الموظفين" : "Employee Portal"}
             </div>
           </div>
@@ -102,10 +106,10 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
 
       {/* NEO AI status */}
       {!collapsed && (
-        <div className="mx-3 my-3 p-3 rounded-lg border border-blue-500/20" style={{ background: "rgba(59,130,246,0.05)" }}>
+        <div className="mx-3 my-3 p-3 rounded-lg border border-[#C8A830]/20" style={{ background: "rgba(10,50,60,0.4)" }}>
           <div className="flex items-center gap-2 mb-1">
-            <Brain className="w-3 h-3 text-blue-400" />
-            <span className="text-xs font-semibold text-blue-400">
+            <Brain className="w-3 h-3 text-[#FADC96]" />
+            <span className="text-xs font-semibold text-[#FADC96]">
               {isRTL ? "محرك NEO الذكي" : "NEO AI Core"}
             </span>
             <span className="ml-auto w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -157,15 +161,16 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
   );
 
   return (
-    <div className="flex h-screen bg-[#060B14] overflow-hidden" dir={isRTL ? "rtl" : "ltr"}>
+    <div className="flex h-screen overflow-hidden" style={{ background: "#050E10" }} dir={isRTL ? "rtl" : "ltr"}>
       {/* Desktop Sidebar */}
       <aside className={`hidden md:flex flex-col shrink-0 border-r border-white/5 transition-all duration-300 relative
         ${collapsed ? "w-16" : "w-60"}`}
-        style={{ background: "rgba(9,14,26,0.95)" }}>
+        style={{ background: "rgba(8,28,34,0.97)" }}>
         <SidebarContent />
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className={`absolute ${isRTL ? "-left-3" : "-right-3"} top-20 w-6 h-6 rounded-full border border-white/10 bg-[#0D1B3E] flex items-center justify-center text-white/40 hover:text-white transition-colors z-10`}
+          className={`absolute ${isRTL ? "-left-3" : "-right-3"} top-20 w-6 h-6 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:text-white transition-colors z-10`}
+          style={{ background: "#0A323C" }}
         >
           {collapsed
             ? (isRTL ? <ChevronLeft className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />)
@@ -178,7 +183,7 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileOpen(false)} />
-          <aside className={`absolute ${isRTL ? "right-0" : "left-0"} top-0 bottom-0 w-60 border-r border-white/5 flex flex-col`} style={{ background: "rgba(9,14,26,0.98)" }}>
+          <aside className={`absolute ${isRTL ? "right-0" : "left-0"} top-0 bottom-0 w-60 border-r border-white/5 flex flex-col`} style={{ background: "rgba(8,28,34,0.99)" }}>
             <SidebarContent />
           </aside>
         </div>
@@ -188,7 +193,7 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
         <header className="shrink-0 h-14 border-b border-white/5 flex items-center justify-between px-4 md:px-6"
-          style={{ background: "rgba(6,11,20,0.9)", backdropFilter: "blur(20px)" }}>
+          style={{ background: "rgba(5,14,16,0.92)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(200,168,48,0.08)" }}>
           <div className="flex items-center gap-3">
             <button className="md:hidden text-white/40 hover:text-white" onClick={() => setMobileOpen(true)}>
               <Menu className="w-5 h-5" />
@@ -216,9 +221,9 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
             </a>
             <button onClick={() => toast.info(t("No new notifications", "لا توجد إشعارات جديدة"))} className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition-colors relative">
               <Bell className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-400" />
+              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#FADC96]" />
             </button>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white">EM</div>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-[#050E10]" style={{ background: "linear-gradient(135deg, #C8A830, #FADC96)" }}>EM</div>
           </div>
         </header>
 

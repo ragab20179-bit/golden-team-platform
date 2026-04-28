@@ -1,11 +1,12 @@
 /* ============================================================
-   GOLDEN TEAM TRADING SERVICES — ENTERPRISE PLATFORM
-   Design Philosophy: "Neural Depth" — Deep Space AI Aesthetic
-   - Deep space dark (#060B14) backgrounds with layered depth
-   - Bioluminescent accents: electric blue, cyan, emerald
-   - Glass morphism cards with backdrop blur
-   - Space Grotesk (bold geometric) + Inter (body)
-   - Gold (#F59E0B) reserved for brand mark and premium indicators
+   GOLDEN TEAM CO. FOR INVESTMENT — ENTERPRISE PLATFORM
+   Design Philosophy: "Prestige Dark" — Deep Teal & Gold
+   - Official brand colors extracted from Canva letterhead
+   - Primary: Deep Teal #0A323C (letterhead header/borders)
+   - Secondary: Olive Green #5A6446 (letterhead accent triangles)
+   - Accent: Warm Gold #FADC96 / #C8A830 (letterhead gold triangles)
+   - Background: Near-black teal-tinted dark
+   - Cairo (Arabic) + Space Grotesk (English/headings) + Inter (body)
    ============================================================ */
 
 @import "tailwindcss";
@@ -50,53 +51,80 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  /* Custom brand tokens — extracted from Golden Team letterhead & artwork */
-  --color-gold: #FFE196;          /* Primary gold — letterhead corner triangles */
-  --color-gold-deep: #F59E0B;     /* Deep gold — logo mark amber */
-  --color-brand-teal: #002D3C;    /* Primary dark teal — letterhead corners & logo border */
-  --color-brand-olive: #5A5A3C;   /* Secondary olive — letterhead accent triangles */
-  --color-neo-blue: #3B82F6;
-  --color-neo-cyan: #06B6D4;
-  --color-neo-emerald: #10B981;
-  --color-space-dark: #060B14;
-  --color-space-mid: #0D1B3E;
+
+  /* ── Official Golden Team Brand Tokens (from Canva letterhead) ── */
+  --color-brand-teal:      #0A323C;   /* Primary — deep teal */
+  --color-brand-teal-mid:  #0D4A58;   /* Mid teal — hover states */
+  --color-brand-teal-light:#1A6070;   /* Light teal — active highlights */
+  --color-brand-olive:     #5A6446;   /* Secondary — olive green */
+  --color-brand-olive-mid: #6B7855;   /* Mid olive */
+  --color-gold:            #FADC96;   /* Primary gold — letterhead triangles */
+  --color-gold-deep:       #C8A830;   /* Deep gold — borders, dividers */
+  --color-gold-amber:      #F59E0B;   /* Amber gold — CTAs, highlights */
+  --color-taupe:           #B4B496;   /* Neutral taupe — subtle accents */
+
+  /* Legacy tokens kept for backward compat with existing components */
+  --color-neo-blue:        #0D6B7F;   /* Remapped to brand teal-light */
+  --color-neo-cyan:        #1A8A9A;   /* Remapped to teal mid */
+  --color-neo-emerald:     #5A6446;   /* Remapped to brand olive */
+  --color-space-dark:      #050E10;   /* Near-black teal-tinted */
+  --color-space-mid:       #091820;   /* Dark teal-tinted mid */
 }
 
 :root {
   --radius: 0.75rem;
-  /* Neural Depth dark theme as default */
-  --background: oklch(0.07 0.02 240);
-  --foreground: oklch(0.92 0.01 220);
-  --card: oklch(0.11 0.025 240);
-  --card-foreground: oklch(0.92 0.01 220);
-  --popover: oklch(0.11 0.025 240);
-  --popover-foreground: oklch(0.92 0.01 220);
-  --primary: oklch(0.6 0.2 250);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.15 0.03 240);
-  --secondary-foreground: oklch(0.85 0.01 220);
-  --muted: oklch(0.15 0.02 240);
-  --muted-foreground: oklch(0.6 0.02 240);
-  --accent: oklch(0.18 0.04 240);
-  --accent-foreground: oklch(0.92 0.01 220);
-  --destructive: oklch(0.65 0.22 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.6 0.2 250);
-  --chart-1: oklch(0.65 0.2 250);
-  --chart-2: oklch(0.65 0.18 195);
-  --chart-3: oklch(0.65 0.18 160);
-  --chart-4: oklch(0.75 0.18 80);
-  --chart-5: oklch(0.65 0.22 25);
-  --sidebar: oklch(0.09 0.025 240);
-  --sidebar-foreground: oklch(0.85 0.01 220);
-  --sidebar-primary: oklch(0.6 0.2 250);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.15 0.03 240);
-  --sidebar-accent-foreground: oklch(0.92 0.01 220);
-  --sidebar-border: oklch(1 0 0 / 6%);
-  --sidebar-ring: oklch(0.6 0.2 250);
+
+  /* ── Prestige Dark Theme (default) ── */
+  /* Background: very dark teal-tinted near-black */
+  --background:            oklch(0.08 0.025 200);
+  --foreground:            oklch(0.92 0.01 200);
+
+  /* Cards: slightly lighter teal-tinted dark */
+  --card:                  oklch(0.12 0.03 200);
+  --card-foreground:       oklch(0.92 0.01 200);
+
+  --popover:               oklch(0.12 0.03 200);
+  --popover-foreground:    oklch(0.92 0.01 200);
+
+  /* Primary: brand teal — used for buttons, links, active states */
+  --primary:               oklch(0.35 0.08 200);
+  --primary-foreground:    oklch(0.95 0.01 200);
+
+  /* Secondary: slightly lighter teal */
+  --secondary:             oklch(0.16 0.04 200);
+  --secondary-foreground:  oklch(0.85 0.01 200);
+
+  /* Muted: very subtle teal */
+  --muted:                 oklch(0.15 0.025 200);
+  --muted-foreground:      oklch(0.58 0.02 200);
+
+  /* Accent: gold — used for highlights, badges, active indicators */
+  --accent:                oklch(0.82 0.14 80);
+  --accent-foreground:     oklch(0.1 0.03 200);
+
+  --destructive:           oklch(0.65 0.22 25);
+  --destructive-foreground:oklch(0.98 0 0);
+
+  --border:                oklch(1 0 0 / 8%);
+  --input:                 oklch(1 0 0 / 10%);
+  --ring:                  oklch(0.82 0.14 80);   /* gold ring */
+
+  /* Charts: teal/olive/gold palette */
+  --chart-1:               oklch(0.55 0.12 200);  /* teal */
+  --chart-2:               oklch(0.50 0.08 140);  /* olive */
+  --chart-3:               oklch(0.82 0.14 80);   /* gold */
+  --chart-4:               oklch(0.65 0.10 170);  /* teal-green */
+  --chart-5:               oklch(0.65 0.22 25);   /* red */
+
+  /* Sidebar: deep teal matching brand header */
+  --sidebar:               oklch(0.10 0.04 200);
+  --sidebar-foreground:    oklch(0.85 0.01 200);
+  --sidebar-primary:       oklch(0.82 0.14 80);   /* gold */
+  --sidebar-primary-foreground: oklch(0.1 0.03 200);
+  --sidebar-accent:        oklch(0.16 0.05 200);
+  --sidebar-accent-foreground: oklch(0.92 0.01 200);
+  --sidebar-border:        oklch(1 0 0 / 6%);
+  --sidebar-ring:          oklch(0.82 0.14 80);
 }
 
 @layer base {
@@ -105,10 +133,10 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Cairo', 'Inter', sans-serif;
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Space Grotesk', 'Cairo', sans-serif;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -152,7 +180,7 @@
     }
   }
 
-  /* Glass morphism card */
+  /* ── Glass morphism card (teal-tinted) ── */
   .glass-card {
     background: oklch(1 0 0 / 4%);
     backdrop-filter: blur(16px);
@@ -166,52 +194,63 @@
   }
   .glass-card-hover:hover {
     background: oklch(1 0 0 / 7%);
-    border-color: oklch(0.6 0.2 250 / 40%);
-    box-shadow: 0 0 30px oklch(0.6 0.2 250 / 15%);
+    border-color: oklch(0.82 0.14 80 / 35%);   /* gold border on hover */
+    box-shadow: 0 0 30px oklch(0.82 0.14 80 / 12%);
     transform: translateY(-2px);
   }
 
-  /* Glow effects */
-  .glow-blue {
-    box-shadow: 0 0 20px oklch(0.6 0.2 250 / 30%);
-  }
-  .glow-cyan {
-    box-shadow: 0 0 20px oklch(0.65 0.18 195 / 30%);
+  /* ── Glow effects (brand palette) ── */
+  .glow-teal {
+    box-shadow: 0 0 20px oklch(0.35 0.08 200 / 40%);
   }
   .glow-gold {
-    box-shadow: 0 0 20px oklch(0.75 0.18 80 / 30%);
+    box-shadow: 0 0 20px oklch(0.82 0.14 80 / 30%);
   }
+  .glow-olive {
+    box-shadow: 0 0 20px oklch(0.50 0.08 140 / 30%);
+  }
+  /* Legacy aliases */
+  .glow-blue   { @apply glow-teal; }
+  .glow-cyan   { @apply glow-teal; }
 
-  /* Gradient text */
-  .gradient-text-blue {
-    background: linear-gradient(135deg, #3B82F6, #06B6D4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+  /* ── Gradient text ── */
   .gradient-text-gold {
-    background: linear-gradient(135deg, #F59E0B, #FBBF24);
+    background: linear-gradient(135deg, #C8A830, #FADC96, #F59E0B);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+  .gradient-text-teal {
+    background: linear-gradient(135deg, #0A323C, #1A6070);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  /* Legacy alias */
+  .gradient-text-blue { @apply gradient-text-teal; }
 
-  /* Neo AI pulse animation */
+  /* ── Brand accent bar (used in headers) ── */
+  .brand-accent-bar {
+    height: 2px;
+    background: linear-gradient(90deg, #C8A830, #5A6446, transparent);
+  }
+
+  /* ── NEO AI pulse (gold-tinted) ── */
   @keyframes neo-pulse {
-    0%, 100% { opacity: 1; box-shadow: 0 0 20px oklch(0.6 0.2 250 / 40%); }
-    50% { opacity: 0.8; box-shadow: 0 0 40px oklch(0.6 0.2 250 / 60%); }
+    0%, 100% { opacity: 1; box-shadow: 0 0 20px oklch(0.82 0.14 80 / 40%); }
+    50%       { opacity: 0.8; box-shadow: 0 0 40px oklch(0.82 0.14 80 / 60%); }
   }
   .neo-pulse {
     animation: neo-pulse 2s ease-in-out infinite;
   }
 
-  /* Scrollbar */
+  /* ── Scrollbar (teal-tinted) ── */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: oklch(0.4 0.08 240); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: oklch(0.5 0.12 250); }
+  ::-webkit-scrollbar-thumb { background: oklch(0.25 0.05 200); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: oklch(0.35 0.08 200); }
 
-  /* Chat message streaming cursor */
+  /* ── Chat streaming cursor ── */
   @keyframes blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
@@ -219,16 +258,16 @@
   .cursor-blink::after {
     content: '▋';
     animation: blink 1s infinite;
-    color: #3B82F6;
+    color: #FADC96;
   }
 
-  /* Sidebar active indicator */
+  /* ── Sidebar active indicator (gold left border) ── */
   .nav-active {
-    background: linear-gradient(90deg, oklch(0.6 0.2 250 / 20%), transparent);
-    border-left: 2px solid #3B82F6;
+    background: linear-gradient(90deg, oklch(0.82 0.14 80 / 15%), transparent);
+    border-left: 2px solid #C8A830;
   }
 
-  /* Status dot */
+  /* ── Status dot ── */
   @keyframes status-pulse {
     0%, 100% { transform: scale(1); opacity: 1; }
     50% { transform: scale(1.4); opacity: 0.6; }
@@ -239,7 +278,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #10B981;
+    background: #5A6446;
     margin-right: 6px;
     animation: status-pulse 2s infinite;
   }

@@ -345,4 +345,14 @@
 - [x] Upgrade fileParser.ts: add scanned PDF OCR fallback (pdftoppm → Tesseract)
 - [x] Update detectCategory for new file types (PPTX, Pages, Numbers, RTF, ODT, ODS, ODP, HEIC, HEIF)
 - [x] Write/update vitest tests for all fixes (281/281 passing)
-- [ ] Save checkpoint
+- [x] Save checkpoint (version 55f8f8d1)
+
+## 2026-04-29 — Brand Identity Update (Canva Assets)
+
+- [x] Extract clean transparent logo PNG from Canva letterhead
+- [x] Rebuild company profile PDF with real brand colors (#0A323C teal, #5A6446 olive, #FADC96 gold), real logo, real company details
+- [x] Update website CSS color variables to match real brand palette
+- [x] Upload real logo to CDN (https://d2xsxph8kpxj0f.cloudfront.net/.../gt_logo_official_d0b30b07.png)
+- [x] Update website navigation/header logo from GT monogram to real logo
+- [x] Update Home.tsx hero section with real brand colors
+- [x] Save checkpoint after brand update
