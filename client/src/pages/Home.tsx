@@ -84,6 +84,7 @@ export default function Home() {
               { label: L.nav.itSolutions, path: "/it-solutions" },
               { label: L.nav.astraPm, path: "/astra-pm" },
               { label: L.nav.consultancy, path: "/consultancy" },
+              { label: L.nav.construction, path: "/construction" },
               { label: L.nav.about, path: "/about" },
               { label: L.nav.contact, path: "/contact" },
             ].map(({ label, path }) => (
@@ -135,6 +136,7 @@ export default function Home() {
               { label: L.nav.itSolutions, path: "/it-solutions" },
               { label: L.nav.astraPm, path: "/astra-pm" },
               { label: L.nav.consultancy, path: "/consultancy" },
+              { label: L.nav.construction, path: "/construction" },
               { label: L.nav.about, path: "/about" },
               { label: L.nav.contact, path: "/contact" },
             ].map(({ label, path }) => (
@@ -573,6 +575,7 @@ export default function Home() {
                 { label: L.footer.services[2].label, path: "/consultancy" },
                 { label: L.footer.services[3].label, path: "/consultancy" },
                 { label: L.footer.services[4].label, path: "/it-solutions" },
+                { label: isRTL ? "الإنشاءات والمشاريع" : "Construction & Projects", path: "/construction" },
               ].map(({ label, path }) => (
                 <button key={label} onClick={() => setLocation(path)} className={`block text-white/40 text-sm py-1 hover:text-white/70 transition-colors ${isRTL ? "text-right" : "text-left"}`}>{label}</button>
               ))}

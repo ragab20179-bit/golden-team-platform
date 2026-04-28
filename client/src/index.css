@@ -209,9 +209,9 @@
   .glow-olive {
     box-shadow: 0 0 20px oklch(0.50 0.08 140 / 30%);
   }
-  /* Legacy aliases */
-  .glow-blue   { @apply glow-teal; }
-  .glow-cyan   { @apply glow-teal; }
+  /* Legacy aliases — use direct CSS, not @apply for custom classes */
+  .glow-blue   { box-shadow: 0 0 20px oklch(0.35 0.08 200 / 40%); }
+  .glow-cyan   { box-shadow: 0 0 20px oklch(0.35 0.08 200 / 40%); }
 
   /* ── Gradient text ── */
   .gradient-text-gold {
@@ -226,8 +226,13 @@
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  /* Legacy alias */
-  .gradient-text-blue { @apply gradient-text-teal; }
+  /* Legacy alias — use direct CSS, not @apply for custom classes */
+  .gradient-text-blue {
+    background: linear-gradient(135deg, #0A323C, #1A6070);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 
   /* ── Brand accent bar (used in headers) ── */
   .brand-accent-bar {

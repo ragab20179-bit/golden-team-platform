@@ -356,3 +356,16 @@
 - [x] Update website navigation/header logo from GT monogram to real logo
 - [x] Update Home.tsx hero section with real brand colors
 - [x] Save checkpoint after brand update
+
+## 2026-04-29 — Construction Section + KDP Project Page
+
+- [x] Add Construction nav link to Home.tsx (desktop + mobile + footer)
+- [x] Add "الإنشاءات" Arabic translation to i18n.ts
+- [x] Create /construction page with Ongoing Projects section and KDP project card
+- [x] Create /construction/kdp dedicated project page with full CGI gallery
+- [x] Download 12 KDP CGI renders (TIFF) from Google Drive and convert to JPEG
+- [x] Upload 12 KDP CGI images to CDN
+- [x] Embed real project details: Al Khobar City Center, 2.4M m², 3 districts, SAR 4.2B
+- [x] Add App.tsx routes: /construction, /construction/kdp
+- [x] TypeScript: 0 errors confirmed
+- [ ] Save checkpoint

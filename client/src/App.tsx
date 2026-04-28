@@ -44,6 +44,8 @@ import NEOUsage from "./pages/NEOUsage";
 import OdooDashboard from "./pages/OdooDashboard";
 import BidEvaluation from "./pages/BidEvaluation";
 import SupplierBidPortal from "./pages/SupplierBidPortal";
+import KDPProject from "./pages/KDPProject";
+import Construction from "./pages/Construction";
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
@@ -80,6 +82,8 @@ function Router() {
       <Route path="/consultancy" component={Consultancy} />
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
+      <Route path="/construction" component={Construction} />
+      <Route path="/construction/kdp" component={KDPProject} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/users" component={UserManagement} />
       <Route path="/admin/roles" component={RolesPermissions} />
