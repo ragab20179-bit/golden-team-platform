@@ -3,96 +3,106 @@
  * Stunning project showcase with real CGI renders from Google Drive
  * Client: Khobar Development Authority | Project No: AE7-23790201
  * Design: Prestige Dark — Deep teal/charcoal, gold accents, immersive full-bleed gallery
+ * Bilingual: Full Arabic/English support via useLanguage context
  */
 
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, MapPin, Calendar, Building2, Layers, TreePine,
+  ArrowLeft, ArrowRight, MapPin, Calendar, Building2, Layers, TreePine,
   Zap, Droplets, Flame, ChevronLeft, ChevronRight, X,
   ExternalLink, Award, Users, BarChart3, Globe
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // ── CDN URLs for all 12 CGI renders ──────────────────────────────────────────
-const CGI_IMAGES = [
+const CGI_IMAGES_EN = [
   {
     url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_03_0c8a692c.jpg",
     caption: "Aerial Masterplan — Gulf Waterfront View",
-    description: "Bird's-eye perspective of the full development with the Arabian Gulf coastline visible in the background, showcasing the integrated urban fabric."
+    captionAr: "المخطط الجوي — منظر الواجهة البحرية",
+    description: "Bird's-eye perspective of the full development with the Arabian Gulf coastline visible in the background, showcasing the integrated urban fabric.",
+    descriptionAr: "منظور جوي للمشروع الكامل مع ظهور ساحل الخليج العربي في الخلفية، يُبرز النسيج الحضري المتكامل."
   },
   {
     url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_04_a3e5f6a0.jpg",
     caption: "Central Business District — Aerial View",
-    description: "Traditional Arabian architecture blended with contemporary towers along tree-lined boulevards in the heart of the redevelopment zone."
+    captionAr: "منطقة الأعمال المركزية — منظر جوي",
+    description: "Traditional Arabian architecture blended with contemporary towers along tree-lined boulevards in the heart of the redevelopment zone.",
+    descriptionAr: "العمارة العربية التقليدية ممزوجة بالأبراج المعاصرة على طول الشوارع المشجرة في قلب منطقة إعادة التطوير."
   },
   {
     url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_05_b7f1294b.jpg",
     caption: "Mixed-Use Urban Corridor",
-    description: "Pedestrian-friendly streetscape with retail at grade, residential above, and integrated landscape elements throughout."
+    captionAr: "الممر الحضري متعدد الاستخدامات",
+    description: "Pedestrian-friendly streetscape with retail at grade, residential above, and integrated landscape elements throughout.",
+    descriptionAr: "واجهة شارع صديقة للمشاة مع محلات تجارية في الطابق الأرضي وسكن فوقها وعناصر تشجير متكاملة."
   },
   {
     url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_06_5c8c0577.jpg",
     caption: "Historic Furdha District — Transformation",
-    description: "Sensitive urban regeneration preserving cultural heritage elements while introducing modern mixed-use programming."
+    captionAr: "حي الفرضة التاريخي — التحول",
+    description: "Sensitive urban regeneration preserving cultural heritage elements while introducing modern mixed-use programming.",
+    descriptionAr: "تجديد حضري حساس يحافظ على عناصر التراث الثقافي مع إدخال برمجة حديثة متعددة الاستخدامات."
   },
   {
     url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_07_cde473d2.jpg",
     caption: "Residential Quarter — Street Level",
-    description: "Human-scale residential streets with shaded walkways, mature landscaping, and activated ground-floor retail."
+    captionAr: "الحي السكني — مستوى الشارع",
+    description: "Human-scale residential streets with shaded walkways, mature landscaping, and activated ground-floor retail.",
+    descriptionAr: "شوارع سكنية بمقياس إنساني مع ممشيات مظللة وتشجير ناضج ومحلات تجارية نشطة في الطابق الأرضي."
   },
   {
     url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_08_f5129b07.jpg",
     caption: "Public Plaza & Civic Spaces",
-    description: "Generous public realm with shaded plazas, water features, and civic anchors creating vibrant community gathering spaces."
+    captionAr: "الميدان العام والفضاءات المدنية",
+    description: "Generous public realm with shaded plazas, water features, and civic anchors creating vibrant community gathering spaces.",
+    descriptionAr: "فضاء عام سخي مع ميادين مظللة ومعالم مائية ومراسي مدنية تخلق فضاءات مجتمعية نابضة بالحياة."
   },
   {
     url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_09_3097638a.jpg",
     caption: "Commercial Boulevard",
-    description: "Activated commercial frontages with continuous canopy shade, outdoor dining terraces, and integrated cycling infrastructure."
+    captionAr: "الشارع التجاري الرئيسي",
+    description: "Activated commercial frontages with continuous canopy shade, outdoor dining terraces, and integrated cycling infrastructure.",
+    descriptionAr: "واجهات تجارية نشطة مع ظل مستمر وتراسات طعام خارجية وبنية تحتية متكاملة للدراجات."
   },
   {
     url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_10_5bd0d8b1.jpg",
     caption: "Landscape & Green Network",
-    description: "Interconnected green corridors with native planting, irrigation systems, and pedestrian movement routes linking all districts."
+    captionAr: "شبكة التشجير والمساحات الخضراء",
+    description: "Interconnected green corridors with native planting, irrigation systems, and pedestrian movement routes linking all districts.",
+    descriptionAr: "ممرات خضراء مترابطة مع نباتات محلية وأنظمة ري ومسارات حركة للمشاة تربط جميع الأحياء."
   },
   {
     url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_11_b4b7d24c.jpg",
     caption: "Infrastructure & Utilities Network",
-    description: "Comprehensive underground infrastructure including roads, drainage, potable water, and utility distribution systems."
+    captionAr: "شبكة البنية التحتية والمرافق",
+    description: "Comprehensive underground infrastructure including roads, drainage, potable water, and utility distribution systems.",
+    descriptionAr: "بنية تحتية شاملة تحت الأرض تشمل الطرق والصرف الصحي ومياه الشرب وأنظمة توزيع المرافق."
   },
   {
     url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_12_54f66a09.jpg",
     caption: "Lighting & Exterior Environment",
-    description: "Sophisticated exterior lighting design with luminaire schedules and intelligent lighting control systems for safety and ambiance."
+    captionAr: "الإضاءة والبيئة الخارجية",
+    description: "Sophisticated exterior lighting design with luminaire schedules and intelligent lighting control systems for safety and ambiance.",
+    descriptionAr: "تصميم إضاءة خارجية متطور مع جداول تركيبات الإضاءة وأنظمة تحكم ذكية للسلامة والأجواء."
   },
   {
     url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_13_bee282cf.jpg",
     caption: "Structural & Architectural Facades",
-    description: "Contemporary facade systems drawing from traditional Arabian architectural motifs, concrete, steel, and bridge elements."
+    captionAr: "الواجهات الإنشائية والمعمارية",
+    description: "Contemporary facade systems drawing from traditional Arabian architectural motifs, concrete, steel, and bridge elements.",
+    descriptionAr: "أنظمة واجهات معاصرة مستوحاة من الزخارف المعمارية العربية التقليدية والخرسانة والصلب وعناصر الجسور."
   },
   {
     url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_14_a91adc2d.jpg",
     caption: "Masterplan Overview — Full Site A",
-    description: "Complete Site A masterplan showing the phased development approach, site access hierarchy, and integration with the existing urban fabric."
+    captionAr: "نظرة عامة على المخطط الرئيسي — الموقع أ كاملاً",
+    description: "Complete Site A masterplan showing the phased development approach, site access hierarchy, and integration with the existing urban fabric.",
+    descriptionAr: "المخطط الرئيسي الكامل للموقع أ يُظهر نهج التطوير المرحلي وتسلسل الوصول وتكاملها مع النسيج الحضري القائم."
   },
-];
-
-const DISCIPLINES = [
-  { icon: Building2, label: "Infrastructure", count: "137 files", desc: "Roads, drainage, utilities, site access, phasing plan", color: "#C8A830" },
-  { icon: Zap, label: "Lighting", count: "162 files", desc: "Exterior lighting, luminaire schedules, control systems", color: "#FADC96" },
-  { icon: Layers, label: "Structure", count: "74 files", desc: "Structural drawings, concrete, steel, bridge elements", color: "#5A6446" },
-  { icon: Droplets, label: "Mechanical", count: "64 files", desc: "HVAC, plumbing, fire suppression, potable water", color: "#1A6070" },
-  { icon: TreePine, label: "Landscape", count: "52 files", desc: "Planting, irrigation, pedestrian movement, cycling", color: "#5A6446" },
-  { icon: Flame, label: "Electrical", count: "35 files", desc: "Power distribution, earthing, general arrangements", color: "#C8A830" },
-];
-
-const STATS = [
-  { value: "588", label: "Project Documents", sub: "7.18 GB total data" },
-  { value: "Site A", label: "Al Khobar City Center", sub: "Historic Furdha District" },
-  { value: "2024", label: "Issued for Bidding", sub: "14 March 2024" },
-  { value: "KDA", label: "Client Authority", sub: "Khobar Development Authority" },
 ];
 
 const fadeUp = { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } } };
@@ -100,6 +110,7 @@ const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 
 export default function KDPProject() {
   const [, setLocation] = useLocation();
+  const { t, isRTL } = useLanguage();
   const [activeImg, setActiveImg] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIdx, setLightboxIdx] = useState(0);
@@ -131,8 +142,8 @@ export default function KDPProject() {
     document.body.style.overflow = "";
   };
 
-  const prevImg = () => setLightboxIdx(i => (i - 1 + CGI_IMAGES.length) % CGI_IMAGES.length);
-  const nextImg = () => setLightboxIdx(i => (i + 1) % CGI_IMAGES.length);
+  const prevImg = () => setLightboxIdx(i => (i - 1 + CGI_IMAGES_EN.length) % CGI_IMAGES_EN.length);
+  const nextImg = () => setLightboxIdx(i => (i + 1) % CGI_IMAGES_EN.length);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -145,8 +156,41 @@ export default function KDPProject() {
     return () => window.removeEventListener("keydown", handler);
   }, [lightboxOpen]);
 
+  const CGI_IMAGES = CGI_IMAGES_EN.map(img => ({
+    ...img,
+    caption: isRTL ? img.captionAr : img.caption,
+    description: isRTL ? img.descriptionAr : img.description,
+  }));
+
+  const DISCIPLINES = [
+    { icon: Building2, labelEn: "Infrastructure", labelAr: "البنية التحتية", count: "137", countLabel: t("files", "ملف"), desc: t("Roads, drainage, utilities, site access, phasing plan", "الطرق والصرف الصحي والمرافق والوصول للموقع وخطة التنفيذ المرحلي"), color: "#C8A830" },
+    { icon: Zap, labelEn: "Lighting", labelAr: "الإضاءة", count: "162", countLabel: t("files", "ملف"), desc: t("Exterior lighting, luminaire schedules, control systems", "الإضاءة الخارجية وجداول التركيبات وأنظمة التحكم"), color: "#FADC96" },
+    { icon: Layers, labelEn: "Structure", labelAr: "الهياكل الإنشائية", count: "74", countLabel: t("files", "ملف"), desc: t("Structural drawings, concrete, steel, bridge elements", "الرسومات الإنشائية والخرسانة والصلب وعناصر الجسور"), color: "#5A6446" },
+    { icon: Droplets, labelEn: "Mechanical", labelAr: "الميكانيكا", count: "64", countLabel: t("files", "ملف"), desc: t("HVAC, plumbing, fire suppression, potable water", "التكييف والسباكة وإطفاء الحريق ومياه الشرب"), color: "#1A6070" },
+    { icon: TreePine, labelEn: "Landscape", labelAr: "التشجير", count: "52", countLabel: t("files", "ملف"), desc: t("Planting, irrigation, pedestrian movement, cycling", "الزراعة والري وحركة المشاة والدراجات"), color: "#5A6446" },
+    { icon: Flame, labelEn: "Electrical", labelAr: "الكهرباء", count: "35", countLabel: t("files", "ملف"), desc: t("Power distribution, earthing, general arrangements", "توزيع الطاقة والتأريض والترتيبات العامة"), color: "#C8A830" },
+  ];
+
+  const STATS = [
+    { value: "588", label: t("Project Documents", "وثيقة مشروع"), sub: t("7.18 GB total data", "٧.١٨ جيجابايت إجمالي") },
+    { value: t("Site A", "الموقع أ"), label: t("Al Khobar City Center", "وسط مدينة الخبر"), sub: t("Historic Furdha District", "حي الفرضة التاريخي") },
+    { value: "2024", label: t("Issued for Bidding", "صدر للمناقصة"), sub: t("14 March 2024", "١٤ مارس ٢٠٢٤") },
+    { value: "KDA", label: t("Client Authority", "جهة العميل"), sub: t("Khobar Development Authority", "هيئة تطوير الخبر") },
+  ];
+
+  const PROJECT_DETAILS = [
+    { labelEn: "Project", labelAr: "المشروع", value: t("Redevelopment of City Center & Al Khobar Historic Furdha", "إعادة تطوير وسط المدينة والفرضة التاريخية بالخبر") },
+    { labelEn: "Site", labelAr: "الموقع", value: t("Site A — Al Khobar City Center", "الموقع أ — وسط مدينة الخبر") },
+    { labelEn: "Client", labelAr: "العميل", value: t("Khobar Development Authority (KDA)", "هيئة تطوير الخبر (KDA)") },
+    { labelEn: "Project No.", labelAr: "رقم المشروع", value: "AE7 PROJECT NO. 23790201" },
+    { labelEn: "Issued For", labelAr: "صدر لـ", value: t("Bidding — Rev 0", "المناقصة — المراجعة ٠") },
+    { labelEn: "Date of Issue", labelAr: "تاريخ الإصدار", value: t("14 March 2024", "١٤ مارس ٢٠٢٤") },
+    { labelEn: "Total Documents", labelAr: "إجمالي الوثائق", value: t("588 files · 7.18 GB", "٥٨٨ ملف · ٧.١٨ جيجابايت") },
+    { labelEn: "Golden Team Role", labelAr: "دور الفريق الذهبي", value: t("Construction Contractor — Infrastructure, Landscape & Buildings", "مقاول الإنشاء — البنية التحتية والتشجير والمباني") },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#050E10] text-white font-sans overflow-x-hidden">
+    <div className={`min-h-screen bg-[#050E10] text-white font-sans overflow-x-hidden ${isRTL ? "rtl" : "ltr"}`}>
 
       {/* ── Sticky Nav ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#050E10]/90 backdrop-blur-md border-b border-white/10">
@@ -155,25 +199,28 @@ export default function KDPProject() {
             onClick={() => setLocation("/")}
             className="flex items-center gap-2 text-white/60 hover:text-[#FADC96] transition-colors text-sm"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Golden Team
+            {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+            {t("Back to Golden Team", "العودة للفريق الذهبي")}
           </button>
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded bg-gradient-to-br from-[#C8A830] to-[#FADC96] flex items-center justify-center">
               <span className="text-[#050E10] font-bold text-xs">GT</span>
             </div>
-            <span className="text-white/70 text-sm hidden sm:block">Golden Team Co. for Investment</span>
+            <span className="text-white/70 text-sm hidden sm:block">
+              {t("Golden Team Co. for Investment", "شركة الفريق الذهبي للإستثمار")}
+            </span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#C8A830]/15 border border-[#C8A830]/30">
             <div className="w-2 h-2 rounded-full bg-[#C8A830] animate-pulse" />
-            <span className="text-[#FADC96] text-xs font-medium tracking-wide">Ongoing Project</span>
+            <span className="text-[#FADC96] text-xs font-medium tracking-wide">
+              {t("Ongoing Project", "مشروع جارٍ")}
+            </span>
           </div>
         </div>
       </nav>
 
       {/* ── Hero — Full Bleed CGI Slideshow ── */}
       <section ref={heroRef} className="relative h-screen overflow-hidden">
-        {/* Background images cycling */}
         {[0, 1, 2].map(i => (
           <div
             key={i}
@@ -189,52 +236,65 @@ export default function KDPProject() {
           </div>
         ))}
 
-        {/* Gradient overlays */}
         <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(5,14,16,0.3) 0%, rgba(5,14,16,0.1) 30%, rgba(5,14,16,0.6) 70%, rgba(5,14,16,1) 100%)" }} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(5,14,16,0.7) 0%, transparent 60%)" }} />
+        <div className="absolute inset-0" style={{ background: isRTL ? "linear-gradient(to left, rgba(5,14,16,0.7) 0%, transparent 60%)" : "linear-gradient(to right, rgba(5,14,16,0.7) 0%, transparent 60%)" }} />
 
-        {/* Hero Content */}
-        <div className="relative z-10 h-full flex flex-col justify-end pb-20 px-6 max-w-7xl mx-auto">
+        <div className={`relative z-10 h-full flex flex-col justify-end pb-20 px-6 max-w-7xl mx-auto ${isRTL ? "items-end text-right" : ""}`}>
           <motion.div initial="hidden" animate="show" variants={stagger}>
-            {/* Badge */}
             <motion.div variants={fadeUp} className="flex items-center gap-3 mb-6">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#C8A830]/20 border border-[#C8A830]/40 text-[#FADC96] text-xs tracking-widest uppercase">
                 <MapPin className="w-3 h-3" />
-                Al Khobar, Eastern Province, KSA
+                {t("Al Khobar, Eastern Province, KSA", "الخبر، المنطقة الشرقية، المملكة العربية السعودية")}
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-white/70 text-xs tracking-widest uppercase">
                 <Calendar className="w-3 h-3" />
-                Project No. AE7-23790201
+                {t("Project No. AE7-23790201", "رقم المشروع: AE7-23790201")}
               </div>
             </motion.div>
 
-            {/* Title */}
             <motion.h1 variants={fadeUp} className="font-display text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.0] mb-4 max-w-4xl">
-              <span className="text-white">Khobar</span>
-              <br />
-              <span style={{ background: "linear-gradient(135deg, #C8A830, #FADC96, #F59E0B)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                Development
-              </span>
-              <br />
-              <span className="text-white">Project</span>
+              {isRTL ? (
+                <>
+                  <span className="text-white">مشروع</span>
+                  <br />
+                  <span style={{ background: "linear-gradient(135deg, #C8A830, #FADC96, #F59E0B)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                    تطوير
+                  </span>
+                  <br />
+                  <span className="text-white">الخبر</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-white">Khobar</span>
+                  <br />
+                  <span style={{ background: "linear-gradient(135deg, #C8A830, #FADC96, #F59E0B)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                    Development
+                  </span>
+                  <br />
+                  <span className="text-white">Project</span>
+                </>
+              )}
             </motion.h1>
 
             <motion.p variants={fadeUp} className="text-white/60 text-lg md:text-xl max-w-2xl leading-relaxed mb-8">
-              Redevelopment of City Center & Al Khobar Historic Furdha — a landmark urban regeneration initiative transforming the heart of Al Khobar into a modern, mixed-use environment while preserving cultural heritage.
+              {t(
+                "Redevelopment of City Center & Al Khobar Historic Furdha — a landmark urban regeneration initiative transforming the heart of Al Khobar into a modern, mixed-use environment while preserving cultural heritage.",
+                "إعادة تطوير وسط المدينة والفرضة التاريخية بالخبر — مبادرة تجديد حضري بارزة تحوّل قلب مدينة الخبر إلى بيئة حديثة متعددة الاستخدامات مع الحفاظ على التراث الثقافي."
+              )}
             </motion.p>
 
-            {/* Client tag */}
             <motion.div variants={fadeUp} className="flex items-center gap-4">
               <div className="flex items-center gap-2 text-white/50 text-sm">
                 <Globe className="w-4 h-4 text-[#C8A830]" />
-                <span>Client:</span>
-                <span className="text-white font-medium">Khobar Development Authority (KDA)</span>
+                <span>{t("Client:", "العميل:")}</span>
+                <span className="text-white font-medium">
+                  {t("Khobar Development Authority (KDA)", "هيئة تطوير الخبر (KDA)")}
+                </span>
               </div>
             </motion.div>
           </motion.div>
         </div>
 
-        {/* Slide indicators */}
         <div className="absolute bottom-8 right-8 z-10 flex gap-2">
           {[0, 1, 2].map(i => (
             <button
@@ -270,48 +330,58 @@ export default function KDPProject() {
           <motion.div variants={fadeUp}>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#C8A830]/30 bg-[#C8A830]/10 text-[#FADC96] text-xs tracking-widest uppercase mb-6">
               <Award className="w-3 h-3" />
-              Project Overview
+              {t("Project Overview", "نظرة عامة على المشروع")}
             </div>
             <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
-              Urban Regeneration<br />
-              <span className="text-[#C8A830]">at City Scale</span>
+              {isRTL ? (
+                <>تجديد حضري<br /><span className="text-[#C8A830]">على مستوى المدينة</span></>
+              ) : (
+                <>Urban Regeneration<br /><span className="text-[#C8A830]">at City Scale</span></>
+              )}
             </h2>
             <p className="text-white/60 text-lg leading-relaxed mb-6">
-              The <strong className="text-white">Redevelopment of City Center and Al Khobar Historic Furdha</strong> is a major urban regeneration initiative commissioned by the Khobar Development Authority. The project encompasses the comprehensive redevelopment of Al Khobar City Center (Site A), targeting the transformation of the historic Furdha district into a modern, mixed-use urban environment while preserving cultural heritage elements.
+              {isRTL ? (
+                <><strong className="text-white">إعادة تطوير وسط المدينة والفرضة التاريخية بالخبر</strong> مبادرة تجديد حضري كبرى كلّفت بها هيئة تطوير الخبر. يشمل المشروع إعادة التطوير الشاملة لوسط مدينة الخبر (الموقع أ)، بهدف تحويل حي الفرضة التاريخي إلى بيئة حضرية حديثة متعددة الاستخدامات مع الحفاظ على عناصر التراث الثقافي.</>
+              ) : (
+                <>The <strong className="text-white">Redevelopment of City Center and Al Khobar Historic Furdha</strong> is a major urban regeneration initiative commissioned by the Khobar Development Authority. The project encompasses the comprehensive redevelopment of Al Khobar City Center (Site A), targeting the transformation of the historic Furdha district into a modern, mixed-use urban environment while preserving cultural heritage elements.</>
+              )}
             </p>
             <p className="text-white/60 text-lg leading-relaxed mb-8">
-              Issued for bidding on <strong className="text-white">14 March 2024</strong> under AE7 Project No. 23790201, the project is governed by Al Khobar Municipality and all Authorities Having Jurisdiction in the Kingdom of Saudi Arabia, including the Urban Planning Council, Saudi Civil Defense, SASO, NWC, and SEC.
+              {isRTL ? (
+                <>صدر للمناقصة في <strong className="text-white">١٤ مارس ٢٠٢٤</strong> تحت مشروع AE7 رقم 23790201، ويخضع المشروع لإشراف أمانة الخبر وجميع الجهات ذات الاختصاص في المملكة العربية السعودية، بما فيها مجلس التخطيط العمراني والدفاع المدني السعودي وسابك والمياه الوطنية وشركة الكهرباء السعودية.</>
+              ) : (
+                <>Issued for bidding on <strong className="text-white">14 March 2024</strong> under AE7 Project No. 23790201, the project is governed by Al Khobar Municipality and all Authorities Having Jurisdiction in the Kingdom of Saudi Arabia, including the Urban Planning Council, Saudi Civil Defense, SASO, NWC, and SEC.</>
+              )}
             </p>
 
-            {/* Standards */}
             <div className="p-5 rounded-xl border border-[#C8A830]/20 bg-[#C8A830]/5">
               <div className="text-[#FADC96] text-sm font-semibold mb-3 flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" />
-                Applicable Standards & Codes
+                {t("Applicable Standards & Codes", "المعايير والأكواد المعتمدة")}
               </div>
               <p className="text-white/50 text-sm leading-relaxed">
-                Saudi Building Code (SBC) · SASO · Mostadam Rating System · NFPA 101 · IBC · ASTM · ASCE 7-05 · ACI · AISC · ASME · ASHRAE · CIBSE · IEC
+                {t(
+                  "Saudi Building Code (SBC) · SASO · Mostadam Rating System · NFPA 101 · IBC · ASTM · ASCE 7-05 · ACI · AISC · ASME · ASHRAE · CIBSE · IEC",
+                  "كود البناء السعودي (SBC) · سابك · نظام التقييم مستدام · NFPA 101 · IBC · ASTM · ASCE 7-05 · ACI · AISC · ASME · ASHRAE · CIBSE · IEC"
+                )}
               </p>
               <p className="text-white/40 text-xs mt-2">
-                Specifications organized using the <strong className="text-white/60">48-Division CSI/CSC MasterFormat</strong> (2004 edition with 2016 amendments)
+                {isRTL ? (
+                  <>المواصفات منظمة باستخدام <strong className="text-white/60">CSI/CSC MasterFormat ذو ٤٨ قسمًا</strong> (إصدار ٢٠٠٤ مع تعديلات ٢٠١٦)</>
+                ) : (
+                  <>Specifications organized using the <strong className="text-white/60">48-Division CSI/CSC MasterFormat</strong> (2004 edition with 2016 amendments)</>
+                )}
               </p>
             </div>
           </motion.div>
 
           {/* Project Details Card */}
           <motion.div variants={fadeUp} className="space-y-4">
-            {[
-              { label: "Project", value: "Redevelopment of City Center & Al Khobar Historic Furdha" },
-              { label: "Site", value: "Site A — Al Khobar City Center" },
-              { label: "Client", value: "Khobar Development Authority (KDA)" },
-              { label: "Project No.", value: "AE7 PROJECT NO. 23790201" },
-              { label: "Issued For", value: "Bidding — Rev 0" },
-              { label: "Date of Issue", value: "14 March 2024" },
-              { label: "Total Documents", value: "588 files · 7.18 GB" },
-              { label: "Golden Team Role", value: "Construction Contractor — Infrastructure, Landscape & Buildings" },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex gap-4 p-4 rounded-xl border border-white/8 bg-white/3 hover:bg-white/5 transition-colors">
-                <div className="text-[#C8A830] text-sm font-semibold w-36 shrink-0">{label}</div>
+            {PROJECT_DETAILS.map(({ labelEn, labelAr, value }) => (
+              <div key={labelEn} className="flex gap-4 p-4 rounded-xl border border-white/8 bg-white/3 hover:bg-white/5 transition-colors">
+                <div className="text-[#C8A830] text-sm font-semibold w-36 shrink-0">
+                  {isRTL ? labelAr : labelEn}
+                </div>
                 <div className="text-white/70 text-sm">{value}</div>
               </div>
             ))}
@@ -326,20 +396,27 @@ export default function KDPProject() {
             <motion.div variants={fadeUp} className="text-center mb-16">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#5A6446]/40 bg-[#5A6446]/10 text-[#FADC96] text-xs tracking-widest uppercase mb-4">
                 <Layers className="w-3 h-3" />
-                Scope of Work
+                {t("Scope of Work", "نطاق العمل")}
               </div>
               <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-4">
-                Multi-Discipline<br /><span className="text-[#C8A830]">Construction Package</span>
+                {isRTL ? (
+                  <>حزمة إنشاء<br /><span className="text-[#C8A830]">متعددة التخصصات</span></>
+                ) : (
+                  <>Multi-Discipline<br /><span className="text-[#C8A830]">Construction Package</span></>
+                )}
               </h2>
               <p className="text-white/50 text-lg max-w-2xl mx-auto">
-                588 project documents spanning 8 engineering disciplines, totalling 7.18 GB of technical data.
+                {t(
+                  "588 project documents spanning 8 engineering disciplines, totalling 7.18 GB of technical data.",
+                  "٥٨٨ وثيقة مشروع تمتد عبر ٨ تخصصات هندسية، بإجمالي ٧.١٨ جيجابايت من البيانات التقنية."
+                )}
               </p>
             </motion.div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {DISCIPLINES.map(({ icon: Icon, label, count, desc, color }) => (
+              {DISCIPLINES.map(({ icon: Icon, labelEn, labelAr, count, countLabel, desc, color }) => (
                 <motion.div
-                  key={label}
+                  key={labelEn}
                   variants={fadeUp}
                   className="group p-6 rounded-2xl border border-white/8 bg-white/3 hover:bg-white/6 hover:border-white/15 transition-all duration-300"
                 >
@@ -348,8 +425,8 @@ export default function KDPProject() {
                       <Icon className="w-5 h-5" style={{ color }} />
                     </div>
                     <div>
-                      <div className="text-white font-semibold text-sm">{label}</div>
-                      <div className="text-white/40 text-xs">{count}</div>
+                      <div className="text-white font-semibold text-sm">{isRTL ? labelAr : labelEn}</div>
+                      <div className="text-white/40 text-xs">{count} {countLabel}</div>
                     </div>
                   </div>
                   <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
@@ -367,19 +444,25 @@ export default function KDPProject() {
             <motion.div variants={fadeUp} className="text-center mb-16">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#C8A830]/30 bg-[#C8A830]/10 text-[#FADC96] text-xs tracking-widest uppercase mb-4">
                 <Users className="w-3 h-3" />
-                Architectural Visualizations
+                {t("Architectural Visualizations", "التصورات المعمارية")}
               </div>
               <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-4">
-                CGI Renders<br /><span className="text-[#C8A830]">Project Vision</span>
+                {isRTL ? (
+                  <>تصورات CGI<br /><span className="text-[#C8A830]">رؤية المشروع</span></>
+                ) : (
+                  <>CGI Renders<br /><span className="text-[#C8A830]">Project Vision</span></>
+                )}
               </h2>
               <p className="text-white/50 text-lg max-w-2xl mx-auto">
-                Official CGI renders from the Final CGIs Report (March 2024) — click any image to view full resolution.
+                {t(
+                  "Official CGI renders from the Final CGIs Report (March 2024) — click any image to view full resolution.",
+                  "تصورات CGI الرسمية من تقرير التصورات النهائية (مارس ٢٠٢٤) — انقر على أي صورة لعرضها بالدقة الكاملة."
+                )}
               </p>
             </motion.div>
 
-            {/* Featured image + grid */}
+            {/* Featured image */}
             <motion.div variants={fadeUp} className="mb-6">
-              {/* Hero gallery image */}
               <div
                 className="relative w-full rounded-2xl overflow-hidden cursor-pointer group"
                 style={{ aspectRatio: "16/7" }}
@@ -393,12 +476,14 @@ export default function KDPProject() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#050E10]/80 via-transparent to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
                   <div>
-                    <div className="text-[#FADC96] text-xs tracking-widest uppercase mb-1">Featured View</div>
+                    <div className="text-[#FADC96] text-xs tracking-widest uppercase mb-1">
+                      {t("Featured View", "المنظر المميز")}
+                    </div>
                     <div className="text-white font-semibold text-xl">{CGI_IMAGES[0].caption}</div>
                   </div>
                   <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white/70 text-sm">
                     <ExternalLink className="w-4 h-4" />
-                    View Full
+                    {t("View Full", "عرض كامل")}
                   </div>
                 </div>
               </div>
@@ -447,7 +532,9 @@ export default function KDPProject() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#050E10]/60 via-transparent to-transparent" />
                   <div className="absolute bottom-4 left-4">
-                    <div className="text-white/60 text-xs mb-0.5 tracking-wide">CGI Render</div>
+                    <div className="text-white/60 text-xs mb-0.5 tracking-wide">
+                      {t("CGI Render", "تصور CGI")}
+                    </div>
                     <div className="text-white font-medium">{img.caption}</div>
                   </div>
                 </motion.div>
@@ -490,14 +577,20 @@ export default function KDPProject() {
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}>
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#C8A830]/30 bg-[#C8A830]/10 text-[#FADC96] text-xs tracking-widest uppercase mb-6">
               <Building2 className="w-3 h-3" />
-              Golden Team Co. for Investment
+              {t("Golden Team Co. for Investment", "شركة الفريق الذهبي للإستثمار")}
             </motion.div>
             <motion.h2 variants={fadeUp} className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
-              Delivering Excellence<br />
-              <span className="text-[#C8A830]">Across Every Discipline</span>
+              {isRTL ? (
+                <>تقديم التميز<br /><span className="text-[#C8A830]">في كل تخصص</span></>
+              ) : (
+                <>Delivering Excellence<br /><span className="text-[#C8A830]">Across Every Discipline</span></>
+              )}
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/60 text-lg leading-relaxed mb-10">
-              From infrastructure and landscape to structural and MEP works, Golden Team Co. for Investment brings comprehensive construction expertise to every phase of the Khobar Development Project.
+              {t(
+                "From infrastructure and landscape to structural and MEP works, Golden Team Co. for Investment brings comprehensive construction expertise to every phase of the Khobar Development Project.",
+                "من البنية التحتية والتشجير إلى الأعمال الإنشائية وأنظمة MEP، تجلب شركة الفريق الذهبي للإستثمار خبرة إنشائية شاملة لكل مرحلة من مراحل مشروع تطوير الخبر."
+              )}
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -505,7 +598,7 @@ export default function KDPProject() {
                 className="bg-[#C8A830] hover:bg-[#FADC96] text-[#050E10] font-bold text-base px-8 py-6 shadow-xl"
                 onClick={() => setLocation("/contact")}
               >
-                Contact Our Team
+                {t("Contact Our Team", "تواصل مع فريقنا")}
               </Button>
               <Button
                 variant="outline"
@@ -513,7 +606,7 @@ export default function KDPProject() {
                 className="border-white/20 text-white hover:bg-white/10 bg-transparent text-base px-8 py-6"
                 onClick={() => setLocation("/construction")}
               >
-                View All Projects
+                {t("View All Projects", "عرض جميع المشاريع")}
               </Button>
             </motion.div>
           </motion.div>
@@ -530,7 +623,6 @@ export default function KDPProject() {
             className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
             onClick={closeLightbox}
           >
-            {/* Close */}
             <button
               className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
               onClick={closeLightbox}
@@ -538,12 +630,10 @@ export default function KDPProject() {
               <X className="w-5 h-5" />
             </button>
 
-            {/* Counter */}
             <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white/50 text-sm">
               {lightboxIdx + 1} / {CGI_IMAGES.length}
             </div>
 
-            {/* Prev */}
             <button
               className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
               onClick={e => { e.stopPropagation(); prevImg(); }}
@@ -551,7 +641,6 @@ export default function KDPProject() {
               <ChevronLeft className="w-6 h-6" />
             </button>
 
-            {/* Image */}
             <motion.div
               key={lightboxIdx}
               initial={{ opacity: 0, scale: 0.95 }}
@@ -572,7 +661,6 @@ export default function KDPProject() {
               </div>
             </motion.div>
 
-            {/* Next */}
             <button
               className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
               onClick={e => { e.stopPropagation(); nextImg(); }}
@@ -580,7 +668,6 @@ export default function KDPProject() {
               <ChevronRight className="w-6 h-6" />
             </button>
 
-            {/* Thumbnail strip */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 overflow-x-auto max-w-2xl px-4">
               {CGI_IMAGES.map((img, i) => (
                 <button

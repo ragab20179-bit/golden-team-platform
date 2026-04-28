@@ -374,11 +374,11 @@ export default function NEOCore() {
                 </div>
                 <div className="flex items-center gap-2 text-xs text-white/30">
                   <div className="w-8 h-0.5 bg-emerald-500/50" />
-                  <span>Data Sync</span>
+                  <span>{t("Data Sync", "مزامنة البيانات")}</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-white/30">
                   <div className="w-8 h-0.5 bg-amber-500/50" />
-                  <span>API Response</span>
+                  <span>{t("API Response", "استجابة API")}</span>
                 </div>
               </div>
             </div>
