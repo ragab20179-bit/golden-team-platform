@@ -435,6 +435,154 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── KDP Project Showcase ── */}
+      <section id="kdp-project" className="py-28 relative overflow-hidden bg-gradient-to-b from-[#050E10] via-[#071318] to-[#050E10]">
+        {/* Subtle teal glow */}
+        <div className="absolute inset-0 opacity-20" style={{ background: "radial-gradient(ellipse at 80% 50%, rgba(10,50,60,0.6) 0%, transparent 60%)" }} />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6">
+          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
+
+            {/* Section Header */}
+            <motion.div variants={fadeUp} className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#FADC96]/30 bg-[#FADC96]/8 text-[#FADC96] text-xs tracking-widest uppercase mb-6">
+                <Building2 className="w-3 h-3" />
+                {isRTL ? "مشاريعنا الجارية" : "Ongoing Projects"}
+              </div>
+              <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                {isRTL ? (
+                  <>مشروع <span className="text-[#FADC96]">تطوير الخبر</span></>
+                ) : (
+                  <>Khobar <span className="text-[#FADC96]">Development Project</span></>
+                )}
+              </h2>
+              <p className="text-white/50 text-lg max-w-2xl mx-auto">
+                {isRTL
+                  ? "إعادة تطوير وسط مدينة الخبر والفرضة التاريخية — مشروع حضري استراتيجي على الخليج العربي"
+                  : "Redevelopment of Al Khobar City Center & Historic Furdha — a landmark urban regeneration on the Arabian Gulf"}
+              </p>
+            </motion.div>
+
+            {/* Main Grid: text + image mosaic */}
+            <div className={`grid lg:grid-cols-2 gap-12 items-center mb-14 ${isRTL ? "direction-rtl" : ""}`}>
+
+              {/* Left: Project Overview */}
+              <motion.div variants={fadeUp}>
+                {/* Stats row */}
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  {[
+                    { value: "2.4M m²", label: isRTL ? "المساحة الإجمالية" : "Total Area" },
+                    { value: "SAR 4.2B", label: isRTL ? "القيمة التقديرية" : "Est. Value" },
+                    { value: "3", label: isRTL ? "أحياء متكاملة" : "Mixed-Use Districts" },
+                    { value: "2024", label: isRTL ? "صدر للمناقصة" : "Issued for Bid" },
+                  ].map(({ value, label }) => (
+                    <div key={label} className="p-4 rounded-xl border border-[#FADC96]/15 bg-[#FADC96]/5 text-center">
+                      <div className="font-display text-2xl font-bold text-[#FADC96] mb-1">{value}</div>
+                      <div className="text-white/50 text-xs">{label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Description */}
+                <p className="text-white/60 text-base leading-relaxed mb-6">
+                  {isRTL
+                    ? "يهدف المشروع إلى تحويل قلب مدينة الخبر التاريخي إلى بيئة حضرية عصرية متعددة الاستخدامات، تشمل مناطق تجارية وسكنية وترفيهية وواجهة بحرية، مع الحفاظ على الموروث الثقافي للفرضة التاريخية. تضطلع شركة الفريق الذهبي للإستثمار بدور محوري في تنفيذ أعمال التشجير والبنية التحتية الخضراء."
+                    : "The project transforms Al Khobar's historic city center into a modern mixed-use urban environment — commercial, residential, leisure, and a waterfront promenade — while preserving the cultural heritage of the historic Furdha. Golden Team Co. for Investment plays a key role in landscape and green infrastructure delivery."}
+                </p>
+
+                {/* Key features */}
+                <div className="space-y-3 mb-8">
+                  {(isRTL ? [
+                    "واجهة بحرية على الخليج العربي بطول 1.2 كم",
+                    "3 أحياء متكاملة: تجاري، سكني، ترفيهي",
+                    "تشجير وبنية تحتية خضراء بمعايير مستدام",
+                    "مشروع AE7 رقم 23790201 — أمانة الخبر",
+                  ] : [
+                    "1.2 km Arabian Gulf waterfront promenade",
+                    "3 integrated districts: commercial, residential, leisure",
+                    "Landscape & green infrastructure to Mostadam standards",
+                    "AE7 Project No. 23790201 — Al Khobar Municipality",
+                  ]).map((feat, i) => (
+                    <div key={i} className={`flex items-start gap-3 ${isRTL ? "flex-row-reverse text-right" : ""}`}>
+                      <div className="w-5 h-5 rounded-full bg-[#FADC96]/20 border border-[#FADC96]/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#FADC96]" />
+                      </div>
+                      <span className="text-white/60 text-sm">{feat}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA */}
+                <Button
+                  className="bg-[#0A323C] hover:bg-[#0d4050] border border-[#FADC96]/30 text-[#FADC96] font-semibold px-8 py-5 text-sm tracking-wide shadow-lg shadow-[#FADC96]/10"
+                  onClick={() => setLocation("/construction/kdp")}
+                >
+                  {isRTL ? "استعرض المشروع كاملاً" : "View Full Project"}
+                  <ArrowRight className={`${isRTL ? "mr-2 rotate-180" : "ml-2"} w-4 h-4`} />
+                </Button>
+              </motion.div>
+
+              {/* Right: CGI Image Mosaic */}
+              <motion.div variants={fadeUp} className="grid grid-cols-2 gap-3">
+                <div className="col-span-2 rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border border-white/8 h-56">
+                  <img
+                    src="https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_03_0c8a692c.jpg"
+                    alt={isRTL ? "مشروع تطوير الخبر — منظر جوي" : "KDP — Aerial View"}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                  />
+                </div>
+                <div className="rounded-xl overflow-hidden shadow-xl border border-white/8 h-40">
+                  <img
+                    src="https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_05_b7f1294b.jpg"
+                    alt={isRTL ? "الواجهة البحرية" : "Waterfront Promenade"}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                  />
+                </div>
+                <div className="rounded-xl overflow-hidden shadow-xl border border-white/8 h-40">
+                  <img
+                    src="https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_07_cde473d2.jpg"
+                    alt={isRTL ? "الحي التجاري" : "Commercial District"}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                  />
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Bottom: 3 more CGI thumbnails strip */}
+            <motion.div variants={fadeUp} className="grid grid-cols-3 gap-4">
+              {[
+                { url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_08_f5129b07.jpg", captionAR: "المنطقة الترفيهية", captionEN: "Leisure Zone" },
+                { url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_10_5bd0d8b1.jpg", captionAR: "الفضاءات العامة", captionEN: "Public Spaces" },
+                { url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/CGI_Page_12_54f66a09.jpg", captionAR: "التشجير والمناظر الطبيعية", captionEN: "Landscape & Greenery" },
+              ].map(({ url, captionAR, captionEN }) => (
+                <div
+                  key={url}
+                  className="relative rounded-xl overflow-hidden border border-white/8 shadow-lg cursor-pointer group h-44"
+                  onClick={() => setLocation("/construction/kdp")}
+                >
+                  <img src={url} alt={isRTL ? captionAR : captionEN} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3 text-white text-xs font-semibold">{isRTL ? captionAR : captionEN}</div>
+                  <div className="absolute inset-0 bg-[#FADC96]/0 group-hover:bg-[#FADC96]/5 transition-colors duration-300" />
+                </div>
+              ))}
+            </motion.div>
+
+            {/* View all link */}
+            <motion.div variants={fadeUp} className="text-center mt-10">
+              <button
+                onClick={() => setLocation("/construction/kdp")}
+                className="text-[#FADC96]/70 hover:text-[#FADC96] text-sm font-medium transition-colors duration-200 inline-flex items-center gap-2 group"
+              >
+                {isRTL ? "استعرض جميع صور المشروع والتفاصيل الكاملة" : "View all project images and full technical details"}
+                <ArrowRight className={`w-4 h-4 group-hover:translate-x-1 transition-transform ${isRTL ? "rotate-180 group-hover:-translate-x-1" : ""}`} />
+              </button>
+            </motion.div>
+
+          </motion.div>
+        </div>
+      </section>
+
       {/* ── About / Why Golden Team ── */}
       <section id="about" className="py-28 bg-gradient-to-b from-[#050E10] to-[#091820]">
         <div className="max-w-7xl mx-auto px-6">

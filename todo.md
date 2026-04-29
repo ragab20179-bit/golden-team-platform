@@ -369,3 +369,7 @@
 - [x] Add App.tsx routes: /construction, /construction/kdp
 - [x] TypeScript: 0 errors confirmed
 - [ ] Save checkpoint
+
+## 2026-04-29 — KDP Showcase on Home Page
+- [x] Add KDP project showcase section to Home.tsx (bilingual Arabic/English overview, CGI images, link to /construction/kdp)
+- [ ] Save checkpoint
