@@ -583,6 +583,109 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Nadheem Project Showcase ── */}
+      <section id="nadheem-project" className="py-28 relative overflow-hidden bg-gradient-to-b from-[#071318] via-[#051210] to-[#050E10]">
+        {/* Green ambient glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full opacity-8" style={{ background: "radial-gradient(circle, rgba(74,222,128,0.12) 0%, transparent 70%)" }} />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-6">
+          <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
+
+            {/* Section badge */}
+            <motion.div variants={fadeUp} className="flex items-center justify-center mb-10">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-green-400/30 bg-green-400/10 text-green-400 text-xs tracking-widest uppercase">
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                {isRTL ? "مشروع جارٍ — الرياض الخضراء" : "Active Project — Green Riyadh Initiative"}
+              </div>
+            </motion.div>
+
+            {/* Title */}
+            <motion.div variants={fadeUp} className={`text-center mb-14 ${isRTL ? "direction-rtl" : ""}`}>
+              <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                {isRTL ? (
+                  <>{"مشروع "}<span className="text-green-400">النظيم</span>{" للتشجير"}</>
+                ) : (
+                  <>An-Nadheem <span className="text-green-400">Landscape</span> Development</>
+                )}
+              </h2>
+              <p className="text-white/50 text-lg max-w-2xl mx-auto">
+                {isRTL
+                  ? "أعمال التشجير والمناظر الطبيعية للقطاع 1 ضمن مبادرة الرياض الخضراء — رؤية 2030"
+                  : "Sector 1 landscape & greenery works under the Green Riyadh Initiative — Vision 2030"}
+              </p>
+            </motion.div>
+
+            {/* Stats bar */}
+            <motion.div variants={fadeUp} className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-14">
+              {[
+                { value: "SAR 33.2M", label: isRTL ? "قيمة العقد" : "Contract Value" },
+                { value: "136",       label: isRTL ? "بنود BOQ" : "BOQ Items" },
+                { value: "18",        label: isRTL ? "فئة عمل" : "Work Categories" },
+                { value: "8 mo",      label: isRTL ? "مدة التنفيذ" : "Duration" },
+              ].map(({ value, label }) => (
+                <div key={label} className="text-center p-5 rounded-xl border border-green-400/15 bg-green-400/5">
+                  <div className="font-display text-2xl font-bold text-green-400 mb-1">{value}</div>
+                  <div className="text-white/45 text-sm">{label}</div>
+                </div>
+              ))}
+            </motion.div>
+
+            {/* Image + description grid */}
+            <div className="grid lg:grid-cols-2 gap-10 items-center mb-10">
+              {/* Image */}
+              <motion.div variants={fadeUp} className="relative rounded-2xl overflow-hidden shadow-2xl shadow-green-900/30">
+                <img
+                  src="https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/nadheem_green2_eebf5935.jpg"
+                  alt={isRTL ? "مشروع النظيم — الرياض الخضراء" : "An-Nadheem — Green Riyadh"}
+                  className="w-full h-80 object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050E10]/60 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 flex gap-2 flex-wrap">
+                  {["Vision 2030", "Green Riyadh", "MOBCO", isRTL ? "الرياض" : "Riyadh"].map(tag => (
+                    <span key={tag} className="px-2.5 py-1 rounded-full bg-[#050E10]/70 border border-green-400/25 text-green-400/80 text-xs">{tag}</span>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Description */}
+              <motion.div variants={fadeUp} className={isRTL ? "text-right" : ""}>
+                <h3 className="font-display text-2xl font-bold text-white mb-4">
+                  {isRTL ? "نظرة عامة على المشروع" : "Project Overview"}
+                </h3>
+                <p className="text-white/55 leading-relaxed mb-6">
+                  {isRTL
+                    ? "يُعدّ مشروع النظيم جزءاً من مبادرة الرياض الخضراء الطموحة التي تهدف إلى تحويل المدينة إلى بيئة حضرية خضراء ومستدامة. يشمل المشروع أعمال التشجير والمناظر الطبيعية الشاملة للقطاع 1، وتتضمن أعمال الترابة والتسوية، الرصف والأرضيات الصلبة، التشجير والزراعة، منظومة الري الحديثة، والأثاث الحضري."
+                    : "The An-Nadheem project is part of the ambitious Green Riyadh Initiative, transforming the city into a sustainable urban green environment. The project covers comprehensive landscape works for Sector 1, including earthworks & grading, hardscape & paving, softscape & planting, modern irrigation systems, and urban furniture."}
+                </p>
+                <div className="space-y-3 mb-8">
+                  {[
+                    { label: isRTL ? "العميل" : "Client", value: isRTL ? "شركة MOBCO للإنشاءات" : "MOBCO Construction Co." },
+                    { label: isRTL ? "الموقع" : "Location", value: isRTL ? "الرياض، المملكة العربية السعودية" : "Riyadh, Saudi Arabia" },
+                    { label: isRTL ? "المبادرة" : "Initiative", value: isRTL ? "الرياض الخضراء — رؤية 2030" : "Green Riyadh — Vision 2030" },
+                    { label: isRTL ? "الحالة" : "Status", value: isRTL ? "جارٍ التنفيذ" : "Active" },
+                  ].map(({ label, value }) => (
+                    <div key={label} className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}>
+                      <div className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" />
+                      <span className="text-white/40 text-sm w-24 flex-shrink-0">{label}:</span>
+                      <span className="text-white/80 text-sm">{value}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setLocation("/construction/nadheem")}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-semibold transition-colors duration-200 shadow-lg shadow-green-900/30"
+                >
+                  {isRTL ? "استعرض المشروع كاملاً" : "View Full Project"}
+                  <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
+                </button>
+              </motion.div>
+            </div>
+
+          </motion.div>
+        </div>
+      </section>
+
       {/* ── About / Why Golden Team ── */}
       <section id="about" className="py-28 bg-gradient-to-b from-[#050E10] to-[#091820]">
         <div className="max-w-7xl mx-auto px-6">

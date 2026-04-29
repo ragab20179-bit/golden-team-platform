@@ -373,3 +373,11 @@
 ## 2026-04-29 — KDP Showcase on Home Page
 - [x] Add KDP project showcase section to Home.tsx (bilingual Arabic/English overview, CGI images, link to /construction/kdp)
 - [ ] Save checkpoint
+
+## 2026-04-29 — Nadheem (Green Riyadh) Project
+- [ ] Search Google Drive and desktop for Nadheem/Green Riyadh project files
+- [ ] Download and extract project details, images, CGI renders
+- [ ] Build dedicated /construction/nadheem project page
+- [ ] Add Nadheem card to /construction page
+- [ ] Add Nadheem showcase to Home.tsx ongoing projects section
+- [ ] Save checkpoint

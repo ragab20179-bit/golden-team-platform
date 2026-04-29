@@ -305,27 +305,81 @@ export default function Construction() {
               </div>
             </motion.div>
 
-            {/* Coming Soon placeholder cards */}
-            <div className="grid md:grid-cols-2 gap-6 mt-6">
-              {UPCOMING_PROJECTS.map(({ title, status, tags }) => (
-                <motion.div
-                  key={title}
-                  variants={fadeUp}
-                  className="p-8 rounded-2xl border border-dashed border-white/15 bg-white/2 flex flex-col gap-4"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="px-2.5 py-1 rounded-full bg-white/8 border border-white/15 text-white/40 text-xs">{status}</div>
+            {/* Nadheem Project Card */}
+            <motion.div variants={fadeUp} className="mt-6">
+              <div
+                className="group relative rounded-2xl border border-green-400/20 bg-white/3 hover:bg-green-400/5 hover:border-green-400/35 transition-all duration-500 overflow-hidden cursor-pointer"
+                onClick={() => setLocation("/construction/nadheem")}
+              >
+                <div className="grid md:grid-cols-2 gap-0">
+                  {/* Image side */}
+                  <div className="relative h-64 md:h-auto overflow-hidden">
+                    <img
+                      src="https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/nadheem_green2_eebf5935.jpg"
+                      alt={t("An-Nadheem Landscape", "مشروع النظيم")}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#050E10]/60" />
+                    <div className="absolute top-4 left-4 flex gap-2">
+                      <div className="px-2.5 py-1 rounded-full bg-green-500/20 border border-green-400/40 text-green-400 text-xs font-semibold">
+                        {t("Active", "جارٍ")}
+                      </div>
+                      <div className="px-2.5 py-1 rounded-full bg-[#050E10]/70 border border-white/15 text-white/60 text-xs">
+                        {t("Green Riyadh", "الرياض الخضراء")}
+                      </div>
+                    </div>
                   </div>
-                  <h4 className="text-white/60 font-semibold text-lg">{title}</h4>
-                  <div className="flex gap-2 flex-wrap">
-                    {tags.map(tag => (
-                      <span key={tag} className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-white/30 text-xs">{tag}</span>
-                    ))}
+
+                  {/* Content side */}
+                  <div className="p-8 flex flex-col justify-between">
+                    <div>
+                      <div className={`flex items-center gap-2 mb-3 ${isRTL ? "flex-row-reverse" : ""}`}>
+                        <MapPin className="w-4 h-4 text-green-400" />
+                        <span className="text-green-400 text-sm">{t("Riyadh, Saudi Arabia", "الرياض، المملكة العربية السعودية")}</span>
+                      </div>
+                      <h3 className={`font-display text-2xl font-bold text-white mb-3 ${isRTL ? "text-right" : ""}`}>
+                        {t("An-Nadheem Landscape Development", "مشروع تطوير النظيم — أعمال التشجير")}
+                      </h3>
+                      <p className={`text-white/55 text-sm leading-relaxed mb-5 ${isRTL ? "text-right" : ""}`}>
+                        {t(
+                          "Sector 1 landscape works under the Green Riyadh Initiative (Vision 2030). 136 BOQ items across 18 work categories including earthworks, hardscape, softscape & planting, irrigation, and site furnishings.",
+                          "أعمال التشجير والمناظر الطبيعية للقطاع 1 ضمن مبادرة الرياض الخضراء (رؤية 2030). 136 بنداً في جدول الكميات تشمل الترابة، الرصف، التشجير، الري، والأثاث الحضري."
+                        )}
+                      </p>
+
+                      {/* Mini stats */}
+                      <div className={`grid grid-cols-3 gap-3 mb-5 ${isRTL ? "direction-rtl" : ""}`}>
+                        {[
+                          { value: "SAR 33.2M", label: t("Contract Value", "قيمة العقد") },
+                          { value: "136",       label: t("BOQ Items", "بنود BOQ") },
+                          { value: "8 mo",      label: t("Duration", "المدة") },
+                        ].map(({ value, label }) => (
+                          <div key={label} className={`p-3 rounded-lg border border-white/8 bg-white/3 text-center`}>
+                            <div className="text-green-400 font-bold text-sm">{value}</div>
+                            <div className="text-white/40 text-xs mt-0.5">{label}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Tags */}
+                      <div className={`flex flex-wrap gap-2 mb-6 ${isRTL ? "flex-row-reverse" : ""}`}>
+                        {["Vision 2030", "Green Riyadh", t("Landscape", "تشجير"), "MOBCO", "Riyadh"].map(tag => (
+                          <span key={tag} className="px-2.5 py-1 rounded-full bg-green-400/8 border border-green-400/20 text-green-400/70 text-xs">{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <Button
+                      className="bg-green-600 hover:bg-green-500 text-white font-bold w-full py-5 shadow-lg shadow-green-500/20"
+                      onClick={(e) => { e.stopPropagation(); setLocation("/construction/nadheem"); }}
+                    >
+                      {t("View Full Project", "عرض المشروع كاملاً")}
+                      {isRTL ? <ArrowLeft className="mr-2 w-4 h-4" /> : <ArrowRight className="ml-2 w-4 h-4" />}
+                    </Button>
                   </div>
-                  <div className="text-white/25 text-sm">{t("Details coming soon", "التفاصيل قادمة قريبًا")}</div>
-                </motion.div>
-              ))}
-            </div>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
