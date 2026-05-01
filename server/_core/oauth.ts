@@ -9,6 +9,31 @@ function getQueryParam(req: Request, key: string): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+/**
+ * Extract the returnPath from the Manus OAuth state parameter.
+ * The state is base64-encoded and may contain:
+ *   - A plain redirectUri string (legacy): "https://origin/api/oauth/callback"
+ *   - A pipe-delimited string: "https://origin/api/oauth/callback|/portal/neo-chat"
+ * Returns the returnPath (defaults to "/portal").
+ */
+function parseManusState(state: string): string {
+  try {
+    const decoded = Buffer.from(state, "base64").toString("utf-8");
+    // Format: "redirectUri|returnPath"
+    if (decoded.includes("|")) {
+      const parts = decoded.split("|");
+      const returnPath = parts[1];
+      // Validate: must be a relative path starting with /
+      if (returnPath && returnPath.startsWith("/")) {
+        return returnPath;
+      }
+    }
+  } catch {
+    // Ignore parse errors — fall through to default
+  }
+  return "/portal";
+}
+
 export function registerOAuthRoutes(app: Express) {
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
@@ -44,7 +69,10 @@ export function registerOAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      res.redirect(302, "/");
+      // Redirect to the originally requested path (or portal home)
+      const returnPath = parseManusState(state);
+      console.log("[OAuth] Login successful, redirecting to:", returnPath);
+      res.redirect(302, returnPath);
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
       res.status(500).json({ error: "OAuth callback failed" });

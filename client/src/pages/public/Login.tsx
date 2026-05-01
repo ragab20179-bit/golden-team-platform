@@ -48,8 +48,8 @@ export default function Login() {
   /** Build the Google auth URL with returnPath so the callback redirects back to the portal */
   const googleLoginUrl = `/api/auth/google?returnPath=${encodeURIComponent("/portal")}`;
 
-  /** Manus OAuth URL */
-  const manusLoginUrl = getLoginUrl();
+  /** Manus OAuth URL — pass /portal as returnPath so callback redirects to portal after login */
+  const manusLoginUrl = getLoginUrl("/portal");
 
   return (
     <div className="min-h-screen bg-[#060B14] flex items-center justify-center relative overflow-hidden">

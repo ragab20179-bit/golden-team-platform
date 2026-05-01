@@ -415,3 +415,9 @@
 - [ ] Add bulk import (CSV/Excel) to ERPModule.tsx
 - [ ] Add bulk import (CSV/Excel) to CRMModule.tsx
 - [ ] Add bulk import (CSV/Excel) to LegalModule.tsx
+
+## 2026-05-02 — Fix Employee Portal Login
+- [x] Diagnose login flow root cause (OAuth callback always redirected to "/" ignoring state)
+- [x] Fix Manus OAuth callback to parse returnPath from state and redirect to /portal
+- [x] Fix Login.tsx to pass /portal as returnPath to Manus OAuth URL
+- [x] Verify 0 TypeScript errors, 297/297 tests passing
