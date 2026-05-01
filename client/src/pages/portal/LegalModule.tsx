@@ -5,12 +5,13 @@
  */
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Scale, Plus, Loader2, Trash2, RefreshCw, FileText, AlertTriangle, CheckCircle, Clock } from "lucide-react";
+import { Scale, Plus, Loader2, Trash2, RefreshCw, FileText, AlertTriangle, CheckCircle, Clock, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AIModuleQueryPanel } from "@/components/AIModuleQueryPanel";
+import { LegalBulkImport } from "@/components/ModuleBulkImport";
 import { trpc } from "@/lib/trpc";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -42,6 +43,7 @@ const typeColor: Record<string, string> = {
 export default function LegalModule() {
   const { t, isRTL } = useLanguage();
   const [addOpen, setAddOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [form, setForm] = useState({
     caseNumber: "", title: "", titleAr: "", type: "contract" as const,
     party: "", partyAr: "", status: "draft" as const,
@@ -131,6 +133,9 @@ export default function LegalModule() {
               {t("Legal Cases & Contracts", "القضايا والعقود القانونية")}
             </h2>
             <div className="flex gap-2">
+              <Button size="sm" onClick={() => setImportOpen(true)} variant="outline" className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 bg-transparent h-8 text-xs">
+                <Upload className={`w-3 h-3 ${isRTL ? "ml-1" : "mr-1"}`} /> {t("Import", "استيراد")}
+              </Button>
               <Button size="sm" onClick={() => refetch()} variant="outline" className="border-white/20 text-white/70 hover:bg-white/10 bg-transparent h-8 text-xs">
                 <RefreshCw className="w-3 h-3" />
               </Button>
@@ -265,6 +270,7 @@ export default function LegalModule() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <LegalBulkImport open={importOpen} onClose={() => { setImportOpen(false); utils.modules.legal.list.invalidate(); utils.modules.legal.stats.invalidate(); }} />
     </PortalLayout>
   );
 }

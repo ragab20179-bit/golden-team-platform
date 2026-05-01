@@ -5,12 +5,13 @@
  */
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Database, Plus, Loader2, Trash2, RefreshCw, TrendingUp, TrendingDown, DollarSign, Clock } from "lucide-react";
+import { Database, Plus, Loader2, Trash2, RefreshCw, TrendingUp, TrendingDown, DollarSign, Clock, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AIModuleQueryPanel } from "@/components/AIModuleQueryPanel";
+import { ERPBulkImport } from "@/components/ModuleBulkImport";
 import { trpc } from "@/lib/trpc";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -41,6 +42,7 @@ const typeColor: Record<string, string> = {
 export default function ERPModule() {
   const { t, isRTL } = useLanguage();
   const [addOpen, setAddOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [form, setForm] = useState({
     recordNumber: "", title: "", titleAr: "", party: "", partyAr: "",
     type: "sale" as const, amount: "", currency: "SAR",
@@ -129,6 +131,9 @@ export default function ERPModule() {
               {t("ERP Records", "سجلات الموارد")}
             </h2>
             <div className="flex gap-2">
+              <Button size="sm" onClick={() => setImportOpen(true)} variant="outline" className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 bg-transparent h-8 text-xs">
+                <Upload className={`w-3 h-3 ${isRTL ? "ml-1" : "mr-1"}`} /> {t("Import", "استيراد")}
+              </Button>
               <Button size="sm" onClick={() => refetch()} variant="outline" className="border-white/20 text-white/70 hover:bg-white/10 bg-transparent h-8 text-xs">
                 <RefreshCw className="w-3 h-3" />
               </Button>
@@ -254,6 +259,7 @@ export default function ERPModule() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ERPBulkImport open={importOpen} onClose={() => { setImportOpen(false); utils.modules.erp.list.invalidate(); utils.modules.erp.stats.invalidate(); }} />
     </PortalLayout>
   );
 }

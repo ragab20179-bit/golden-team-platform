@@ -5,13 +5,14 @@
  */
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Award, Plus, Loader2, Trash2, RefreshCw, AlertTriangle, CheckCircle, Clock } from "lucide-react";
+import { Award, Plus, Loader2, Trash2, RefreshCw, AlertTriangle, CheckCircle, Clock, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AIModuleQueryPanel } from "@/components/AIModuleQueryPanel";
+import { QMSBulkImport } from "@/components/ModuleBulkImport";
 import { trpc } from "@/lib/trpc";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -40,6 +41,7 @@ const severityColor: Record<string, string> = {
 export default function QMSModule() {
   const { t, isRTL } = useLanguage();
   const [addOpen, setAddOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [form, setForm] = useState({
     ncrNumber: "", title: "", titleAr: "", description: "",
     category: "", severity: "minor" as const,
@@ -113,6 +115,9 @@ export default function QMSModule() {
               {t("Non-Conformance Reports", "تقارير عدم المطابقة")}
             </h2>
             <div className="flex gap-2">
+              <Button size="sm" onClick={() => setImportOpen(true)} variant="outline" className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 bg-transparent h-8 text-xs">
+                <Upload className={`w-3 h-3 ${isRTL ? "ml-1" : "mr-1"}`} /> {t("Import", "استيراد")}
+              </Button>
               <Button size="sm" onClick={() => refetch()} variant="outline" className="border-white/20 text-white/70 hover:bg-white/10 bg-transparent h-8 text-xs">
                 <RefreshCw className="w-3 h-3" />
               </Button>
@@ -255,6 +260,7 @@ export default function QMSModule() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <QMSBulkImport open={importOpen} onClose={() => { setImportOpen(false); utils.modules.qms.list.invalidate(); utils.modules.qms.stats.invalidate(); }} />
     </PortalLayout>
   );
 }

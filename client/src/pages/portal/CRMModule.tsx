@@ -5,12 +5,13 @@
  */
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Users, Plus, Loader2, Trash2, RefreshCw, TrendingUp, Star, DollarSign, Target } from "lucide-react";
+import { Users, Plus, Loader2, Trash2, RefreshCw, TrendingUp, Star, DollarSign, Target, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import PortalLayout from "@/components/PortalLayout";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { AIModuleQueryPanel } from "@/components/AIModuleQueryPanel";
+import { CRMBulkImport } from "@/components/ModuleBulkImport";
 import { trpc } from "@/lib/trpc";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -41,6 +42,7 @@ const typeColor: Record<string, string> = {
 export default function CRMModule() {
   const { t, isRTL } = useLanguage();
   const [addOpen, setAddOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [form, setForm] = useState({
     fullName: "", fullNameAr: "", company: "", companyAr: "",
     email: "", phone: "", type: "lead" as const,
@@ -126,6 +128,9 @@ export default function CRMModule() {
               {t("Contacts & Leads", "جهات الاتصال والعملاء المحتملون")}
             </h2>
             <div className="flex gap-2">
+              <Button size="sm" onClick={() => setImportOpen(true)} variant="outline" className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 bg-transparent h-8 text-xs">
+                <Upload className={`w-3 h-3 ${isRTL ? "ml-1" : "mr-1"}`} /> {t("Import", "استيراد")}
+              </Button>
               <Button size="sm" onClick={() => refetch()} variant="outline" className="border-white/20 text-white/70 hover:bg-white/10 bg-transparent h-8 text-xs">
                 <RefreshCw className="w-3 h-3" />
               </Button>
@@ -257,6 +262,7 @@ export default function CRMModule() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <CRMBulkImport open={importOpen} onClose={() => { setImportOpen(false); utils.modules.crm.list.invalidate(); utils.modules.crm.stats.invalidate(); }} />
     </PortalLayout>
   );
 }

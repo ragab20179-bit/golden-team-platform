@@ -433,6 +433,30 @@ export const modulesRouter = router({
         await db.delete(qmsIncidents).where(eq(qmsIncidents.id, input.id));
         return { success: true };
       }),
+
+    bulkImport: protectedProcedure
+      .input(z.object({ entries: z.array(qmsIncidentSchema) }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        let success = 0; let failed = 0; const errors: string[] = [];
+        for (const entry of input.entries) {
+          try {
+            const code = entry.incidentCode ?? `NCR-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+            await db.insert(qmsIncidents).values({
+              ...entry, incidentCode: code,
+              severity: entry.severity ?? "minor",
+              status: entry.status ?? "open",
+              createdBy: ctx.user.id,
+            });
+            success++;
+          } catch (err: unknown) {
+            failed++;
+            errors.push(`${entry.title}: ${err instanceof Error ? err.message : "Insert failed"}`);
+          }
+        }
+        return { success, failed, errors };
+      }),
   }),
 
   // ── ERP ────────────────────────────────────────────────────────────────────
@@ -501,6 +525,31 @@ export const modulesRouter = router({
         if (!db) throw new Error("DB unavailable");
         await db.delete(erpRecords).where(eq(erpRecords.id, input.id));
         return { success: true };
+      }),
+
+    bulkImport: protectedProcedure
+      .input(z.object({ entries: z.array(erpRecordSchema) }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        let success = 0; let failed = 0; const errors: string[] = [];
+        for (const entry of input.entries) {
+          try {
+            const recNum = entry.recordNumber ?? `ERP-${new Date().getFullYear()}-${String(Date.now()).slice(-5)}`;
+            await db.insert(erpRecords).values({
+              ...entry, recordNumber: recNum,
+              type: entry.type ?? "sale",
+              currency: entry.currency ?? "SAR",
+              status: entry.status ?? "draft",
+              createdBy: ctx.user.id,
+            });
+            success++;
+          } catch (err: unknown) {
+            failed++;
+            errors.push(`${entry.title}: ${err instanceof Error ? err.message : "Insert failed"}`);
+          }
+        }
+        return { success, failed, errors };
       }),
   }),
 
@@ -573,6 +622,30 @@ export const modulesRouter = router({
         if (!db) throw new Error("DB unavailable");
         await db.delete(crmContacts).where(eq(crmContacts.id, input.id));
         return { success: true };
+      }),
+
+    bulkImport: protectedProcedure
+      .input(z.object({ entries: z.array(crmContactSchema) }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        let success = 0; let failed = 0; const errors: string[] = [];
+        for (const entry of input.entries) {
+          try {
+            await db.insert(crmContacts).values({
+              ...entry, email: entry.email || null,
+              type: entry.type ?? "lead",
+              stage: entry.stage ?? "new",
+              probability: entry.probability ?? 0,
+              createdBy: ctx.user.id,
+            });
+            success++;
+          } catch (err: unknown) {
+            failed++;
+            errors.push(`${entry.fullName}: ${err instanceof Error ? err.message : "Insert failed"}`);
+          }
+        }
+        return { success, failed, errors };
       }),
   }),
 
@@ -652,6 +725,30 @@ export const modulesRouter = router({
         if (!db) throw new Error("DB unavailable");
         await db.delete(legalCases).where(eq(legalCases.id, input.id));
         return { success: true };
+      }),
+
+    bulkImport: protectedProcedure
+      .input(z.object({ entries: z.array(legalCaseSchema) }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        let success = 0; let failed = 0; const errors: string[] = [];
+        for (const entry of input.entries) {
+          try {
+            const caseNum = entry.caseNumber ?? `GT-LEGAL-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+            await db.insert(legalCases).values({
+              ...entry, caseNumber: caseNum,
+              type: entry.type ?? "contract",
+              status: entry.status ?? "draft",
+              createdBy: ctx.user.id,
+            });
+            success++;
+          } catch (err: unknown) {
+            failed++;
+            errors.push(`${entry.title}: ${err instanceof Error ? err.message : "Insert failed"}`);
+          }
+        }
+        return { success, failed, errors };
       }),
   }),
 });

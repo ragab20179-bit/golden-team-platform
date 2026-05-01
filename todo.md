@@ -402,3 +402,16 @@
 - [x] Add auth guard (useAuth) to PortalLayout.tsx
 - [x] Add auth guard (useAuth) to AdminLayout.tsx
 - [x] Fix glow-teal Vite pre-transform warning in index.css
+
+## 2026-05-02 — Phase 15: Live Data + Bulk Import (Option C)
+- [ ] Seed HR module with 12 representative Golden Team employees
+- [ ] Seed KPI module with 10 KPI targets across all departments
+- [ ] Seed Procurement module with 8 PO items
+- [ ] Seed QMS module with 6 NCR/incident records
+- [ ] Seed ERP module with 8 financial records
+- [x] Seed CRM module with 10 contacts/leads
+- [ ] Seed Legal module with 6 contracts/cases
+- [ ] Add bulk import (CSV/Excel) to QMSModule.tsx
+- [ ] Add bulk import (CSV/Excel) to ERPModule.tsx
+- [ ] Add bulk import (CSV/Excel) to CRMModule.tsx
+- [ ] Add bulk import (CSV/Excel) to LegalModule.tsx
