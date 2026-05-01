@@ -177,7 +177,7 @@ function PurchaseTab() {
             <EmptyState message="No purchase orders yet" />
           ) : (
             <div className="space-y-2">
-              {orders?.map((order: Record<string, unknown>, i: number) => (
+              {orders?.map((order, i: number) => (
                 <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/8 transition-colors">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
@@ -216,7 +216,7 @@ function PurchaseTab() {
             <EmptyState message="No suppliers yet" />
           ) : (
             <div className="space-y-2">
-              {suppliers?.map((s: Record<string, unknown>, i: number) => (
+              {suppliers?.map((s, i: number) => (
                 <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-xs">
@@ -274,7 +274,7 @@ function AccountingTab() {
             <EmptyState message="No invoices yet" />
           ) : (
             <div className="space-y-2">
-              {invoices?.map((inv: Record<string, unknown>, i: number) => (
+              {invoices?.map((inv, i: number) => (
                 <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
@@ -315,7 +315,7 @@ function AccountingTab() {
             <EmptyState message="No payments yet" />
           ) : (
             <div className="space-y-2">
-              {payments?.map((p: Record<string, unknown>, i: number) => (
+              {payments?.map((p, i: number) => (
                 <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                   <div>
                     <div className="text-sm text-white">{String(p.name ?? "—")}</div>
@@ -339,7 +339,7 @@ function InventoryTab() {
   const { data: products, isLoading } = trpc.odoo.getProducts.useQuery({ limit: 100 });
   const { data: pickings, isLoading: pickLoading } = trpc.odoo.getStockPickings.useQuery({ limit: 20 });
 
-  const filtered = products?.filter((p: Record<string, unknown>) =>
+  const filtered = products?.filter((p) =>
     !search || String(p.name ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
@@ -363,7 +363,7 @@ function InventoryTab() {
             <EmptyState message={search ? "No products match your search" : "No products yet"} />
           ) : (
             <div className="space-y-2">
-              {filtered?.map((p: Record<string, unknown>, i: number) => (
+              {filtered?.map((p, i: number) => (
                 <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
@@ -401,7 +401,7 @@ function InventoryTab() {
             <EmptyState message="No stock movements yet" />
           ) : (
             <div className="space-y-2">
-              {pickings?.map((pick: Record<string, unknown>, i: number) => (
+              {pickings?.map((pick, i: number) => (
                 <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                   <div>
                     <div className="text-sm text-white">{String(pick.name ?? "—")}</div>
@@ -425,7 +425,7 @@ function CrmTab() {
   const { data: leads, isLoading } = trpc.odoo.getCrmLeads.useQuery({ limit: 50 });
   const { data: stages } = trpc.odoo.getCrmStages.useQuery();
 
-  const totalRevenue = leads?.reduce((sum: number, l: Record<string, unknown>) =>
+  const totalRevenue = leads?.reduce((sum: number, l) =>
     sum + (typeof l.expected_revenue === "number" ? l.expected_revenue : 0), 0) ?? 0;
 
   return (
@@ -440,9 +440,9 @@ function CrmTab() {
 
       {stages && stages.length > 0 && (
         <div className="flex gap-2 flex-wrap">
-          {stages.map((s: Record<string, unknown>, i: number) => {
-            const count = leads?.filter((l: Record<string, unknown>) =>
-              Array.isArray(l.stage_id) && l.stage_id[0] === (s as Record<string, unknown>).id
+          {stages.map((s, i: number) => {
+            const count = leads?.filter((l) =>
+              Array.isArray(l.stage_id) && l.stage_id[0] === s.id
             ).length ?? 0;
             return (
               <div key={i} className="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white/60">
@@ -462,7 +462,7 @@ function CrmTab() {
             <EmptyState message="No CRM leads yet" />
           ) : (
             <div className="space-y-2">
-              {leads?.map((lead: Record<string, unknown>, i: number) => (
+              {leads?.map((lead, i: number) => (
                 <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center">
@@ -516,7 +516,7 @@ function ProjectTab() {
               <EmptyState message="No projects yet" />
             ) : (
               <div className="space-y-2">
-                {projects?.map((proj: Record<string, unknown>, i: number) => (
+                {projects?.map((proj, i: number) => (
                   <button key={i} onClick={() => setSelectedProject(typeof proj.id === "number" ? proj.id : undefined)}
                     className={`w-full text-left flex items-center justify-between p-3 rounded-lg transition-colors ${selectedProject === (proj.id as number) ? "bg-amber-500/20 border border-amber-500/30" : "bg-white/5 hover:bg-white/8"}`}>
                     <div className="flex items-center gap-3">
@@ -548,7 +548,7 @@ function ProjectTab() {
               <EmptyState message="No tasks yet" />
             ) : (
               <div className="space-y-2">
-                {tasks?.map((task: Record<string, unknown>, i: number) => (
+                {tasks?.map((task, i: number) => (
                   <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                     <div>
                       <div className="text-sm text-white">{String(task.name ?? "—")}</div>

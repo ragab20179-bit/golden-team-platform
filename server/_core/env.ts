@@ -12,4 +12,9 @@ export const ENV = {
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
   odooApiKey: process.env.ODOO_API_KEY ?? "",
   odooUsername: process.env.ODOO_USERNAME ?? "",
+  // ─── Added in Odoo Client v2 PR ──────────────────────────────────────────
+  odooUrl: process.env.ODOO_URL ?? "https://goldenteam.odoo.com",
+  odooDb: process.env.ODOO_DB ?? "goldenteam",
+  // ─── Added for Redis support (Hybrid AI v2 / Odoo Client v2) ─────────────
+  redisUrl: process.env.REDIS_URL ?? "",
 };
