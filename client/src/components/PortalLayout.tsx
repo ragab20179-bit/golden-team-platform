@@ -3,8 +3,11 @@
  * Design: "Prestige Dark" — Golden Team brand identity (teal #0A323C + olive #5A6446 + gold #FADC96)
  * Bilingual: Arabic / English — semantic trade language
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   LayoutDashboard, Users, Database, UserCheck, BarChart3,
   ShoppingCart, FileCheck, Scale, MessageSquare, Shield,
@@ -77,6 +80,41 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { lang, isRTL, toggleLang, t } = useLanguage();
+  const { isAuthenticated, loading } = useAuth();
+
+  // Auth guard — redirect unauthenticated users to login
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      window.location.href = getLoginUrl(window.location.pathname);
+    }
+  }, [loading, isAuthenticated]);
+
+  // Show branded skeleton while auth state resolves
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#05080F] flex">
+        <div className="w-64 border-r border-white/5 p-4 flex flex-col gap-3">
+          <Skeleton className="h-10 w-full rounded-lg" />
+          {Array.from({ length: 12 }).map((_, i) => (
+            <Skeleton key={i} className="h-8 w-full rounded-md" />
+          ))}
+        </div>
+        <div className="flex-1 p-8 flex flex-col gap-4">
+          <Skeleton className="h-10 w-64 rounded-lg" />
+          <Skeleton className="h-6 w-96 rounded" />
+          <div className="grid grid-cols-3 gap-4 mt-4">
+            <Skeleton className="h-32 rounded-xl" />
+            <Skeleton className="h-32 rounded-xl" />
+            <Skeleton className="h-32 rounded-xl" />
+          </div>
+          <Skeleton className="h-64 rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
+  // Render nothing while redirect is in progress
+  if (!isAuthenticated) return null;
 
   const handleLogout = () => {
     toast.success(t("Logged out successfully", "تم تسجيل الخروج بنجاح"));

@@ -3,8 +3,11 @@
  * Design: Neural Depth — deep space dark, amber/gold accents, glass morphism
  * Distinct from PortalLayout: uses red-tinted accents for admin authority, wider sidebar
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { getLoginUrl } from "@/const";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   LayoutDashboard, Users, Shield, Settings, Activity,
   FileText, Key, Database, Bell, ChevronRight, LogOut,
@@ -70,6 +73,47 @@ export default function AdminLayout({ children, title = "Admin Panel", subtitle 
   const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const { user, isAuthenticated, loading } = useAuth();
+
+  // Auth + admin role guard
+  useEffect(() => {
+    if (loading) return;
+    if (!isAuthenticated) {
+      window.location.href = getLoginUrl(window.location.pathname);
+      return;
+    }
+    if (user?.role !== "admin") {
+      // Authenticated but not admin — send to portal
+      setLocation("/portal");
+    }
+  }, [loading, isAuthenticated, user?.role]);
+
+  // Show skeleton while auth resolves
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#05080F] flex">
+        <div className="w-72 border-r border-white/5 p-4 flex flex-col gap-3">
+          <Skeleton className="h-10 w-full rounded-lg" />
+          {Array.from({ length: 16 }).map((_, i) => (
+            <Skeleton key={i} className="h-7 w-full rounded-md" />
+          ))}
+        </div>
+        <div className="flex-1 p-8 flex flex-col gap-4">
+          <Skeleton className="h-10 w-64 rounded-lg" />
+          <Skeleton className="h-6 w-96 rounded" />
+          <div className="grid grid-cols-4 gap-4 mt-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-24 rounded-xl" />
+            ))}
+          </div>
+          <Skeleton className="h-64 rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
+  // Render nothing while redirect is in progress
+  if (!isAuthenticated || user?.role !== "admin") return null;
 
   const toggleGroup = (group: string) => {
     setCollapsedGroups(prev => {

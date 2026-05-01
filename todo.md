@@ -381,3 +381,24 @@
 - [ ] Add Nadheem card to /construction page
 - [ ] Add Nadheem showcase to Home.tsx ongoing projects section
 - [ ] Save checkpoint
+
+## 2026-05-02 — Frontend Reorganisation
+- [x] Move 20 portal pages into pages/portal/ subdirectory
+- [x] Move 12 public pages into pages/public/ subdirectory
+- [x] Update all import paths in App.tsx and affected files
+- [x] Add React.lazy() + Suspense code splitting to App.tsx for all 36 routes
+- [x] Add auth guard (useAuth) to PortalLayout.tsx — redirect unauthenticated users
+- [x] Add auth guard (useAuth) to AdminLayout.tsx — redirect non-admin users
+- [x] Fix glow-teal Vite pre-transform warning in index.css
+- [ ] Run TypeScript check (0 errors)
+- [ ] Run vitest (all tests passing)
+- [ ] Save checkpoint
+
+## 2026-05-02 — Frontend Reorganisation
+- [x] Move 20 portal pages into pages/portal/ subdirectory
+- [x] Move 12 public pages into pages/public/ subdirectory
+- [x] Update all import paths in App.tsx and affected files
+- [x] Add React.lazy() + Suspense code splitting to App.tsx for all 36 routes
+- [x] Add auth guard (useAuth) to PortalLayout.tsx
+- [x] Add auth guard (useAuth) to AdminLayout.tsx
+- [x] Fix glow-teal Vite pre-transform warning in index.css
