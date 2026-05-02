@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import PortalLayout from "@/components/PortalLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +17,7 @@ import {
   RefreshCw, ExternalLink, Search, TrendingUp,
   AlertCircle, CheckCircle2, Clock, XCircle,
   Building2, Phone, Mail, MapPin, BarChart3,
-  Wifi, WifiOff,
+  Wifi, WifiOff, Sparkles,
 } from "lucide-react";
 
 
@@ -584,6 +585,7 @@ const TABS: { id: OdooTab; label: string; icon: React.ElementType }[] = [
 
 export default function OdooDashboard() {
   const [activeTab, setActiveTab] = useState<OdooTab>("overview");
+  const [, navigate] = useLocation();
 
   // ── Connection health — polls every 60 s ──────────────────────────────────
   const { data: health } = trpc.odoo.getHealth.useQuery(undefined, {
@@ -621,6 +623,12 @@ export default function OdooDashboard() {
               {isOffline ? <WifiOff className="w-3.5 h-3.5" /> : <Wifi className="w-3.5 h-3.5" />}
               {!health ? "Checking..." : isConnected ? "Odoo Connected" : isOffline ? "Odoo Offline" : "Odoo Degraded"}
             </span>
+            <Button
+              onClick={() => navigate("/portal/odoo/ai-entry")}
+              size="sm"
+              className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-semibold gap-2 shadow-lg shadow-amber-500/20">
+              <Sparkles className="w-3.5 h-3.5" /> NEO AI Entry
+            </Button>
             <a href="https://goldenteam1.odoo.com" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" size="sm"
                 className="border-white/20 text-white/60 hover:text-white bg-transparent gap-2">

@@ -40,6 +40,25 @@ import {
   getOdooBreakerState,
 } from "../odoo";
 
+/** True when the error message indicates the circuit breaker is open */
+function isBreakerOpen(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return msg.toLowerCase().includes("breaker is open") ||
+         msg.toLowerCase().includes("circuit breaker") ||
+         msg.toLowerCase().includes("open state");
+}
+
+/**
+ * For READ queries: return an empty-array fallback when the breaker is open
+ * so the page renders gracefully with an offline indicator instead of crashing.
+ * For WRITE mutations: always throw so the user knows the action failed.
+ */
+function handleReadError(err: unknown, context: string): [] {
+  const msg = err instanceof Error ? err.message : String(err);
+  console.warn(`[Odoo] ${context} — returning [] (breaker open or Odoo offline): ${msg.slice(0, 120)}`);
+  return [];
+}
+
 // ── Error wrapper ──────────────────────────────────────────────────────────────
 function handleOdooError(err: unknown, context: string): never {
   const msg = err instanceof Error ? err.message : String(err);
@@ -48,6 +67,16 @@ function handleOdooError(err: unknown, context: string): never {
     code: "INTERNAL_SERVER_ERROR",
     message: `Odoo ${context} failed: ${msg.slice(0, 200)}`,
   });
+}
+
+/** Wrap a read query: return empty array on breaker-open, throw on real errors */
+async function safeRead<T>(fn: () => Promise<T[]>, context: string): Promise<T[]> {
+  try {
+    return await fn();
+  } catch (err) {
+    if (isBreakerOpen(err)) return handleReadError(err, context) as T[];
+    handleOdooError(err, context);
+  }
 }
 
 // ── Router ─────────────────────────────────────────────────────────────────────
@@ -74,6 +103,10 @@ export const odooRouter = router({
     try {
       return await getOdooStats();
     } catch (err) {
+      if (isBreakerOpen(err)) {
+        console.warn("[Odoo] getStats — breaker open, returning empty stats");
+        return { purchaseOrders: 0, invoices: 0, products: 0, suppliers: 0, crmLeads: 0, projects: 0, tasks: 0, lastSync: new Date().toISOString(), stale: true };
+      }
       handleOdooError(err, "getStats");
     }
   }),
@@ -81,33 +114,15 @@ export const odooRouter = router({
   // ── Purchase Module ──────────────────────────────────────────────────────────
   getPurchaseOrders: protectedProcedure
     .input(z.object({ limit: z.number().int().min(1).max(200).default(50) }))
-    .query(async ({ input }) => {
-      try {
-        return await getPurchaseOrders(input.limit);
-      } catch (err) {
-        handleOdooError(err, "getPurchaseOrders");
-      }
-    }),
+    .query(async ({ input }) => safeRead(() => getPurchaseOrders(input.limit), "getPurchaseOrders")),
 
   getPurchaseOrderLines: protectedProcedure
     .input(z.object({ orderId: z.number().int().positive().optional() }))
-    .query(async ({ input }) => {
-      try {
-        return await getPurchaseOrderLines(input.orderId);
-      } catch (err) {
-        handleOdooError(err, "getPurchaseOrderLines");
-      }
-    }),
+    .query(async ({ input }) => safeRead(() => getPurchaseOrderLines(input.orderId), "getPurchaseOrderLines")),
 
   getSuppliers: protectedProcedure
     .input(z.object({ limit: z.number().int().min(1).max(500).default(100) }))
-    .query(async ({ input }) => {
-      try {
-        return await getSuppliers(input.limit);
-      } catch (err) {
-        handleOdooError(err, "getSuppliers");
-      }
-    }),
+    .query(async ({ input }) => safeRead(() => getSuppliers(input.limit), "getSuppliers")),
 
   createPurchaseOrder: protectedProcedure
     .input(z.object({
@@ -168,33 +183,15 @@ export const odooRouter = router({
       type: z.enum(["in_invoice", "out_invoice", "all"]).default("all"),
       limit: z.number().int().min(1).max(200).default(50),
     }))
-    .query(async ({ input }) => {
-      try {
-        return await getInvoices(input.type, input.limit);
-      } catch (err) {
-        handleOdooError(err, "getInvoices");
-      }
-    }),
+    .query(async ({ input }) => safeRead(() => getInvoices(input.type, input.limit), "getInvoices")),
 
   getPayments: protectedProcedure
     .input(z.object({ limit: z.number().int().min(1).max(200).default(50) }))
-    .query(async ({ input }) => {
-      try {
-        return await getPayments(input.limit);
-      } catch (err) {
-        handleOdooError(err, "getPayments");
-      }
-    }),
+    .query(async ({ input }) => safeRead(() => getPayments(input.limit), "getPayments")),
 
   getChartOfAccounts: protectedProcedure
     .input(z.object({ limit: z.number().int().min(1).max(500).default(200) }))
-    .query(async ({ input }) => {
-      try {
-        return await getChartOfAccounts(input.limit);
-      } catch (err) {
-        handleOdooError(err, "getChartOfAccounts");
-      }
-    }),
+    .query(async ({ input }) => safeRead(() => getChartOfAccounts(input.limit), "getChartOfAccounts")),
 
   /**
    * Create a vendor bill (in_invoice) or customer invoice (out_invoice).
@@ -291,46 +288,25 @@ export const odooRouter = router({
   // ── Inventory Module ─────────────────────────────────────────────────────────
   getProducts: protectedProcedure
     .input(z.object({ limit: z.number().int().min(1).max(500).default(100) }))
-    .query(async ({ input }) => {
-      try {
-        return await getProducts(input.limit);
-      } catch (err) {
-        handleOdooError(err, "getProducts");
-      }
-    }),
+    .query(async ({ input }) => safeRead(() => getProducts(input.limit), "getProducts")),
 
   getStockPickings: protectedProcedure
     .input(z.object({ limit: z.number().int().min(1).max(200).default(50) }))
-    .query(async ({ input }) => {
-      try {
-        return await getStockPickings(input.limit);
-      } catch (err) {
-        handleOdooError(err, "getStockPickings");
-      }
-    }),
+    .query(async ({ input }) => safeRead(() => getStockPickings(input.limit), "getStockPickings")),
 
-  getWarehouses: protectedProcedure.query(async () => {
-    try {
-      return await getWarehouses();
-    } catch (err) {
-      handleOdooError(err, "getWarehouses");
-    }
-  }),
+  getWarehouses: protectedProcedure.query(async () => safeRead(() => getWarehouses(), "getWarehouses")),
 
   searchProducts: protectedProcedure
     .input(z.object({
       query: z.string().min(1).max(200),
       limit: z.number().int().min(1).max(50).default(20),
     }))
-    .query(async ({ input }) => {
-      try {
-        return await odooSearchRead("product.product", [["name", "ilike", input.query]], [
-          "name", "default_code", "qty_available", "list_price", "categ_id", "uom_id",
-        ], { limit: input.limit });
-      } catch (err) {
-        handleOdooError(err, "searchProducts");
-      }
-    }),
+    .query(async ({ input }) => safeRead(
+      () => odooSearchRead("product.product", [["name", "ilike", input.query]], [
+        "name", "default_code", "qty_available", "list_price", "categ_id", "uom_id",
+      ], { limit: input.limit }),
+      "searchProducts"
+    )),
 
   /** Get live stock quantities per product per location. */
   getLiveStockLevels: protectedProcedure
@@ -339,40 +315,25 @@ export const odooRouter = router({
       limit: z.number().int().min(1).max(500).default(100),
     }))
     .query(async ({ input }) => {
-      try {
-        const domain: unknown[][] = [["location_id.usage", "=", "internal"]];
-        if (input.productIds?.length) {
-          domain.push(["product_id", "in", input.productIds]);
-        }
-        return await odooSearchRead(
+      const domain: unknown[][] = [["location_id.usage", "=", "internal"]];
+      if (input.productIds?.length) domain.push(["product_id", "in", input.productIds]);
+      return safeRead(
+        () => odooSearchRead(
           "stock.quant",
           domain,
           ["product_id", "location_id", "quantity", "reserved_quantity", "available_quantity"],
           { limit: input.limit, order: "product_id asc" },
-        );
-      } catch (err) {
-        handleOdooError(err, "getLiveStockLevels");
-      }
+        ),
+        "getLiveStockLevels"
+      );
     }),
 
   // ── CRM Module ───────────────────────────────────────────────────────────────
   getCrmLeads: protectedProcedure
     .input(z.object({ limit: z.number().int().min(1).max(200).default(50) }))
-    .query(async ({ input }) => {
-      try {
-        return await getCrmLeads(input.limit);
-      } catch (err) {
-        handleOdooError(err, "getCrmLeads");
-      }
-    }),
+    .query(async ({ input }) => safeRead(() => getCrmLeads(input.limit), "getCrmLeads")),
 
-  getCrmStages: protectedProcedure.query(async () => {
-    try {
-      return await getCrmStages();
-    } catch (err) {
-      handleOdooError(err, "getCrmStages");
-    }
-  }),
+  getCrmStages: protectedProcedure.query(async () => safeRead(() => getCrmStages(), "getCrmStages")),
 
   createCrmLead: protectedProcedure
     .input(z.object({
@@ -423,19 +384,18 @@ export const odooRouter = router({
       departmentId: z.number().int().positive().optional(),
     }))
     .query(async ({ input }) => {
-      try {
-        const domain: unknown[][] = [["active", "=", true]];
-        if (input.departmentId) domain.push(["department_id", "=", input.departmentId]);
-        return await odooSearchRead(
+      const domain: unknown[][] = [["active", "=", true]];
+      if (input.departmentId) domain.push(["department_id", "=", input.departmentId]);
+      return safeRead(
+        () => odooSearchRead(
           "hr.employee",
           domain,
           ["name", "job_title", "job_id", "department_id", "work_email", "work_phone",
            "mobile_phone", "coach_id", "parent_id", "resource_calendar_id"],
           { limit: input.limit, order: "name asc" },
-        );
-      } catch (err) {
-        handleOdooError(err, "getEmployees");
-      }
+        ),
+        "getEmployees"
+      );
     }),
 
   /** Get payslips for a given period. */
@@ -447,20 +407,19 @@ export const odooRouter = router({
       limit: z.number().int().min(1).max(200).default(50),
     }))
     .query(async ({ input }) => {
-      try {
-        const domain: unknown[][] = [];
-        if (input.dateFrom) domain.push(["date_from", ">=", input.dateFrom]);
-        if (input.dateTo) domain.push(["date_to", "<=", input.dateTo]);
-        if (input.employeeId) domain.push(["employee_id", "=", input.employeeId]);
-        return await odooSearchRead(
+      const domain: unknown[][] = [];
+      if (input.dateFrom) domain.push(["date_from", ">=", input.dateFrom]);
+      if (input.dateTo) domain.push(["date_to", "<=", input.dateTo]);
+      if (input.employeeId) domain.push(["employee_id", "=", input.employeeId]);
+      return safeRead(
+        () => odooSearchRead(
           "hr.payslip",
           domain,
           ["name", "employee_id", "date_from", "date_to", "state", "net_wage"],
           { limit: input.limit, order: "date_from desc" },
-        );
-      } catch (err) {
-        handleOdooError(err, "getPayslips");
-      }
+        ),
+        "getPayslips"
+      );
     }),
 
   /** Create a leave (time-off) request for an employee. */
@@ -490,26 +449,14 @@ export const odooRouter = router({
   // ── Project Module ───────────────────────────────────────────────────────────
   getProjects: protectedProcedure
     .input(z.object({ limit: z.number().int().min(1).max(200).default(50) }))
-    .query(async ({ input }) => {
-      try {
-        return await getProjects(input.limit);
-      } catch (err) {
-        handleOdooError(err, "getProjects");
-      }
-    }),
+    .query(async ({ input }) => safeRead(() => getProjects(input.limit), "getProjects")),
 
   getProjectTasks: protectedProcedure
     .input(z.object({
       projectId: z.number().int().positive().optional(),
       limit: z.number().int().min(1).max(500).default(100),
     }))
-    .query(async ({ input }) => {
-      try {
-        return await getProjectTasks(input.projectId, input.limit);
-      } catch (err) {
-        handleOdooError(err, "getProjectTasks");
-      }
-    }),
+    .query(async ({ input }) => safeRead(() => getProjectTasks(input.projectId, input.limit), "getProjectTasks")),
 
   createProject: protectedProcedure
     .input(z.object({
@@ -557,6 +504,170 @@ export const odooRouter = router({
       }
     }),
 
+  // ── AI Data Entry ────────────────────────────────────────────────────────────
+  /**
+   * AI-powered natural language data entry.
+   * Step 1 (confirmed=false): LLM parses instruction → returns parsed op + summary.
+   * Step 2 (confirmed=true):  Execute the confirmed operation in Odoo.
+   */
+  aiDataEntry: protectedProcedure
+    .input(z.object({
+      instruction: z.string().min(1).max(2000),
+      confirmed: z.boolean().default(false),
+      parsedOperation: z.string().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const { invokeLLM } = await import("../_core/llm");
+
+      // ── Step 1: Parse ────────────────────────────────────────────────────────
+      if (!input.confirmed) {
+        const [suppliers, products, crmStages, projects] = await Promise.all([
+          safeRead(() => getSuppliers(50), "aiDataEntry:suppliers"),
+          safeRead(() => getProducts(50), "aiDataEntry:products"),
+          safeRead(() => getCrmStages(), "aiDataEntry:crmStages"),
+          safeRead(() => getProjects(30), "aiDataEntry:projects"),
+        ]);
+
+        const ctx = [
+          suppliers.length ? `Suppliers (id: name): ${suppliers.slice(0, 20).map(s => `${s.id}: ${s.name}`).join(", ")}` : "",
+          products.length ? `Products (id: name, price): ${products.slice(0, 20).map(p => `${p.id}: ${p.name} @ ${p.list_price}`).join(", ")}` : "",
+          crmStages.length ? `CRM stages (id: name): ${crmStages.map(s => `${s.id}: ${s.name}`).join(", ")}` : "",
+          projects.length ? `Projects (id: name): ${projects.slice(0, 10).map(p => `${p.id}: ${p.name}`).join(", ")}` : "",
+        ].filter(Boolean).join("\n");
+
+        const systemPrompt = `You are NEO, the Golden Team AI assistant. Parse the user's Odoo ERP data entry instruction and return a JSON object.
+
+Supported operations:
+- CREATE_PURCHASE_ORDER: partnerId, orderLines [{productId,qty,priceUnit,name?}], notes?
+- CONFIRM_PURCHASE_ORDER: orderId
+- CREATE_INVOICE: moveType ("in_invoice"|"out_invoice"), partnerId, invoiceLines [{name,quantity?,priceUnit,accountId?}], invoiceDate?, ref?
+- POST_INVOICE: invoiceId
+- REGISTER_PAYMENT: invoiceId, amount, paymentDate?, memo?
+- CREATE_CRM_LEAD: name, partnerId?, expectedRevenue?, phone?, emailFrom?, description?
+- UPDATE_CRM_LEAD_STAGE: leadId, stageId
+- CREATE_PROJECT: name, partnerId?, dateStart?, dateEnd?, description?
+- CREATE_TASK: name, projectId, deadline?, priority ("0"|"1")?, description?
+- CREATE_LEAVE_REQUEST: employeeId, holidayStatusId, dateFrom, dateTo, name?
+- UNKNOWN: if no operation matches
+
+Live Odoo context:\n${ctx || "(Odoo offline)"}
+
+Return ONLY valid JSON:
+{"operation":"...","fields":{...},"summary":"one sentence summary","missingFields":["..."]}
+If missingFields non-empty, set summary to a clarifying question. Respond in the user's language.`;
+
+        const llmResp = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: input.instruction },
+          ],
+          response_format: { type: "json_object" } as { type: "json_object" },
+        });
+
+        const rawMsg = llmResp.choices?.[0]?.message?.content;
+        const raw = typeof rawMsg === "string" ? rawMsg : "{}";
+        let parsed: Record<string, unknown>;
+        try { parsed = JSON.parse(raw); }
+        catch { parsed = { operation: "UNKNOWN", fields: {}, summary: "Could not parse instruction.", missingFields: [] }; }
+
+        return {
+          stage: "parsed" as const,
+          operation: parsed.operation as string,
+          fields: parsed.fields as Record<string, unknown>,
+          summary: parsed.summary as string,
+          missingFields: (parsed.missingFields as string[]) ?? [],
+          parsedJson: raw,
+        };
+      }
+
+      // ── Step 2: Execute ──────────────────────────────────────────────────────
+      if (!input.parsedOperation) throw new TRPCError({ code: "BAD_REQUEST", message: "parsedOperation required" });
+      let op: { operation: string; fields: Record<string, unknown> };
+      try { op = JSON.parse(input.parsedOperation); }
+      catch { throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid parsedOperation JSON" }); }
+
+      const f = op.fields;
+      switch (op.operation) {
+        case "CREATE_PURCHASE_ORDER": {
+          const id = await odooCreate("purchase.order", {
+            partner_id: f.partnerId, notes: f.notes ?? "",
+            order_line: (f.orderLines as Array<{productId:number;qty:number;priceUnit:number;name?:string}>).map(l => [0,0,{product_id:l.productId,product_qty:l.qty,price_unit:l.priceUnit,name:l.name??""}]),
+          });
+          return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Purchase Order created (ID: ${id})` } };
+        }
+        case "CONFIRM_PURCHASE_ORDER": {
+          await odooAction("purchase.order", "button_confirm", [f.orderId as number]);
+          return { stage: "executed" as const, operation: op.operation, result: { success: true, id: f.orderId, message: `PO #${f.orderId} confirmed` } };
+        }
+        case "CREATE_INVOICE": {
+          const id = await odooCreate("account.move", {
+            move_type: f.moveType, partner_id: f.partnerId,
+            ...(f.invoiceDate ? { invoice_date: f.invoiceDate } : {}),
+            ...(f.ref ? { ref: f.ref } : {}),
+            invoice_line_ids: (f.invoiceLines as Array<{name:string;quantity?:number;priceUnit:number;accountId?:number}>).map(l => [0,0,{name:l.name,quantity:l.quantity??1,price_unit:l.priceUnit,...(l.accountId?{account_id:l.accountId}:{})}]),
+          });
+          return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Invoice created (ID: ${id})` } };
+        }
+        case "POST_INVOICE": {
+          await odooAction("account.move", "action_post", [f.invoiceId as number]);
+          return { stage: "executed" as const, operation: op.operation, result: { success: true, id: f.invoiceId, message: `Invoice #${f.invoiceId} posted` } };
+        }
+        case "REGISTER_PAYMENT": {
+          const [inv] = await odooSearchRead<{partner_id:[number,string];move_type:string}>("account.move",[["id","=",f.invoiceId]],["partner_id","move_type"],{limit:1});
+          if (!inv) throw new TRPCError({ code: "NOT_FOUND", message: `Invoice ${f.invoiceId} not found` });
+          const pid = await odooCreate("account.payment", {
+            payment_type: inv.move_type==="in_invoice"?"outbound":"inbound",
+            partner_type: inv.move_type==="in_invoice"?"supplier":"customer",
+            partner_id: inv.partner_id[0], amount: f.amount,
+            ...(f.paymentDate?{date:f.paymentDate}:{}), ...(f.memo?{memo:f.memo}:{}),
+          });
+          await odooAction("account.payment","action_post",[pid]);
+          return { stage: "executed" as const, operation: op.operation, result: { success: true, id: pid, message: `Payment registered (ID: ${pid})` } };
+        }
+        case "CREATE_CRM_LEAD": {
+          const id = await odooCreate("crm.lead", {
+            name: f.name, type: "opportunity",
+            ...(f.partnerId?{partner_id:f.partnerId}:{}),
+            ...(f.expectedRevenue!==undefined?{expected_revenue:f.expectedRevenue}:{}),
+            ...(f.phone?{phone:f.phone}:{}), ...(f.emailFrom?{email_from:f.emailFrom}:{}),
+            ...(f.description?{description:f.description}:{}),
+          });
+          return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `CRM opportunity created (ID: ${id})` } };
+        }
+        case "UPDATE_CRM_LEAD_STAGE": {
+          await odooWrite("crm.lead",[f.leadId as number],{stage_id:f.stageId});
+          return { stage: "executed" as const, operation: op.operation, result: { success: true, id: f.leadId, message: `Lead #${f.leadId} moved to stage ${f.stageId}` } };
+        }
+        case "CREATE_PROJECT": {
+          const id = await odooCreate("project.project", {
+            name: f.name,
+            ...(f.partnerId?{partner_id:f.partnerId}:{}),
+            ...(f.dateStart?{date_start:f.dateStart}:{}), ...(f.dateEnd?{date:f.dateEnd}:{}),
+            ...(f.description?{description:f.description}:{}),
+          });
+          return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Project created (ID: ${id})` } };
+        }
+        case "CREATE_TASK": {
+          const id = await odooCreate("project.task", {
+            name: f.name, project_id: f.projectId, priority: f.priority??"0",
+            ...(f.deadline?{date_deadline:f.deadline}:{}),
+            ...(f.description?{description:f.description}:{}),
+          });
+          return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Task created (ID: ${id})` } };
+        }
+        case "CREATE_LEAVE_REQUEST": {
+          const id = await odooCreate("hr.leave", {
+            employee_id: f.employeeId, holiday_status_id: f.holidayStatusId,
+            date_from: f.dateFrom, date_to: f.dateTo,
+            ...(f.name?{name:f.name}:{}),
+          });
+          return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Leave request created (ID: ${id})` } };
+        }
+        default:
+          throw new TRPCError({ code: "BAD_REQUEST", message: `Unsupported operation: ${op.operation}` });
+      }
+    }),
+
   // ── Partners (shared across modules) ────────────────────────────────────────
   getPartners: protectedProcedure
     .input(z.object({
@@ -565,16 +676,15 @@ export const odooRouter = router({
       customerOnly: z.boolean().default(false),
     }))
     .query(async ({ input }) => {
-      try {
-        const domain: unknown[][] = [];
-        if (input.supplierOnly) domain.push(["supplier_rank", ">", 0]);
-        if (input.customerOnly) domain.push(["customer_rank", ">", 0]);
-        return await odooSearchRead("res.partner", domain, [
+      const domain: unknown[][] = [];
+      if (input.supplierOnly) domain.push(["supplier_rank", ">", 0]);
+      if (input.customerOnly) domain.push(["customer_rank", ">", 0]);
+      return safeRead(
+        () => odooSearchRead("res.partner", domain, [
           "name", "email", "phone", "mobile", "street", "city",
           "country_id", "supplier_rank", "customer_rank", "vat", "website",
-        ], { limit: input.limit, order: "name asc" });
-      } catch (err) {
-        handleOdooError(err, "getPartners");
-      }
+        ], { limit: input.limit, order: "name asc" }),
+        "getPartners"
+      );
     }),
 });

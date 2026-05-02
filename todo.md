@@ -436,3 +436,10 @@
 - [x] Seed super admin: ragab20179@gmail.com / GoldenTeam@2026 (role: admin)
 - [x] Rewrite Login.tsx with email+password form wired to auth.emailLogin
 - [x] Fix getUserByEmail to prefer local account when multiple users share same email
+
+## Phase 23 — Odoo Circuit Breaker Fix + AI Data Entry + Integration Report
+- [x] Fix circuit breaker: all read procedures return empty array + offline flag (not throw) when breaker open
+- [x] Generate full Odoo integration report (Markdown + PDF)
+- [x] Build AI-powered Odoo data entry page: NEO chat → parse order → confirm → execute into Odoo
+- [x] Add odoo.aiDataEntry tRPC procedure (LLM parses natural language → calls Odoo mutations)
+- [x] Register /portal/odoo/ai-entry route in App.tsx + NEO AI Entry button on OdooDashboard
