@@ -454,3 +454,14 @@
 - [x] Add Dockerfile + docker-compose for bridge deployment
 - [x] Write DEPLOYMENT.md (Railway/Render/Docker/Python options)
 - [x] All 301 tests passing, 0 TypeScript errors
+
+## Phase 25 — Odoo AI Entries Audit Log (COMPLETE)
+- [x] Add odoo_ai_entries table to Drizzle schema
+- [x] Create table in production DB via direct SQL (migration conflict bypass)
+- [x] Add logOdooAiEntry, updateOdooAiEntry, getOdooAiEntries, getOdooAiEntryStats, clearOdooAiEntries DB helpers
+- [x] Add getAiEntries, getAiEntryStats, clearAiEntries tRPC procedures to odoo router
+- [x] Wire auto-logging (logOdooAiEntry + updateOdooAiEntry) into aiDataEntry execute step
+- [x] Build OdooAuditLog.tsx page: KPI cards, top operations, filters, paginated table, detail dialog, clear all
+- [x] Add Audit Log button to OdooDashboard header
+- [x] Register /portal/odoo/audit-log route in App.tsx
+- [x] 301 tests passing, 0 TypeScript errors

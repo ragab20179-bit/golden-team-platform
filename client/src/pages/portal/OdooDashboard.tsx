@@ -17,7 +17,7 @@ import {
   RefreshCw, ExternalLink, Search, TrendingUp,
   AlertCircle, CheckCircle2, Clock, XCircle,
   Building2, Phone, Mail, MapPin, BarChart3,
-  Wifi, WifiOff, Sparkles,
+  Wifi, WifiOff, Sparkles, Activity,
 } from "lucide-react";
 
 
@@ -628,6 +628,13 @@ export default function OdooDashboard() {
               size="sm"
               className="bg-amber-500 hover:bg-amber-400 text-[#05080F] font-semibold gap-2 shadow-lg shadow-amber-500/20">
               <Sparkles className="w-3.5 h-3.5" /> NEO AI Entry
+            </Button>
+            <Button
+              onClick={() => navigate("/portal/odoo/audit-log")}
+              variant="outline"
+              size="sm"
+              className="border-white/20 text-white/60 hover:text-amber-400 hover:border-amber-400/40 bg-transparent gap-2">
+              <Activity className="w-3.5 h-3.5" /> Audit Log
             </Button>
             <a href="https://goldenteam1.odoo.com" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" size="sm"

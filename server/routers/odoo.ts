@@ -516,7 +516,7 @@ export const odooRouter = router({
       confirmed: z.boolean().default(false),
       parsedOperation: z.string().optional(),
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       const { invokeLLM } = await import("../_core/llm");
 
       // ── Step 1: Parse ────────────────────────────────────────────────────────
@@ -586,85 +586,139 @@ If missingFields non-empty, set summary to a clarifying question. Respond in the
       try { op = JSON.parse(input.parsedOperation); }
       catch { throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid parsedOperation JSON" }); }
 
+      const { logOdooAiEntry, updateOdooAiEntry } = await import("../db/odooAuditLog");
+      const auditStart = Date.now();
+      let auditId: number | null = null;
+      try {
+        auditId = await logOdooAiEntry({
+          userId: ctx.user.id,
+          userName: ctx.user.name ?? null,
+          userEmail: ctx.user.email ?? null,
+          userPrompt: input.instruction,
+          operation: op.operation,
+          status: "pending",
+          parsedPayload: op.fields as Record<string, unknown>,
+          source: "builtin",
+        });
+      } catch (logErr) {
+        console.warn("[AuditLog] Failed to create audit entry:", logErr);
+      }
+
       const f = op.fields;
-      switch (op.operation) {
-        case "CREATE_PURCHASE_ORDER": {
-          const id = await odooCreate("purchase.order", {
-            partner_id: f.partnerId, notes: f.notes ?? "",
-            order_line: (f.orderLines as Array<{productId:number;qty:number;priceUnit:number;name?:string}>).map(l => [0,0,{product_id:l.productId,product_qty:l.qty,price_unit:l.priceUnit,name:l.name??""}]),
+
+      // Helper: update audit entry after execution
+      async function auditSuccess(recordId: number | unknown, recordName?: string) {
+        if (!auditId) return;
+        try {
+          await updateOdooAiEntry(auditId, {
+            status: "success",
+            odooRecordId: typeof recordId === "number" ? recordId : undefined,
+            odooRecordName: recordName,
+            executionMs: Date.now() - auditStart,
           });
-          return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Purchase Order created (ID: ${id})` } };
+        } catch (e) { console.warn("[AuditLog] update failed:", e); }
+      }
+      async function auditFail(errorMessage: string) {
+        if (!auditId) return;
+        try {
+          await updateOdooAiEntry(auditId, { status: "failed", errorMessage, executionMs: Date.now() - auditStart });
+        } catch (e) { console.warn("[AuditLog] update failed:", e); }
+      }
+
+      try {
+        switch (op.operation) {
+          case "CREATE_PURCHASE_ORDER": {
+            const id = await odooCreate("purchase.order", {
+              partner_id: f.partnerId, notes: f.notes ?? "",
+              order_line: (f.orderLines as Array<{productId:number;qty:number;priceUnit:number;name?:string}>).map(l => [0,0,{product_id:l.productId,product_qty:l.qty,price_unit:l.priceUnit,name:l.name??""}]),
+            });
+            await auditSuccess(id, `Purchase Order #${id}`);
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Purchase Order created (ID: ${id})` } };
+          }
+          case "CONFIRM_PURCHASE_ORDER": {
+            await odooAction("purchase.order", "button_confirm", [f.orderId as number]);
+            await auditSuccess(f.orderId, `PO #${f.orderId}`);
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id: f.orderId, message: `PO #${f.orderId} confirmed` } };
+          }
+          case "CREATE_INVOICE": {
+            const id = await odooCreate("account.move", {
+              move_type: f.moveType, partner_id: f.partnerId,
+              ...(f.invoiceDate ? { invoice_date: f.invoiceDate } : {}),
+              ...(f.ref ? { ref: f.ref } : {}),
+              invoice_line_ids: (f.invoiceLines as Array<{name:string;quantity?:number;priceUnit:number;accountId?:number}>).map(l => [0,0,{name:l.name,quantity:l.quantity??1,price_unit:l.priceUnit,...(l.accountId?{account_id:l.accountId}:{})}]),
+            });
+            await auditSuccess(id, `Invoice #${id}`);
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Invoice created (ID: ${id})` } };
+          }
+          case "POST_INVOICE": {
+            await odooAction("account.move", "action_post", [f.invoiceId as number]);
+            await auditSuccess(f.invoiceId, `Invoice #${f.invoiceId}`);
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id: f.invoiceId, message: `Invoice #${f.invoiceId} posted` } };
+          }
+          case "REGISTER_PAYMENT": {
+            const [inv] = await odooSearchRead<{partner_id:[number,string];move_type:string}>("account.move",[["id","=",f.invoiceId]],["partner_id","move_type"],{limit:1});
+            if (!inv) throw new TRPCError({ code: "NOT_FOUND", message: `Invoice ${f.invoiceId} not found` });
+            const pid = await odooCreate("account.payment", {
+              payment_type: inv.move_type==="in_invoice"?"outbound":"inbound",
+              partner_type: inv.move_type==="in_invoice"?"supplier":"customer",
+              partner_id: inv.partner_id[0], amount: f.amount,
+              ...(f.paymentDate?{date:f.paymentDate}:{}), ...(f.memo?{memo:f.memo}:{}),
+            });
+            await odooAction("account.payment","action_post",[pid]);
+            await auditSuccess(pid, `Payment #${pid}`);
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id: pid, message: `Payment registered (ID: ${pid})` } };
+          }
+          case "CREATE_CRM_LEAD": {
+            const id = await odooCreate("crm.lead", {
+              name: f.name, type: "opportunity",
+              ...(f.partnerId?{partner_id:f.partnerId}:{}),
+              ...(f.expectedRevenue!==undefined?{expected_revenue:f.expectedRevenue}:{}),
+              ...(f.phone?{phone:f.phone}:{}), ...(f.emailFrom?{email_from:f.emailFrom}:{}),
+              ...(f.description?{description:f.description}:{}),
+            });
+            await auditSuccess(id, String(f.name));
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `CRM opportunity created (ID: ${id})` } };
+          }
+          case "UPDATE_CRM_LEAD_STAGE": {
+            await odooWrite("crm.lead",[f.leadId as number],{stage_id:f.stageId});
+            await auditSuccess(f.leadId, `Lead #${f.leadId}`);
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id: f.leadId, message: `Lead #${f.leadId} moved to stage ${f.stageId}` } };
+          }
+          case "CREATE_PROJECT": {
+            const id = await odooCreate("project.project", {
+              name: f.name,
+              ...(f.partnerId?{partner_id:f.partnerId}:{}),
+              ...(f.dateStart?{date_start:f.dateStart}:{}), ...(f.dateEnd?{date:f.dateEnd}:{}),
+              ...(f.description?{description:f.description}:{}),
+            });
+            await auditSuccess(id, String(f.name));
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Project created (ID: ${id})` } };
+          }
+          case "CREATE_TASK": {
+            const id = await odooCreate("project.task", {
+              name: f.name, project_id: f.projectId, priority: f.priority??"0",
+              ...(f.deadline?{date_deadline:f.deadline}:{}),
+              ...(f.description?{description:f.description}:{}),
+            });
+            await auditSuccess(id, String(f.name));
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Task created (ID: ${id})` } };
+          }
+          case "CREATE_LEAVE_REQUEST": {
+            const id = await odooCreate("hr.leave", {
+              employee_id: f.employeeId, holiday_status_id: f.holidayStatusId,
+              date_from: f.dateFrom, date_to: f.dateTo,
+              ...(f.name?{name:f.name}:{}),
+            });
+            await auditSuccess(id, `Leave #${id}`);
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Leave request created (ID: ${id})` } };
+          }
+          default:
+            throw new TRPCError({ code: "BAD_REQUEST", message: `Unsupported operation: ${op.operation}` });
         }
-        case "CONFIRM_PURCHASE_ORDER": {
-          await odooAction("purchase.order", "button_confirm", [f.orderId as number]);
-          return { stage: "executed" as const, operation: op.operation, result: { success: true, id: f.orderId, message: `PO #${f.orderId} confirmed` } };
-        }
-        case "CREATE_INVOICE": {
-          const id = await odooCreate("account.move", {
-            move_type: f.moveType, partner_id: f.partnerId,
-            ...(f.invoiceDate ? { invoice_date: f.invoiceDate } : {}),
-            ...(f.ref ? { ref: f.ref } : {}),
-            invoice_line_ids: (f.invoiceLines as Array<{name:string;quantity?:number;priceUnit:number;accountId?:number}>).map(l => [0,0,{name:l.name,quantity:l.quantity??1,price_unit:l.priceUnit,...(l.accountId?{account_id:l.accountId}:{})}]),
-          });
-          return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Invoice created (ID: ${id})` } };
-        }
-        case "POST_INVOICE": {
-          await odooAction("account.move", "action_post", [f.invoiceId as number]);
-          return { stage: "executed" as const, operation: op.operation, result: { success: true, id: f.invoiceId, message: `Invoice #${f.invoiceId} posted` } };
-        }
-        case "REGISTER_PAYMENT": {
-          const [inv] = await odooSearchRead<{partner_id:[number,string];move_type:string}>("account.move",[["id","=",f.invoiceId]],["partner_id","move_type"],{limit:1});
-          if (!inv) throw new TRPCError({ code: "NOT_FOUND", message: `Invoice ${f.invoiceId} not found` });
-          const pid = await odooCreate("account.payment", {
-            payment_type: inv.move_type==="in_invoice"?"outbound":"inbound",
-            partner_type: inv.move_type==="in_invoice"?"supplier":"customer",
-            partner_id: inv.partner_id[0], amount: f.amount,
-            ...(f.paymentDate?{date:f.paymentDate}:{}), ...(f.memo?{memo:f.memo}:{}),
-          });
-          await odooAction("account.payment","action_post",[pid]);
-          return { stage: "executed" as const, operation: op.operation, result: { success: true, id: pid, message: `Payment registered (ID: ${pid})` } };
-        }
-        case "CREATE_CRM_LEAD": {
-          const id = await odooCreate("crm.lead", {
-            name: f.name, type: "opportunity",
-            ...(f.partnerId?{partner_id:f.partnerId}:{}),
-            ...(f.expectedRevenue!==undefined?{expected_revenue:f.expectedRevenue}:{}),
-            ...(f.phone?{phone:f.phone}:{}), ...(f.emailFrom?{email_from:f.emailFrom}:{}),
-            ...(f.description?{description:f.description}:{}),
-          });
-          return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `CRM opportunity created (ID: ${id})` } };
-        }
-        case "UPDATE_CRM_LEAD_STAGE": {
-          await odooWrite("crm.lead",[f.leadId as number],{stage_id:f.stageId});
-          return { stage: "executed" as const, operation: op.operation, result: { success: true, id: f.leadId, message: `Lead #${f.leadId} moved to stage ${f.stageId}` } };
-        }
-        case "CREATE_PROJECT": {
-          const id = await odooCreate("project.project", {
-            name: f.name,
-            ...(f.partnerId?{partner_id:f.partnerId}:{}),
-            ...(f.dateStart?{date_start:f.dateStart}:{}), ...(f.dateEnd?{date:f.dateEnd}:{}),
-            ...(f.description?{description:f.description}:{}),
-          });
-          return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Project created (ID: ${id})` } };
-        }
-        case "CREATE_TASK": {
-          const id = await odooCreate("project.task", {
-            name: f.name, project_id: f.projectId, priority: f.priority??"0",
-            ...(f.deadline?{date_deadline:f.deadline}:{}),
-            ...(f.description?{description:f.description}:{}),
-          });
-          return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Task created (ID: ${id})` } };
-        }
-        case "CREATE_LEAVE_REQUEST": {
-          const id = await odooCreate("hr.leave", {
-            employee_id: f.employeeId, holiday_status_id: f.holidayStatusId,
-            date_from: f.dateFrom, date_to: f.dateTo,
-            ...(f.name?{name:f.name}:{}),
-          });
-          return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Leave request created (ID: ${id})` } };
-        }
-        default:
-          throw new TRPCError({ code: "BAD_REQUEST", message: `Unsupported operation: ${op.operation}` });
+      } catch (execErr) {
+        const msg = execErr instanceof Error ? execErr.message : String(execErr);
+        await auditFail(msg);
+        throw execErr;
       }
     }),  // ── NEO FastAPI Bridge Chat ───────────────────────────────────────────────────────
   /**
@@ -790,6 +844,78 @@ If missingFields non-empty, set summary to a clarifying question. Respond in the
       } catch {
         return { configured: true, status: "unreachable" as const };
       }
+    }),
+
+  // ── Audit Log — NEO AI Entry history ─────────────────────────────────────────
+  /**
+   * Get paginated audit log entries.
+   * Admin sees all entries; regular users see only their own.
+   */
+  getAiEntries: protectedProcedure
+    .input(z.object({
+      limit: z.number().int().min(1).max(200).default(50),
+      offset: z.number().int().min(0).default(0),
+      status: z.enum(["success", "failed", "pending", "rejected"]).optional(),
+      operation: z.string().optional(),
+      source: z.enum(["builtin", "neo_bridge"]).optional(),
+      sinceHours: z.number().int().min(1).max(720).optional(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { getOdooAiEntries, countOdooAiEntries } = await import("../db/odooAuditLog");
+      const isAdmin = ctx.user.role === "admin";
+      const since = input.sinceHours ? new Date(Date.now() - input.sinceHours * 3_600_000) : undefined;
+      const opts = {
+        limit: input.limit,
+        offset: input.offset,
+        status: input.status,
+        operation: input.operation,
+        source: input.source,
+        since,
+        userId: isAdmin ? undefined : ctx.user.id,
+      };
+      const [entries, total] = await Promise.all([
+        getOdooAiEntries(opts),
+        countOdooAiEntries(opts),
+      ]);
+      return { entries, total };
+    }),
+
+  /**
+   * Get KPI stats for the audit log dashboard (totals, success rate, top operations).
+   */
+  getAiEntryStats: protectedProcedure
+    .query(async () => {
+      const { getOdooAiEntryStats } = await import("../db/odooAuditLog");
+      return getOdooAiEntryStats();
+    }),
+
+  /**
+   * Get a single audit log entry by ID.
+   * Admin can access any entry; users can only access their own.
+   */
+  getAiEntryById: protectedProcedure
+    .input(z.object({ id: z.number().int() }))
+    .query(async ({ ctx, input }) => {
+      const { getOdooAiEntryById } = await import("../db/odooAuditLog");
+      const entry = await getOdooAiEntryById(input.id);
+      if (!entry) throw new TRPCError({ code: "NOT_FOUND", message: "Audit entry not found" });
+      if (ctx.user.role !== "admin" && entry.userId !== ctx.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Access denied" });
+      }
+      return entry;
+    }),
+
+  /**
+   * Admin only: permanently clear all audit log entries.
+   */
+  clearAiEntries: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Admin only" });
+      }
+      const { clearOdooAiEntries } = await import("../db/odooAuditLog");
+      const deleted = await clearOdooAiEntries();
+      return { deleted };
     }),
 
   // ── Partners (shared across modules) ───────────────────────────────────────────

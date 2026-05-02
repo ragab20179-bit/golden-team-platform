@@ -527,3 +527,39 @@ export const supplierInvites = mysqlTable("supplier_invites", {
 });
 export type SupplierInvite = typeof supplierInvites.$inferSelect;
 export type InsertSupplierInvite = typeof supplierInvites.$inferInsert;
+
+// ─── Odoo AI Entries — Audit log for every NEO-executed Odoo action ──────────
+/**
+ * Append-only audit trail for all AI-driven Odoo data entry operations.
+ * Records every parse→confirm→execute cycle: who triggered it, what was done,
+ * which Odoo record was created/updated, and whether it succeeded.
+ * Rows are NEVER updated or deleted — compliance and ISO 9001 audit requirement.
+ */
+export const odooAiEntries = mysqlTable("odoo_ai_entries", {
+  id: int("id").autoincrement().primaryKey(),
+  // Who triggered the action
+  userId: int("userId").notNull(),
+  userName: varchar("userName", { length: 255 }),
+  userEmail: varchar("userEmail", { length: 320 }),
+  // What was requested (raw natural language)
+  userPrompt: text("userPrompt").notNull(),
+  // Parsed operation details
+  operation: varchar("operation", { length: 64 }).notNull(), // e.g. CREATE_PURCHASE_ORDER
+  odooModel: varchar("odooModel", { length: 128 }),          // e.g. purchase.order
+  odooRecordId: int("odooRecordId"),                         // Odoo record ID if created
+  odooRecordName: varchar("odooRecordName", { length: 255 }),// Human-readable name
+  // Execution result
+  status: mysqlEnum("status", ["success", "failed", "pending", "rejected"]).notNull().default("pending"),
+  errorMessage: text("errorMessage"),
+  // Full payload snapshot for audit
+  parsedPayload: json("parsedPayload"),   // The structured data sent to Odoo
+  odooResponse: json("odooResponse"),    // Raw Odoo XML-RPC response
+  // Source: which engine executed it
+  source: mysqlEnum("source", ["builtin", "neo_bridge"]).notNull().default("builtin"),
+  // Timing
+  executionMs: int("executionMs"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type OdooAiEntry = typeof odooAiEntries.$inferSelect;
+export type InsertOdooAiEntry = typeof odooAiEntries.$inferInsert;
