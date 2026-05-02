@@ -421,3 +421,10 @@
 - [x] Fix Manus OAuth callback to parse returnPath from state and redirect to /portal
 - [x] Fix Login.tsx to pass /portal as returnPath to Manus OAuth URL
 - [x] Verify 0 TypeScript errors, 297/297 tests passing
+
+## 2026-05-02 — Odoo Live Connection
+- [x] Test live connection to goldenteam1.odoo.com (DB: golden-team-1)
+- [x] Store ODOO_URL, ODOO_DB, ODOO_API_KEY, ODOO_USERNAME as secrets
+- [x] Add 12 missing Odoo procedures (getHealth, getEmployees, getPayslips, getLeaves, createLeave, getAnalyticLines, getSalesOrders, createSalesOrder, confirmPurchaseOrder, validateStockPicking, createInvoice, postInvoice, registerPayment, updateCrmLeadStage)
+- [x] Add Odoo connection health indicator to OdooDashboard (live badge + offline/degraded banners)
+- [x] Add env validation test for ODOO_URL and ODOO_DB

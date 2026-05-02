@@ -16,6 +16,7 @@ import {
   RefreshCw, ExternalLink, Search, TrendingUp,
   AlertCircle, CheckCircle2, Clock, XCircle,
   Building2, Phone, Mail, MapPin, BarChart3,
+  Wifi, WifiOff,
 } from "lucide-react";
 
 
@@ -584,6 +585,16 @@ const TABS: { id: OdooTab; label: string; icon: React.ElementType }[] = [
 export default function OdooDashboard() {
   const [activeTab, setActiveTab] = useState<OdooTab>("overview");
 
+  // ── Connection health — polls every 60 s ──────────────────────────────────
+  const { data: health } = trpc.odoo.getHealth.useQuery(undefined, {
+    refetchInterval: 60_000,
+    retry: false,
+  });
+
+  const isConnected = health?.status === "connected";
+  const isOffline   = health?.status === "offline";
+  const isDegraded  = health?.status === "degraded";
+
   return (
     <PortalLayout title="Odoo Integration">
       <div className="space-y-6">
@@ -594,16 +605,44 @@ export default function OdooDashboard() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-white">Odoo Integration</h1>
-            <p className="text-sm text-white/50">Live sync with goldenteam.odoo.com</p>
+            <p className="text-sm text-white/50">Live sync with goldenteam1.odoo.com</p>
           </div>
-          <a href="https://goldenteam.odoo.com" target="_blank" rel="noopener noreferrer"
-            className="ml-auto">
-            <Button variant="outline" size="sm"
-              className="border-white/20 text-white/60 hover:text-white bg-transparent gap-2">
-              <ExternalLink className="w-3.5 h-3.5" /> Open Odoo
-            </Button>
-          </a>
+          <div className="ml-auto flex items-center gap-2">
+            {/* Live connection health badge */}
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
+              !health
+                ? "text-white/40 border-white/20"
+                : isConnected
+                  ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/10"
+                  : isOffline
+                    ? "text-red-400 border-red-500/30 bg-red-500/10"
+                    : "text-amber-400 border-amber-500/30 bg-amber-500/10"
+            }`}>
+              {isOffline ? <WifiOff className="w-3.5 h-3.5" /> : <Wifi className="w-3.5 h-3.5" />}
+              {!health ? "Checking..." : isConnected ? "Odoo Connected" : isOffline ? "Odoo Offline" : "Odoo Degraded"}
+            </span>
+            <a href="https://goldenteam1.odoo.com" target="_blank" rel="noopener noreferrer">
+              <Button variant="outline" size="sm"
+                className="border-white/20 text-white/60 hover:text-white bg-transparent gap-2">
+                <ExternalLink className="w-3.5 h-3.5" /> Open Odoo
+              </Button>
+            </a>
+          </div>
         </div>
+
+        {/* Stale data warning banners */}
+        {isOffline && (
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+            <WifiOff className="w-4 h-4 shrink-0" />
+            <span>Odoo connection is currently unavailable. Data shown may be stale or cached. The system will reconnect automatically.</span>
+          </div>
+        )}
+        {isDegraded && (
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm">
+            <Wifi className="w-4 h-4 shrink-0" />
+            <span>Odoo connection is degraded. Some data may be served from cache. Retrying automatically.</span>
+          </div>
+        )}
 
         {/* Tab bar */}
         <div className="flex gap-1 p-1 bg-white/5 rounded-xl border border-white/10 overflow-x-auto">
