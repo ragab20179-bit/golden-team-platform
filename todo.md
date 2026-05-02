@@ -428,3 +428,11 @@
 - [x] Add 12 missing Odoo procedures (getHealth, getEmployees, getPayslips, getLeaves, createLeave, getAnalyticLines, getSalesOrders, createSalesOrder, confirmPurchaseOrder, validateStockPicking, createInvoice, postInvoice, registerPayment, updateCrmLeadStage)
 - [x] Add Odoo connection health indicator to OdooDashboard (live badge + offline/degraded banners)
 - [x] Add env validation test for ODOO_URL and ODOO_DB
+
+## Email/Password Auth (Phase 22)
+- [x] Add passwordHash column to users table (ALTER TABLE)
+- [x] Add getUserByEmail() to db.ts (prefers local account with passwordHash)
+- [x] Add auth.emailLogin tRPC procedure with bcrypt verification + session cookie
+- [x] Seed super admin: ragab20179@gmail.com / GoldenTeam@2026 (role: admin)
+- [x] Rewrite Login.tsx with email+password form wired to auth.emailLogin
+- [x] Fix getUserByEmail to prefer local account when multiple users share same email

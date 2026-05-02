@@ -1,8 +1,11 @@
-import { COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+import bcrypt from "bcryptjs";
+import { sdk } from "./_core/sdk";
 import { vaultRouter } from "./routers/vault";
 import { universalUploadRouter } from "./routers/universalUpload";
 import { modulesRouter } from "./routers/modules";
@@ -21,6 +24,8 @@ import {
   getAstraPolicyRules,
   upsertAstraPolicyRule,
   deleteAstraPolicyRule,
+  getUserByEmail,
+  upsertUser,
 } from "./db";
 
 export const appRouter = router({
@@ -32,6 +37,35 @@ export const appRouter = router({
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
+    /**
+     * Email + password login for local accounts (employees and super admin).
+     * Does NOT require Manus OAuth — credentials stored in DB with bcrypt.
+     */
+    emailLogin: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string().min(1),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const user = await getUserByEmail(input.email);
+        if (!user || !user.passwordHash) {
+          throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid email or password' });
+        }
+        const valid = await bcrypt.compare(input.password, user.passwordHash);
+        if (!valid) {
+          throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid email or password' });
+        }
+        // Update lastSignedIn
+        await upsertUser({ openId: user.openId, lastSignedIn: new Date() });
+        // Issue session cookie
+        const sessionToken = await sdk.createSessionToken(user.openId, {
+          name: user.name || '',
+          expiresInMs: ONE_YEAR_MS,
+        });
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        return { success: true, role: user.role } as const;
+      }),
   }),
 
   // ─── ASTRA AMG — Decision Log ──────────────────────────────────────────────

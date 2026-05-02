@@ -79,6 +79,17 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  // Fetch all users with this email (there may be multiple from different auth methods)
+  const result = await db.select().from(users).where(eq(users.email, email));
+  if (result.length === 0) return undefined;
+  // Prefer the local account (has passwordHash) over OAuth-only accounts
+  const localUser = result.find(u => u.passwordHash !== null && u.passwordHash !== undefined);
+  return localUser ?? result[0];
+}
+
 // ─── ASTRA Decision Log ────────────────────────────────────────────────────────
 
 /** Append a new decision to the immutable audit log. Never updates or deletes. */

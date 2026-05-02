@@ -3,16 +3,20 @@
  * Design: "Neural Depth" — glass morphism login card on deep space background
  *
  * Authentication options:
- *   1. Google Sign-In  → /api/auth/google  (real OAuth 2.0)
- *   2. Manus OAuth     → getLoginUrl()     (Manus platform OAuth)
- *   3. Email/Password  → placeholder (not yet backed by DB — shows toast)
+ *   1. Email + Password → trpc.auth.emailLogin (local DB accounts, bcrypt)
+ *   2. Google Sign-In   → /api/auth/google  (real OAuth 2.0)
+ *   3. Manus OAuth      → getLoginUrl()     (Manus platform OAuth — owner only)
  */
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
-import { Brain, ArrowRight, Shield, Lock } from "lucide-react";
+import { Brain, ArrowRight, Shield, Lock, Mail, KeyRound, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { getLoginUrl } from "@/const";
+import { trpc } from "@/lib/trpc";
 
 const PORTAL_BG =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-hero-corporate-LAR4ea7VBJH3jL9DF5uSJy.webp";
@@ -44,6 +48,33 @@ function GoogleIcon() {
 export default function Login() {
   const [, setLocation] = useLocation();
   const { t } = useLanguage();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const emailLoginMutation = trpc.auth.emailLogin.useMutation({
+    onSuccess: (data) => {
+      // Redirect based on role
+      if (data.role === "admin") {
+        setLocation("/portal");
+      } else {
+        setLocation("/portal");
+      }
+      // Force a page reload so the session cookie is picked up by all components
+      window.location.href = "/portal";
+    },
+    onError: (err) => {
+      setErrorMsg(err.message || t("Invalid email or password", "بريد إلكتروني أو كلمة مرور غير صحيحة"));
+    },
+  });
+
+  const handleEmailLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg("");
+    emailLoginMutation.mutate({ email: email.trim(), password });
+  };
 
   /** Build the Google auth URL with returnPath so the callback redirects back to the portal */
   const googleLoginUrl = `/api/auth/google?returnPath=${encodeURIComponent("/portal")}`;
@@ -121,47 +152,103 @@ export default function Login() {
             </span>
           </div>
 
-          {/* ── Sign-in options ── */}
+          {/* ── Email + Password form ── */}
+          <form onSubmit={handleEmailLogin} className="space-y-4 mb-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-white/60 text-xs font-medium">
+                {t("Email Address", "البريد الإلكتروني")}
+              </Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@goldenteam.sa"
+                  required
+                  className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-blue-500/50 focus:ring-blue-500/20 h-11"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-white/60 text-xs font-medium">
+                {t("Password", "كلمة المرور")}
+              </Label>
+              <div className="relative">
+                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className="pl-9 pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/20 focus:border-blue-500/50 focus:ring-blue-500/20 h-11"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {errorMsg && (
+              <p className="text-red-400 text-xs text-center py-1">{errorMsg}</p>
+            )}
+
+            <Button
+              type="submit"
+              disabled={emailLoginMutation.isPending}
+              className="w-full h-12 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold text-sm border-0 shadow-lg shadow-blue-500/20"
+            >
+              {emailLoginMutation.isPending ? (
+                <><Loader2 className="w-4 h-4 animate-spin mr-2" />{t("Signing in…", "جارٍ تسجيل الدخول…")}</>
+              ) : (
+                <>{t("Sign In", "تسجيل الدخول")} <ArrowRight className="w-4 h-4 ml-2" /></>
+              )}
+            </Button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-4">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-white/25 text-xs">{t("or continue with", "أو تابع باستخدام")}</span>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
+
+          {/* ── OAuth options ── */}
           <div className="space-y-3">
             {/* Google Sign-In */}
             <a href={googleLoginUrl} className="block">
               <Button
                 type="button"
                 variant="outline"
-                className="w-full h-12 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-semibold text-sm flex items-center justify-center gap-3 transition-all duration-200 hover:shadow-md"
+                className="w-full h-11 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-semibold text-sm flex items-center justify-center gap-3 transition-all duration-200 hover:shadow-md"
               >
                 <GoogleIcon />
                 {t("Continue with Google", "المتابعة باستخدام Google")}
               </Button>
             </a>
 
-            {/* Divider */}
-            <div className="flex items-center gap-3 my-2">
-              <div className="flex-1 h-px bg-white/10" />
-              <span className="text-white/25 text-xs">{t("or", "أو")}</span>
-              <div className="flex-1 h-px bg-white/10" />
-            </div>
-
             {/* Manus OAuth */}
             <a href={manusLoginUrl} className="block">
               <Button
                 type="button"
-                className="w-full h-12 bg-blue-600 hover:bg-blue-500 text-white border-0 font-semibold text-sm flex items-center justify-center gap-2"
+                variant="outline"
+                className="w-full h-11 bg-transparent hover:bg-white/5 text-white/60 hover:text-white border border-white/10 font-semibold text-sm flex items-center justify-center gap-2"
               >
                 <Brain className="w-4 h-4" />
                 {t("Continue with Manus", "المتابعة باستخدام Manus")}
-                <ArrowRight className="w-4 h-4" />
               </Button>
             </a>
           </div>
-
-          {/* Info note */}
-          <p className="mt-5 text-center text-xs text-white/25 leading-relaxed">
-            {t(
-              "Sign in with your Golden Team Google Workspace account or your Manus account.",
-              "سجّل الدخول باستخدام حساب Google Workspace الخاص بشركة الفريق الذهبي أو حساب Manus."
-            )}
-          </p>
         </motion.div>
 
         {/* Security note */}
@@ -173,8 +260,8 @@ export default function Login() {
         >
           <Shield className="w-3 h-3" />
           {t(
-            "Secured by ASTRA AMG Governance · JWT + OAuth 2.0",
-            "محمي بحوكمة ASTRA AMG · JWT + OAuth 2.0"
+            "Secured by ASTRA AMG Governance · JWT + bcrypt",
+            "محمي بحوكمة ASTRA AMG · JWT + bcrypt"
           )}
           <Lock className="w-3 h-3" />
         </motion.div>
