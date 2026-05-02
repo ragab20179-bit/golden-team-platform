@@ -39,7 +39,10 @@ class OAuthService {
   }
 
   private decodeState(state: string): string {
-    const redirectUri = atob(state);
+    const decoded = atob(state);
+    // State may be encoded as "redirectUri|returnPath" — extract only the redirectUri part
+    // so the token exchange sends the clean registered callback URL to Manus
+    const redirectUri = decoded.includes("|") ? decoded.split("|")[0] : decoded;
     return redirectUri;
   }
 
