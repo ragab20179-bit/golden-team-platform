@@ -17,4 +17,7 @@ export const ENV = {
   odooDb: process.env.ODOO_DB ?? "golden-team-1",
   // ─── Added for Redis support (Hybrid AI v2 / Odoo Client v2) ─────────────
   redisUrl: process.env.REDIS_URL ?? "",
+  // ─── NEO FastAPI Odoo Bridge ─────────────────────────────────────────────
+  neoBridgeUrl: process.env.NEO_BRIDGE_URL ?? "",
+  neoBridgeApiKey: process.env.NEO_BRIDGE_API_KEY ?? "",
 };

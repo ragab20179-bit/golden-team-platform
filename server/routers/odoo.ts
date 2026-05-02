@@ -666,10 +666,134 @@ If missingFields non-empty, set summary to a clarifying question. Respond in the
         default:
           throw new TRPCError({ code: "BAD_REQUEST", message: `Unsupported operation: ${op.operation}` });
       }
+    }),  // ── NEO FastAPI Bridge Chat ───────────────────────────────────────────────────────
+  /**
+   * Proxy to the NEO FastAPI Odoo Bridge for full agentic multi-turn chat.
+   * Falls back to the built-in aiDataEntry LLM parse if bridge is not configured.
+   */
+  neoBridgeChat: protectedProcedure
+    .input(z.object({
+      message: z.string().min(1).max(4000),
+      history: z.array(z.object({
+        role: z.enum(["user", "assistant", "tool", "system"]),
+        content: z.string(),
+      })).default([]),
+      autoExecute: z.boolean().default(false),
+    }))
+    .mutation(async ({ input }) => {
+      const { ENV } = await import("../_core/env");
+
+      // ── If bridge is configured, proxy to it ──────────────────────────────────────
+      if (ENV.neoBridgeUrl) {
+        try {
+          const resp = await fetch(`${ENV.neoBridgeUrl}/chat`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(ENV.neoBridgeApiKey ? { Authorization: `Bearer ${ENV.neoBridgeApiKey}` } : {}),
+            },
+            body: JSON.stringify({
+              message: input.message,
+              history: input.history,
+              auto_execute: input.autoExecute,
+            }),
+            signal: AbortSignal.timeout(55_000),
+          });
+          if (!resp.ok) {
+            const errText = await resp.text();
+            throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Bridge error ${resp.status}: ${errText.slice(0, 200)}` });
+          }
+          const data = await resp.json() as Record<string, unknown>;
+          return { source: "bridge" as const, ...data };
+        } catch (err) {
+          if (err instanceof TRPCError) throw err;
+          // Bridge unreachable — fall through to built-in LLM
+          console.warn("[NEO Bridge] unreachable, falling back to built-in LLM:", err);
+        }
+      }
+
+      // ── Fallback: built-in LLM parse (same as aiDataEntry step 1) ───────────────
+      const { invokeLLM } = await import("../_core/llm");
+      const llmResp = await invokeLLM({
+        messages: [
+          {
+            role: "system",
+            content: `You are NEO, the Golden Team AI assistant for Odoo ERP data entry.
+            Parse the user's instruction and respond helpfully.
+            If you need more information, ask for it clearly.
+            Respond in the user's language (Arabic or English).`,
+          },
+          ...input.history.map(h => ({ role: h.role as "user" | "assistant" | "system", content: h.content })),
+          { role: "user", content: input.message },
+        ],
+      });
+      const content = llmResp.choices?.[0]?.message?.content ?? "I couldn't process that request.";
+      return {
+        source: "builtin" as const,
+        type: "message",
+        content,
+        requires_confirmation: false,
+      };
     }),
 
-  // ── Partners (shared across modules) ────────────────────────────────────────
-  getPartners: protectedProcedure
+  /**
+   * Execute a confirmed action from the NEO FastAPI bridge.
+   */
+  neoBridgeExecute: protectedProcedure
+    .input(z.object({
+      actions: z.array(z.object({
+        tool_name: z.string(),
+        tool_args: z.record(z.string(), z.unknown()),
+      })).min(1),
+    }))
+    .mutation(async ({ input }) => {
+      const { ENV } = await import("../_core/env");
+
+      if (!ENV.neoBridgeUrl) {
+        throw new TRPCError({ code: "PRECONDITION_FAILED", message: "NEO Bridge not configured. Set NEO_BRIDGE_URL env var." });
+      }
+
+      const resp = await fetch(`${ENV.neoBridgeUrl}/execute_confirmed`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(ENV.neoBridgeApiKey ? { Authorization: `Bearer ${ENV.neoBridgeApiKey}` } : {}),
+        },
+        body: JSON.stringify({ actions: input.actions }),
+        signal: AbortSignal.timeout(55_000),
+      });
+
+      if (!resp.ok) {
+        const errText = await resp.text();
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Bridge execute error ${resp.status}: ${errText.slice(0, 200)}` });
+      }
+
+      return await resp.json() as { success: boolean; results: Array<{ tool_name: string; success: boolean; data?: unknown; error?: string }> };
+    }),
+
+  /**
+   * Check if the NEO FastAPI bridge is reachable and healthy.
+   */
+  neoBridgeHealth: protectedProcedure
+    .query(async () => {
+      const { ENV } = await import("../_core/env");
+      if (!ENV.neoBridgeUrl) {
+        return { configured: false, status: "not_configured" as const };
+      }
+      try {
+        const resp = await fetch(`${ENV.neoBridgeUrl}/health`, {
+          signal: AbortSignal.timeout(5_000),
+        });
+        if (!resp.ok) return { configured: true, status: "error" as const, httpStatus: resp.status };
+        const data = await resp.json() as Record<string, unknown>;
+        return { configured: true, status: data.status as string, odooVersion: data.odoo_version as string };
+      } catch {
+        return { configured: true, status: "unreachable" as const };
+      }
+    }),
+
+  // ── Partners (shared across modules) ───────────────────────────────────────────
+  getPartners:protectedProcedure
     .input(z.object({
       limit: z.number().int().min(1).max(500).default(100),
       supplierOnly: z.boolean().default(false),

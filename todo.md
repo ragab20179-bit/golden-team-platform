@@ -443,3 +443,14 @@
 - [x] Build AI-powered Odoo data entry page: NEO chat → parse order → confirm → execute into Odoo
 - [x] Add odoo.aiDataEntry tRPC procedure (LLM parses natural language → calls Odoo mutations)
 - [x] Register /portal/odoo/ai-entry route in App.tsx + NEO AI Entry button on OdooDashboard
+
+## Phase 24 — NEO FastAPI Odoo Bridge
+
+- [x] Clone rosenvladimirov/odoo-claude-mcp and extract XML-RPC client + tool definitions
+- [x] Build NEO FastAPI bridge service (Python): odoo_client.py + tools.py + executor.py + main.py
+- [x] Add OpenAI function-calling router with /parse, /execute, /chat, /health endpoints
+- [x] Add neoBridgeChat, neoBridgeExecute, neoBridgeHealth tRPC procedures to odoo router
+- [x] Extend OdooAIDataEntry.tsx: voice input (Web Speech API), bridge health indicator, bridge confirm card
+- [x] Add Dockerfile + docker-compose for bridge deployment
+- [x] Write DEPLOYMENT.md (Railway/Render/Docker/Python options)
+- [x] All 301 tests passing, 0 TypeScript errors
