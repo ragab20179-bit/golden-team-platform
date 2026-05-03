@@ -69,13 +69,36 @@ function handleOdooError(err: unknown, context: string): never {
   });
 }
 
-/** Wrap a read query: return empty array on breaker-open, throw on real errors */
+/** True when the error is a transient/rate-limit condition that should degrade gracefully */
+function isTransientError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return msg.includes("429") || msg.toLowerCase().includes("too many requests") ||
+         msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("service unavailable") ||
+         msg.includes("503") || msg.includes("502");
+}
+
+/** Wrap a read query: return empty array on breaker-open or transient errors, throw on real errors */
 async function safeRead<T>(fn: () => Promise<T[]>, context: string): Promise<T[]> {
   try {
     return await fn();
   } catch (err) {
-    if (isBreakerOpen(err)) return handleReadError(err, context) as T[];
+    if (isBreakerOpen(err) || isTransientError(err)) return handleReadError(err, context) as T[];
     handleOdooError(err, context);
+  }
+}
+
+/**
+ * Fully fault-tolerant read — NEVER throws, always returns [] on any error.
+ * Used for context-loading in aiDataEntry parse step so Odoo downtime
+ * doesn't block the LLM parse (it just runs with less context).
+ */
+async function silentRead<T>(fn: () => Promise<T[]>, context: string): Promise<T[]> {
+  try {
+    return await fn();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn(`[Odoo] ${context} — silentRead returning [] (${msg.slice(0, 80)})`);
+    return [];
   }
 }
 
@@ -522,10 +545,10 @@ export const odooRouter = router({
       // ── Step 1: Parse ────────────────────────────────────────────────────────
       if (!input.confirmed) {
         const [suppliers, products, crmStages, projects] = await Promise.all([
-          safeRead(() => getSuppliers(50), "aiDataEntry:suppliers"),
-          safeRead(() => getProducts(50), "aiDataEntry:products"),
-          safeRead(() => getCrmStages(), "aiDataEntry:crmStages"),
-          safeRead(() => getProjects(30), "aiDataEntry:projects"),
+          silentRead(() => getSuppliers(50), "aiDataEntry:suppliers"),
+          silentRead(() => getProducts(50), "aiDataEntry:products"),
+          silentRead(() => getCrmStages(), "aiDataEntry:crmStages"),
+          silentRead(() => getProjects(30), "aiDataEntry:projects"),
         ]);
 
         const ctx = [
@@ -538,6 +561,11 @@ export const odooRouter = router({
         const systemPrompt = `You are NEO, the Golden Team AI assistant. Parse the user's Odoo ERP data entry instruction and return a JSON object.
 
 Supported operations:
+- CREATE_CUSTOMER: name, email?, phone?, mobile?, street?, city?, countryId?, website?, notes? (isCompany defaults true)
+- CREATE_VENDOR: name, email?, phone?, mobile?, street?, city?, countryId?, website?, notes? (supplier, isCompany defaults true)
+- UPDATE_PARTNER: partnerId, name?, email?, phone?, mobile?, street?, city?, notes?
+- CREATE_SALE_ORDER: partnerId, orderLines [{productId,qty,priceUnit,name?}], notes?
+- CONFIRM_SALE_ORDER: orderId
 - CREATE_PURCHASE_ORDER: partnerId, orderLines [{productId,qty,priceUnit,name?}], notes?
 - CONFIRM_PURCHASE_ORDER: orderId
 - CREATE_INVOICE: moveType ("in_invoice"|"out_invoice"), partnerId, invoiceLines [{name,quantity?,priceUnit,accountId?}], invoiceDate?, ref?
@@ -548,6 +576,7 @@ Supported operations:
 - CREATE_PROJECT: name, partnerId?, dateStart?, dateEnd?, description?
 - CREATE_TASK: name, projectId, deadline?, priority ("0"|"1")?, description?
 - CREATE_LEAVE_REQUEST: employeeId, holidayStatusId, dateFrom, dateTo, name?
+- CREATE_EMPLOYEE: name, jobTitle?, workEmail?, workPhone?, departmentId?, managerId?
 - UNKNOWN: if no operation matches
 
 Live Odoo context:\n${ctx || "(Odoo offline)"}
@@ -711,6 +740,74 @@ If missingFields non-empty, set summary to a clarifying question. Respond in the
             });
             await auditSuccess(id, `Leave #${id}`);
             return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Leave request created (ID: ${id})` } };
+          }
+          case "CREATE_CUSTOMER": {
+            const id = await odooCreate("res.partner", {
+              name: f.name, is_company: true, customer_rank: 1, supplier_rank: 0,
+              ...(f.email ? { email: f.email } : {}),
+              ...(f.phone ? { phone: f.phone } : {}),
+              ...(f.mobile ? { mobile: f.mobile } : {}),
+              ...(f.street ? { street: f.street } : {}),
+              ...(f.city ? { city: f.city } : {}),
+              ...(f.countryId ? { country_id: f.countryId } : {}),
+              ...(f.website ? { website: f.website } : {}),
+              ...(f.notes ? { comment: f.notes } : {}),
+            });
+            await auditSuccess(id, String(f.name));
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Customer "${f.name}" created in Odoo (ID: ${id})` } };
+          }
+          case "CREATE_VENDOR": {
+            const id = await odooCreate("res.partner", {
+              name: f.name, is_company: true, supplier_rank: 1, customer_rank: 0,
+              ...(f.email ? { email: f.email } : {}),
+              ...(f.phone ? { phone: f.phone } : {}),
+              ...(f.mobile ? { mobile: f.mobile } : {}),
+              ...(f.street ? { street: f.street } : {}),
+              ...(f.city ? { city: f.city } : {}),
+              ...(f.countryId ? { country_id: f.countryId } : {}),
+              ...(f.website ? { website: f.website } : {}),
+              ...(f.notes ? { comment: f.notes } : {}),
+            });
+            await auditSuccess(id, String(f.name));
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Vendor "${f.name}" created in Odoo (ID: ${id})` } };
+          }
+          case "UPDATE_PARTNER": {
+            const updateData: Record<string, unknown> = {};
+            if (f.name) updateData.name = f.name;
+            if (f.email) updateData.email = f.email;
+            if (f.phone) updateData.phone = f.phone;
+            if (f.mobile) updateData.mobile = f.mobile;
+            if (f.street) updateData.street = f.street;
+            if (f.city) updateData.city = f.city;
+            if (f.notes) updateData.comment = f.notes;
+            await odooWrite("res.partner", [f.partnerId as number], updateData);
+            await auditSuccess(f.partnerId, `Partner #${f.partnerId}`);
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id: f.partnerId, message: `Partner #${f.partnerId} updated` } };
+          }
+          case "CREATE_SALE_ORDER": {
+            const id = await odooCreate("sale.order", {
+              partner_id: f.partnerId, note: f.notes ?? "",
+              order_line: (f.orderLines as Array<{productId:number;qty:number;priceUnit:number;name?:string}>).map(l => [0,0,{product_id:l.productId,product_uom_qty:l.qty,price_unit:l.priceUnit,name:l.name??""}]),
+            });
+            await auditSuccess(id, `Sale Order #${id}`);
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Sale Order created (ID: ${id})` } };
+          }
+          case "CONFIRM_SALE_ORDER": {
+            await odooAction("sale.order", "action_confirm", [f.orderId as number]);
+            await auditSuccess(f.orderId, `SO #${f.orderId}`);
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id: f.orderId, message: `Sale Order #${f.orderId} confirmed` } };
+          }
+          case "CREATE_EMPLOYEE": {
+            const id = await odooCreate("hr.employee", {
+              name: f.name,
+              ...(f.jobTitle ? { job_title: f.jobTitle } : {}),
+              ...(f.workEmail ? { work_email: f.workEmail } : {}),
+              ...(f.workPhone ? { work_phone: f.workPhone } : {}),
+              ...(f.departmentId ? { department_id: f.departmentId } : {}),
+              ...(f.managerId ? { parent_id: f.managerId } : {}),
+            });
+            await auditSuccess(id, String(f.name));
+            return { stage: "executed" as const, operation: op.operation, result: { success: true, id, message: `Employee "${f.name}" created in Odoo (ID: ${id})` } };
           }
           default:
             throw new TRPCError({ code: "BAD_REQUEST", message: `Unsupported operation: ${op.operation}` });

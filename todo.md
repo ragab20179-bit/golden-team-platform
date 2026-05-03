@@ -477,3 +477,12 @@
 - [ ] Item 8: Role-based portal access — module_access table + access control per user role
 - [ ] Item 9: Scheduled AI reports — weekly KPI/Odoo summary endpoint + schedule task
 - [ ] Item 10: Mobile-responsive portal — sidebar hamburger menu + Odoo dashboard mobile pass
+
+## Phase 27 — NEO AI Data Entry Operation Expansion
+- [x] Add CREATE_CUSTOMER operation to aiDataEntry LLM parser and executor
+- [x] Add CREATE_VENDOR operation to aiDataEntry LLM parser and executor
+- [x] Add CREATE_EMPLOYEE operation to aiDataEntry LLM parser and executor
+- [x] Add UPDATE_PARTNER operation to aiDataEntry LLM parser and executor
+- [x] Add CREATE_SALE_ORDER / CONFIRM_SALE_ORDER operations
+- [x] Fix safeRead to add silentRead for aiDataEntry context loading (fault-tolerant)
+- [x] Test all new operations end-to-end
