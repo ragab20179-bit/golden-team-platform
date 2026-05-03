@@ -65,6 +65,7 @@ const NEOUsage         = lazy(() => import("./pages/portal/NEOUsage"));
 const OdooDashboard    = lazy(() => import("./pages/portal/OdooDashboard"));
 const OdooAIDataEntry  = lazy(() => import("./pages/portal/OdooAIDataEntry"));
 const OdooAuditLog     = lazy(() => import("./pages/portal/OdooAuditLog"));
+const PortalSettings   = lazy(() => import("./pages/portal/PortalSettings"));
 const BidEvaluation    = lazy(() => import("./pages/portal/BidEvaluation"));
 const SupplierBidPortal = lazy(() => import("./pages/SupplierBidPortal"));
 
@@ -122,6 +123,7 @@ function Router() {
         <Route path="/portal/odoo"              component={OdooDashboard} />
         <Route path="/portal/odoo/ai-entry"     component={OdooAIDataEntry} />
         <Route path="/portal/odoo/audit-log"    component={OdooAuditLog} />
+        <Route path="/portal/settings"           component={PortalSettings} />
         <Route path="/portal/bid-evaluation"    component={BidEvaluation} />
 
         {/* Public supplier bid portal — no auth required */}

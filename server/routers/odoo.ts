@@ -918,8 +918,64 @@ If missingFields non-empty, set summary to a clarifying question. Respond in the
       return { deleted };
     }),
 
-  // ── Partners (shared across modules) ───────────────────────────────────────────
-  getPartners:protectedProcedure
+  // ── Audit Log Export ──────────────────────────────────────────────────────────────────────────────────────
+  exportAiEntries: protectedProcedure
+    .input(z.object({
+      status: z.enum(["all", "success", "failed", "pending"]).default("all"),
+      source: z.enum(["all", "direct", "bridge"]).default("all"),
+      operation: z.string().optional(),
+      from: z.number().optional(),
+      to: z.number().optional(),
+    }))
+    .mutation(async ({ input }) => {
+      const { getOdooAiEntries } = await import("../db/odooAuditLog");
+      const entries = await getOdooAiEntries({
+        status: input.status === "all" ? undefined : input.status as "success" | "failed" | "pending",
+        source: input.source === "all" ? undefined : (input.source === "direct" ? "builtin" : "neo_bridge") as "builtin" | "neo_bridge",
+        operation: input.operation,
+        since: input.from ? new Date(input.from) : undefined,
+        limit: 5000,
+        offset: 0,
+      });
+      const header = ["ID", "Timestamp", "User", "Operation", "Source", "Status", "Odoo Record ID", "Execution Time (ms)", "Error"].join(",");
+      const rows = entries.map((e) => [
+        e.id,
+        new Date(e.createdAt).toISOString(),
+        (e.userName ?? "").replace(/,/g, ";"),
+        e.operation,
+        e.source,
+        e.status,
+        e.odooRecordId ?? "",
+        e.executionMs ?? "",
+        (e.errorMessage ?? "").replace(/,/g, ";").replace(/\n/g, " "),
+      ].join(","));
+      return { csv: [header, ...rows].join("\n"), count: entries.length };
+    }),
+
+  // ── Sales Orders ─────────────────────────────────────────────────────────────────────────
+  getSalesOrders: protectedProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(500).default(50) }))
+    .query(async ({ input }) => {
+      const { getSalesOrders } = await import("../odoo/modules/sales");
+      return safeRead(() => getSalesOrders(input.limit), "getSalesOrders");
+    }),
+
+  getSalesOrderLines: protectedProcedure
+    .input(z.object({ orderId: z.number().int().optional() }))
+    .query(async ({ input }) => {
+      const { getSalesOrderLines } = await import("../odoo/modules/sales");
+      return safeRead(() => getSalesOrderLines(input.orderId), "getSalesOrderLines");
+    }),
+
+  getCustomers: protectedProcedure
+    .input(z.object({ limit: z.number().int().min(1).max(500).default(100) }))
+    .query(async ({ input }) => {
+      const { getCustomers } = await import("../odoo/modules/sales");
+      return safeRead(() => getCustomers(input.limit), "getCustomers");
+    }),
+
+  // ── Partners (shared across modules) ───────────────────────────────────────────────────
+  getPartners: protectedProcedure
     .input(z.object({
       limit: z.number().int().min(1).max(500).default(100),
       supplierOnly: z.boolean().default(false),

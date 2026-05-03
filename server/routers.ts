@@ -66,6 +66,65 @@ export const appRouter = router({
         ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
         return { success: true, role: user.role } as const;
       }),
+
+    /**
+     * Change password for the currently logged-in user.
+     * Requires current password for verification before updating.
+     */
+    changePassword: protectedProcedure
+      .input(z.object({
+        currentPassword: z.string().min(1),
+        newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user.email) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'No email associated with this account' });
+        }
+        const user = await getUserByEmail(ctx.user.email);
+        if (!user || !user.passwordHash) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: 'No password set for this account. Use OAuth login.' });
+        }
+        const valid = await bcrypt.compare(input.currentPassword, user.passwordHash);
+        if (!valid) {
+          throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Current password is incorrect' });
+        }
+        const newHash = await bcrypt.hash(input.newPassword, 12);
+        await upsertUser({ openId: user.openId, passwordHash: newHash });
+        return { success: true } as const;
+      }),
+
+    /**
+     * Admin-only: Create a new employee account with email + password.
+     * The employee can log in immediately with the provided credentials.
+     */
+    createEmployee: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1),
+        email: z.string().email(),
+        password: z.string().min(8, 'Password must be at least 8 characters'),
+        role: z.enum(['admin', 'user']).default('user'),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Only admins can create employee accounts' });
+        }
+        const existing = await getUserByEmail(input.email);
+        if (existing) {
+          throw new TRPCError({ code: 'CONFLICT', message: 'An account with this email already exists' });
+        }
+        const passwordHash = await bcrypt.hash(input.password, 12);
+        const openId = `local-${input.email.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${Date.now()}`;
+        await upsertUser({
+          openId,
+          name: input.name,
+          email: input.email,
+          passwordHash,
+          role: input.role,
+          loginMethod: 'email' as const,
+          lastSignedIn: new Date(),
+        });
+        return { success: true, openId } as const;
+      }),
   }),
 
   // ─── ASTRA AMG — Decision Log ──────────────────────────────────────────────

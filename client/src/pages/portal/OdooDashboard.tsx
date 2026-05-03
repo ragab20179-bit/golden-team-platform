@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   ShoppingCart, Receipt, Package, Users, FolderKanban,
-  RefreshCw, ExternalLink, Search, TrendingUp,
+  RefreshCw, ExternalLink, Search, TrendingUp, DollarSign,
   AlertCircle, CheckCircle2, Clock, XCircle,
   Building2, Phone, Mail, MapPin, BarChart3,
   Wifi, WifiOff, Sparkles, Activity,
@@ -22,7 +22,7 @@ import {
 
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-type OdooTab = "overview" | "purchase" | "accounting" | "inventory" | "crm" | "project";
+type OdooTab = "overview" | "purchase" | "sales" | "accounting" | "inventory" | "crm" | "project";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function stateColor(state: string): string {
@@ -239,6 +239,61 @@ function PurchaseTab() {
                   )}
                 </div>
               ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function SalesTab() {
+  const [search, setSearch] = useState("");
+  const { data: orders, isLoading } = trpc.odoo.getSalesOrders.useQuery({ limit: 50 });
+  const filtered = (orders ?? []).filter(o =>
+    !search || o.name?.toLowerCase().includes(search.toLowerCase()) ||
+    (Array.isArray(o.partner_id) ? o.partner_id[1] : "").toLowerCase().includes(search.toLowerCase())
+  );
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-white">Sales Orders</h2>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+          <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search orders..." className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-white/30 w-64" />
+        </div>
+      </div>
+      <Card className="bg-[#0A0F1E]/80 border-white/10">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm text-white/70">Sales Orders ({filtered.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex items-center gap-2 text-white/40 py-8 justify-center"><RefreshCw className="w-4 h-4 animate-spin" /> Loading...</div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-12 text-white/30">No sales orders found</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="border-b border-white/10 text-white/40">
+                  <th className="text-left py-2 px-3">Order</th>
+                  <th className="text-left py-2 px-3">Customer</th>
+                  <th className="text-left py-2 px-3">Date</th>
+                  <th className="text-left py-2 px-3">Status</th>
+                  <th className="text-right py-2 px-3">Total</th>
+                </tr></thead>
+                <tbody>
+                  {filtered.map(o => (
+                    <tr key={o.id} className="border-b border-white/5 hover:bg-white/3 transition-colors">
+                      <td className="py-2.5 px-3 text-amber-400 font-mono text-xs">{o.name}</td>
+                      <td className="py-2.5 px-3 text-white/80">{Array.isArray(o.partner_id) ? o.partner_id[1] : "—"}</td>
+                      <td className="py-2.5 px-3 text-white/50 text-xs">{o.date_order ? new Date(o.date_order).toLocaleDateString() : "—"}</td>
+                      <td className="py-2.5 px-3"><Badge className={`text-[10px] border ${stateColor(o.state)}`}>{o.state}</Badge></td>
+                      <td className="py-2.5 px-3 text-right text-white/80 font-mono text-xs">{o.amount_total?.toLocaleString()} {Array.isArray(o.currency_id) ? o.currency_id[1] : ""}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>
@@ -577,6 +632,7 @@ function ProjectTab() {
 const TABS: { id: OdooTab; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "Overview", icon: BarChart3 },
   { id: "purchase", label: "Purchase", icon: ShoppingCart },
+  { id: "sales", label: "Sales", icon: DollarSign },
   { id: "accounting", label: "Accounting", icon: Receipt },
   { id: "inventory", label: "Inventory", icon: Package },
   { id: "crm", label: "CRM", icon: TrendingUp },
@@ -659,17 +715,18 @@ export default function OdooDashboard() {
           </div>
         )}
 
-        {/* Tab bar */}
-        <div className="flex gap-1 p-1 bg-white/5 rounded-xl border border-white/10 overflow-x-auto">
+        {/* Tab bar — horizontally scrollable on mobile */}
+        <div className="flex gap-1 p-1 bg-white/5 rounded-xl border border-white/10 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
           {TABS.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+              className={`flex items-center gap-1.5 md:gap-2 px-2.5 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
                 activeTab === id
                   ? "bg-amber-500 text-[#05080F]"
                   : "text-white/50 hover:text-white hover:bg-white/5"
               }`}>
-              <Icon className="w-4 h-4" />
-              {label}
+              <Icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              <span className="hidden sm:inline">{label}</span>
+              <span className="sm:hidden">{label.split(" ")[0]}</span>
             </button>
           ))}
         </div>
@@ -677,6 +734,7 @@ export default function OdooDashboard() {
         {/* Tab content */}
         {activeTab === "overview" && <OverviewTab />}
         {activeTab === "purchase" && <PurchaseTab />}
+        {activeTab === "sales" && <SalesTab />}
         {activeTab === "accounting" && <AccountingTab />}
         {activeTab === "inventory" && <InventoryTab />}
         {activeTab === "crm" && <CrmTab />}

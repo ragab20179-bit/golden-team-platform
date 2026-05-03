@@ -6,6 +6,7 @@ import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerGoogleAuthRoutes } from "./googleAuth";
+import { registerScheduledReportRoutes } from "../scheduledReports";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -39,6 +40,8 @@ async function startServer() {
   registerOAuthRoutes(app);
   // Google OAuth routes under /api/auth/google and /api/auth/google/callback
   registerGoogleAuthRoutes(app);
+  // Scheduled task report ingestion endpoints
+  registerScheduledReportRoutes(app);
   // tRPC API
   app.use(
     "/api/trpc",

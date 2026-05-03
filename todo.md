@@ -465,3 +465,15 @@
 - [x] Add Audit Log button to OdooDashboard header
 - [x] Register /portal/odoo/audit-log route in App.tsx
 - [x] 301 tests passing, 0 TypeScript errors
+
+## Phase 26 — Items 1-10 Full Implementation
+- [ ] Item 1: Activate NEO FastAPI Bridge — wire NEO_BRIDGE_URL + NEO_BRIDGE_API_KEY secrets, bridge health check UI
+- [ ] Item 2: Change Password UI — portal settings page with changePassword tRPC procedure
+- [ ] Item 3: Employee Account Creation — admin-only createEmployee dialog + procedure
+- [ ] Item 4: Audit Log CSV/Excel Export — exportAiEntries procedure + download button on OdooAuditLog
+- [ ] Item 5: Voice input on NEO Chat — Web Speech API mic button in NEOChat.tsx composer
+- [ ] Item 6: Unified AI Audit Trail — extend ai_audit_log to NEO Chat, ASTRA, Risk Assessment
+- [ ] Item 7: Odoo Sales Orders — getSalesOrders tRPC procedure + Sales tab on OdooDashboard
+- [ ] Item 8: Role-based portal access — module_access table + access control per user role
+- [ ] Item 9: Scheduled AI reports — weekly KPI/Odoo summary endpoint + schedule task
+- [ ] Item 10: Mobile-responsive portal — sidebar hamburger menu + Odoo dashboard mobile pass

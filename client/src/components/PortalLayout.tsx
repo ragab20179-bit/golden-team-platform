@@ -20,26 +20,27 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 // Navigation items — labels translated dynamically
+// adminOnly: true = only visible to users with role === "admin"
 const NAV_ITEMS_EN = [
-  { key: "dashboard",     icon: LayoutDashboard, path: "/portal",              color: "text-[#FADC96]" },
-  { key: "hr",            icon: Users,           path: "/portal/hr",           color: "text-[#FADC96]" },
-  { key: "erp",           icon: Database,        path: "/portal/erp",          color: "text-[#FADC96]" },
-  { key: "crm",           icon: UserCheck,       path: "/portal/crm",          color: "text-[#FADC96]" },
-  { key: "kpi",           icon: BarChart3,       path: "/portal/kpi",          color: "text-[#FADC96]" },
-  { key: "procurement",   icon: ShoppingCart,    path: "/portal/procurement",  color: "text-[#FADC96]" },
-  { key: "qms",           icon: FileCheck,       path: "/portal/qms",          color: "text-[#FADC96]" },
-  { key: "legal",         icon: Scale,           path: "/portal/legal",        color: "text-[#FADC96]" },
-  { key: "comms",         icon: MessageSquare,   path: "/portal/comms",        color: "text-[#FADC96]" },
-  { key: "audit",         icon: ScrollText,      path: "/portal/audit",        color: "text-[#FADC96]" },
-  { key: "governance",    icon: Shield,          path: "/portal/governance",   color: "text-[#FADC96]" },
-  { key: "meetings",      icon: Mic,             path: "/portal/meetings",     color: "text-[#FADC96]" },
-  { key: "neoCore",       icon: Cpu,             path: "/portal/neo-core",     color: "text-[#FADC96]" },
-  { key: "vault",         icon: HardDrive,       path: "/portal/vault",        color: "text-[#FADC96]" },
-  { key: "neoChat",       icon: MessageSquare,   path: "/portal/neo-chat",     color: "text-[#FADC96]" },
-  { key: "requests",     icon: ClipboardList,   path: "/portal/requests",     color: "text-[#FADC96]" },
-  { key: "neoUsage",     icon: TrendingUp,      path: "/portal/neo-usage",    color: "text-[#FADC96]" },
-  { key: "odoo",         icon: Building2,       path: "/portal/odoo",          color: "text-[#FADC96]" },
-  { key: "bidEval",      icon: Scale,           path: "/portal/bid-evaluation", color: "text-[#FADC96]" },
+  { key: "dashboard",     icon: LayoutDashboard, path: "/portal",              color: "text-[#FADC96]", adminOnly: false },
+  { key: "hr",            icon: Users,           path: "/portal/hr",           color: "text-[#FADC96]", adminOnly: false },
+  { key: "erp",           icon: Database,        path: "/portal/erp",          color: "text-[#FADC96]", adminOnly: false },
+  { key: "crm",           icon: UserCheck,       path: "/portal/crm",          color: "text-[#FADC96]", adminOnly: false },
+  { key: "kpi",           icon: BarChart3,       path: "/portal/kpi",          color: "text-[#FADC96]", adminOnly: false },
+  { key: "procurement",   icon: ShoppingCart,    path: "/portal/procurement",  color: "text-[#FADC96]", adminOnly: false },
+  { key: "qms",           icon: FileCheck,       path: "/portal/qms",          color: "text-[#FADC96]", adminOnly: false },
+  { key: "legal",         icon: Scale,           path: "/portal/legal",        color: "text-[#FADC96]", adminOnly: true },
+  { key: "comms",         icon: MessageSquare,   path: "/portal/comms",        color: "text-[#FADC96]", adminOnly: false },
+  { key: "audit",         icon: ScrollText,      path: "/portal/audit",        color: "text-[#FADC96]", adminOnly: true },
+  { key: "governance",    icon: Shield,          path: "/portal/governance",   color: "text-[#FADC96]", adminOnly: true },
+  { key: "meetings",      icon: Mic,             path: "/portal/meetings",     color: "text-[#FADC96]", adminOnly: false },
+  { key: "neoCore",       icon: Cpu,             path: "/portal/neo-core",     color: "text-[#FADC96]", adminOnly: true },
+  { key: "vault",         icon: HardDrive,       path: "/portal/vault",        color: "text-[#FADC96]", adminOnly: false },
+  { key: "neoChat",       icon: MessageSquare,   path: "/portal/neo-chat",     color: "text-[#FADC96]", adminOnly: false },
+  { key: "requests",     icon: ClipboardList,   path: "/portal/requests",     color: "text-[#FADC96]", adminOnly: false },
+  { key: "neoUsage",     icon: TrendingUp,      path: "/portal/neo-usage",    color: "text-[#FADC96]", adminOnly: true },
+  { key: "odoo",         icon: Building2,       path: "/portal/odoo",          color: "text-[#FADC96]", adminOnly: true },
+  { key: "bidEval",      icon: Scale,           path: "/portal/bid-evaluation", color: "text-[#FADC96]", adminOnly: true },
 ];
 
 const NAV_LABELS: Record<string, { en: string; ar: string }> = {
@@ -80,7 +81,8 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { lang, isRTL, toggleLang, t } = useLanguage();
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
+  const isAdmin = user?.role === "admin";
 
   // Auth guard — redirect unauthenticated users to login
   useEffect(() => {
@@ -160,7 +162,7 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
 
       {/* Nav items */}
       <nav className="flex-1 overflow-y-auto py-2 px-2">
-        {NAV_ITEMS_EN.map((item) => {
+        {NAV_ITEMS_EN.filter(item => !item.adminOnly || isAdmin).map((item) => {
           const active = location === item.path || (item.path !== "/portal" && location.startsWith(item.path));
           const label = NAV_LABELS[item.key]?.[lang] ?? item.key;
           return (
@@ -181,8 +183,8 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
       {/* Bottom actions */}
       <div className="p-3 border-t border-white/5 space-y-1">
         <button
-          onClick={() => toast.info(t("Settings coming soon", "الإعدادات قيد التطوير"))}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors ${collapsed ? "justify-center" : isRTL ? "flex-row-reverse" : ""}`}
+          onClick={() => { setLocation("/portal/settings"); setMobileOpen(false); }}
+          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location === "/portal/settings" ? "nav-active text-white" : "text-white/40 hover:text-white hover:bg-white/5"} ${collapsed ? "justify-center" : isRTL ? "flex-row-reverse" : ""}`}
         >
           <Settings className="w-4 h-4 shrink-0" />
           {!collapsed && <span className="text-sm">{isRTL ? "الإعدادات" : "Settings"}</span>}
@@ -261,13 +263,16 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
               <Bell className="w-4 h-4" />
               <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#FADC96]" />
             </button>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-[#050E10]" style={{ background: "linear-gradient(135deg, #C8A830, #FADC96)" }}>EM</div>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-[#050E10]" style={{ background: "linear-gradient(135deg, #C8A830, #FADC96)" }} title={user?.name ?? user?.email ?? ""}>              {user?.name ? user.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase() : (user?.email?.[0] ?? "U").toUpperCase()}
+            </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto">
-          {children}
+        <main className="flex-1 overflow-auto min-w-0">
+          <div className="min-w-0 w-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>

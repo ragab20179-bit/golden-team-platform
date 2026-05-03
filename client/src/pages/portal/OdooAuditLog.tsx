@@ -44,7 +44,7 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import {
-  ArrowLeft, RefreshCw, Trash2, Eye, CheckCircle2,
+  ArrowLeft, RefreshCw, Trash2, Eye, CheckCircle2, Download,
   XCircle, Clock, Ban, Bot, Cpu, BarChart3, Activity,
   Search, Filter, ChevronLeft, ChevronRight,
 } from "lucide-react";
@@ -239,6 +239,21 @@ export default function OdooAuditLog() {
     refetchInterval: 60_000,
   });
 
+  const exportMutation = trpc.odoo.exportAiEntries.useMutation({
+    onSuccess: (res) => {
+      if (res.count === 0) { toast.info("No entries to export."); return; }
+      const blob = new Blob([res.csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `odoo-ai-audit-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${res.count} entries to CSV.`);
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
   const clearMutation = trpc.odoo.clearAiEntries.useMutation({
     onSuccess: (res) => {
       toast.success(`Audit log cleared — ${res.deleted} entries deleted.`);
@@ -309,6 +324,15 @@ export default function OdooAuditLog() {
               className="text-white/60 hover:text-amber-400"
             >
               <RefreshCw className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportMutation.mutate({ status: statusFilter as "all"|"success"|"failed"|"pending", source: sourceFilter as "all"|"direct"|"bridge", operation: opFilter !== "all" ? opFilter : undefined })}
+              disabled={exportMutation.isPending}
+              className="border-amber-400/30 text-amber-400 hover:bg-amber-400/10 bg-transparent text-xs"
+            >
+              <Download className="w-3 h-3 mr-1" /> Export CSV
             </Button>
             {isAdmin && (
               <Button

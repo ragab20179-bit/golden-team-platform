@@ -563,3 +563,19 @@ export const odooAiEntries = mysqlTable("odoo_ai_entries", {
 
 export type OdooAiEntry = typeof odooAiEntries.$inferSelect;
 export type InsertOdooAiEntry = typeof odooAiEntries.$inferInsert;
+
+// ── Scheduled Reports ──────────────────────────────────────────────────────
+export const scheduledReports = mysqlTable("scheduled_reports", {
+  id:          int("id").primaryKey().autoincrement(),
+  title:       varchar("title", { length: 255 }).notNull(),
+  content:     text("content").notNull(),
+  reportType:  varchar("report_type", { length: 64 }).notNull().default("weekly_kpi"),
+  periodStart: varchar("period_start", { length: 32 }),
+  periodEnd:   varchar("period_end", { length: 32 }),
+  metadata:    text("metadata"),
+  createdBy:   int("created_by"),
+  createdAt:   timestamp("created_at").defaultNow().notNull(),
+});
+
+export type ScheduledReport = typeof scheduledReports.$inferSelect;
+export type InsertScheduledReport = typeof scheduledReports.$inferInsert;
