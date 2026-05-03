@@ -44,18 +44,22 @@ export const appRouter = router({
     emailLogin: publicProcedure
       .input(z.object({
         email: z.string().email(),
-        password: z.string().min(1),
+        // max(72): bcrypt silently truncates at 72 bytes — enforce it in schema
+        // so the stored hash and the login hash always cover the same bytes.
+        password: z.string().min(1).max(72),
       }))
       .mutation(async ({ input, ctx }) => {
-        // Defensive: trim whitespace that browsers/autofill may inject
+        // Normalise email only — passwords are sacred bytes, never trim.
         const email = input.email.trim().toLowerCase();
-        const password = input.password.trim();
+        const password = input.password; // intentional: no .trim()
         const user = await getUserByEmail(email);
-        if (!user || !user.passwordHash) {
-          throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid email or password' });
-        }
-        const valid = await bcrypt.compare(password, user.passwordHash);
-        if (!valid) {
+        // Timing-attack guard (Claude Q1 recommendation):
+        // Always run bcrypt.compare even when the user is not found so that
+        // response time cannot be used to enumerate valid email addresses.
+        const DUMMY_HASH = '$2b$12$invalidhashpadding000000000000000000000000000000';
+        const hashToCompare = user?.passwordHash ?? DUMMY_HASH;
+        const valid = await bcrypt.compare(password, hashToCompare);
+        if (!user || !user.passwordHash || !valid) {
           throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid email or password' });
         }
         // Update lastSignedIn

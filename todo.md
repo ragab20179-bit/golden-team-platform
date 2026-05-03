@@ -486,3 +486,18 @@
 - [x] Add CREATE_SALE_ORDER / CONFIRM_SALE_ORDER operations
 - [x] Fix safeRead to add silentRead for aiDataEntry context loading (fault-tolerant)
 - [x] Test all new operations end-to-end
+
+## Phase 28 — Claude Peer Review Implementation (COMPLETE)
+- [x] Q1: Remove password trim from emailLogin, add dummy-hash timing-attack guard, add max(72) Zod schema
+- [x] Q2: Replace silentRead with gracefulRead (structured logging + degraded flag in context prompt)
+- [x] Q3: Replace 16-case switch with Command Registry pattern (server/lib/odoo-operations/)
+  - [x] types.ts — OperationContext + OperationResult + Operation interfaces
+  - [x] partners.ts — CREATE_CUSTOMER, CREATE_VENDOR, UPDATE_PARTNER
+  - [x] purchase.ts — CREATE_PURCHASE_ORDER, CONFIRM_PURCHASE_ORDER
+  - [x] invoice.ts — CREATE_INVOICE, POST_INVOICE, REGISTER_PAYMENT
+  - [x] sales.ts — CREATE_SALE_ORDER, CONFIRM_SALE_ORDER
+  - [x] crm.ts — CREATE_CRM_LEAD, UPDATE_CRM_LEAD_STAGE
+  - [x] projects.ts — CREATE_PROJECT, CREATE_TASK, CREATE_LEAVE_REQUEST
+  - [x] hr.ts — CREATE_EMPLOYEE
+  - [x] registry.ts — central registry + executeOperation dispatcher
+- [x] 303 tests passing, 0 TypeScript errors
