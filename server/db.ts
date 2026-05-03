@@ -82,8 +82,10 @@ export async function getUserByOpenId(openId: string) {
 export async function getUserByEmail(email: string) {
   const db = await getDb();
   if (!db) return undefined;
+  // Normalize email: trim + lowercase to handle case/whitespace mismatches
+  const normalizedEmail = email.trim().toLowerCase();
   // Fetch all users with this email (there may be multiple from different auth methods)
-  const result = await db.select().from(users).where(eq(users.email, email));
+  const result = await db.select().from(users).where(eq(users.email, normalizedEmail));
   if (result.length === 0) return undefined;
   // Prefer the local account (has passwordHash) over OAuth-only accounts
   const localUser = result.find(u => u.passwordHash !== null && u.passwordHash !== undefined);

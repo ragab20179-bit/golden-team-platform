@@ -47,11 +47,14 @@ export const appRouter = router({
         password: z.string().min(1),
       }))
       .mutation(async ({ input, ctx }) => {
-        const user = await getUserByEmail(input.email);
+        // Defensive: trim whitespace that browsers/autofill may inject
+        const email = input.email.trim().toLowerCase();
+        const password = input.password.trim();
+        const user = await getUserByEmail(email);
         if (!user || !user.passwordHash) {
           throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid email or password' });
         }
-        const valid = await bcrypt.compare(input.password, user.passwordHash);
+        const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) {
           throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid email or password' });
         }
