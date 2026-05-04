@@ -67,6 +67,8 @@ export default function Login() {
     },
     onError: (err) => {
       setErrorMsg(err.message || t("Invalid email or password", "بريد إلكتروني أو كلمة مرور غير صحيحة"));
+      // Clear the password field so the user types it fresh — prevents autofill loops
+      setPassword("");
     },
   });
 
@@ -182,7 +184,7 @@ export default function Login() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
+                  autoComplete="off"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -200,7 +202,12 @@ export default function Login() {
             </div>
 
             {errorMsg && (
-              <p className="text-red-400 text-xs text-center py-1">{errorMsg}</p>
+              <div className="text-center py-1">
+                <p className="text-red-400 text-xs">{errorMsg}</p>
+                <p className="text-white/30 text-xs mt-0.5">
+                  {t("Please retype your password manually", "يرجى إعادة كتابة كلمة المرور يدوياً")}
+                </p>
+              </div>
             )}
 
             <Button
