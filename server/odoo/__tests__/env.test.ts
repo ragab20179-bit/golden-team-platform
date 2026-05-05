@@ -14,8 +14,9 @@ describe("Odoo ENV configuration", () => {
     expect(ENV.odooUrl).toContain("goldenteam1.odoo.com");
   });
 
-  it("odooDb is golden-team-1", () => {
-    expect(ENV.odooDb).toBe("golden-team-1");
+  it("odooDb is goldenteam1", () => {
+    // Database name confirmed via /web/database/list — the correct name is goldenteam1
+    expect(ENV.odooDb).toBe("goldenteam1");
   });
 
   it("odooApiKey is set and non-empty", () => {
