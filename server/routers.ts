@@ -26,6 +26,7 @@ import {
   deleteAstraPolicyRule,
   getUserByEmail,
   upsertUser,
+  getAllUsers,
 } from "./db";
 
 export const appRouter = router({
@@ -131,6 +132,17 @@ export const appRouter = router({
           lastSignedIn: new Date(),
         });
         return { success: true, openId } as const;
+      }),
+    /**
+     * Admin-only: List all users in the system.
+     * Used by the Permissions tab in Portal Settings.
+     */
+    listUsers: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (ctx.user.role !== 'admin') {
+          throw new TRPCError({ code: 'FORBIDDEN', message: 'Only admins can list users' });
+        }
+        return getAllUsers();
       }),
   }),
 

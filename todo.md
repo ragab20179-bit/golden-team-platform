@@ -540,19 +540,26 @@
 - [ ] Add create sale order quick action button
 
 ### Item 8: Role-based Portal Access
-- [ ] Add module_access table to Drizzle schema
-- [ ] Add getModuleAccess + setModuleAccess tRPC procedures
-- [ ] Add module access control UI in admin SystemSettings
-- [ ] Gate portal module routes by module_access table
+- [x] Add module_access table to Drizzle schema
+- [x] Add getModuleAccess + setModuleAccess tRPC procedures
+- [x] Add module access control UI in portal settings Permissions tab
+- [x] Gate portal module routes by module_access table
 
 ### Item 9: Scheduled AI Reports
 - [ ] Add /api/scheduled/weekly-report POST endpoint
 - [ ] Build weeklyReport tRPC procedure (KPI + Odoo summary)
 - [ ] Schedule weekly report via Manus schedule tool
-- [ ] Add Reports page at /portal/reports
+- [x] Add Reports page at /portal/reports
 
 ### Item 10: Mobile-Responsive Portal
 - [ ] Add hamburger menu button to DashboardLayout sidebar (mobile)
 - [ ] Add slide-in sidebar drawer for mobile (Sheet component)
 - [ ] Fix OdooDashboard grid for mobile (single column)
 - [ ] Fix portal module pages for mobile (responsive tables)
+
+## Phase 27 — Module Access UI, Reports Page, NEO Bridge, 100% Mobile
+
+- [x] Module Access Permissions UI — admin-only Permissions tab in /portal/settings
+- [x] Reports page at /portal/reports — searchable paginated list with Markdown rendering (+ sidebar nav link added)
+- [ ] NEO Bridge secrets — NEO_BRIDGE_URL + NEO_BRIDGE_API_KEY configuration (pending user action)
+- [x] 100% mobile-friendly portal — PortalLayout hamburger, all grids/tables/forms responsive

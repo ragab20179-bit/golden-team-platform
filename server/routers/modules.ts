@@ -809,4 +809,37 @@ export const modulesRouter = router({
       const { moduleAccess } = await import("../../drizzle/schema.js");
       return db.select().from(moduleAccess).where(eq(moduleAccess.userId, input.userId));
     }),
+
+  /**
+   * Admin-only: List scheduled AI reports with search and pagination.
+   */
+  getReports: protectedProcedure
+    .input(z.object({
+      search: z.string().optional(),
+      page: z.number().int().min(1).default(1),
+      pageSize: z.number().int().min(1).max(50).default(20),
+    }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new (await import("@trpc/server")).TRPCError({ code: "FORBIDDEN", message: "Only admins can view reports" });
+      }
+      const db = await getDb();
+      if (!db) return { reports: [], total: 0 };
+      const { scheduledReports } = await import("../../drizzle/schema.js");
+      const { desc: descOrd, like, or } = await import("drizzle-orm");
+      const offset = (input.page - 1) * input.pageSize;
+      const baseQuery = db.select().from(scheduledReports);
+      const filteredQuery = input.search
+        ? baseQuery.where(or(
+            like(scheduledReports.title, `%${input.search}%`),
+            like(scheduledReports.content, `%${input.search}%`)
+          ))
+        : baseQuery;
+      const reports = await filteredQuery
+        .orderBy(descOrd(scheduledReports.createdAt))
+        .limit(input.pageSize)
+        .offset(offset);
+      const countRows = await db.select({ count: sql<number>`count(*)` }).from(scheduledReports);
+      return { reports, total: Number(countRows[0]?.count ?? 0) };
+    }),
 });

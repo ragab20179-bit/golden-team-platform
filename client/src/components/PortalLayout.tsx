@@ -41,6 +41,7 @@ const NAV_ITEMS_EN = [
   { key: "neoUsage",     icon: TrendingUp,      path: "/portal/neo-usage",    color: "text-[#FADC96]", adminOnly: true },
   { key: "odoo",         icon: Building2,       path: "/portal/odoo",          color: "text-[#FADC96]", adminOnly: true },
   { key: "bidEval",      icon: Scale,           path: "/portal/bid-evaluation", color: "text-[#FADC96]", adminOnly: true },
+  { key: "reports",      icon: BarChart3,       path: "/portal/reports",         color: "text-[#FADC96]", adminOnly: true },
 ];
 
 const NAV_LABELS: Record<string, { en: string; ar: string }> = {
@@ -63,6 +64,7 @@ const NAV_LABELS: Record<string, { en: string; ar: string }> = {
   neoUsage:    { en: "AI Usage",          ar: "استخدام الذكاء" },
   odoo:        { en: "Odoo Integration",   ar: "تكامل أودو" },
   bidEval:     { en: "Bid Evaluation",      ar: "تقييم العطاءات" },
+  reports:     { en: "AI Reports",            ar: "تقارير الذكاء" },
 };
 
 // NAV_ITEMS exported from navItems.ts to avoid Fast Refresh issues

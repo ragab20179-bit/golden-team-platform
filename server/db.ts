@@ -174,3 +174,19 @@ export async function clearAstraDecisions(): Promise<number> {
   const result = await db.delete(astraDecisions);
   return (result as { affectedRows?: number }).affectedRows ?? 0;
 }
+
+/** Admin-only: Return all users ordered by creation date (newest first). */
+export async function getAllUsers() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({
+    id: users.id,
+    openId: users.openId,
+    name: users.name,
+    email: users.email,
+    role: users.role,
+    loginMethod: users.loginMethod,
+    createdAt: users.createdAt,
+    lastSignedIn: users.lastSignedIn,
+  }).from(users).orderBy(desc(users.createdAt));
+}
