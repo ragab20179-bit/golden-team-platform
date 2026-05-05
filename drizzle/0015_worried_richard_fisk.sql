@@ -1,0 +1,1 @@
+ALTER TABLE `odoo_ai_entries` MODIFY COLUMN `source` enum('builtin','neo_bridge','neo_chat','astra') NOT NULL DEFAULT 'builtin';

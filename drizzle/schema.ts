@@ -555,7 +555,7 @@ export const odooAiEntries = mysqlTable("odoo_ai_entries", {
   parsedPayload: json("parsedPayload"),   // The structured data sent to Odoo
   odooResponse: json("odooResponse"),    // Raw Odoo XML-RPC response
   // Source: which engine executed it
-  source: mysqlEnum("source", ["builtin", "neo_bridge"]).notNull().default("builtin"),
+  source: mysqlEnum("source", ["builtin", "neo_bridge", "neo_chat", "astra"]).notNull().default("builtin"),
   // Timing
   executionMs: int("executionMs"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -563,6 +563,26 @@ export const odooAiEntries = mysqlTable("odoo_ai_entries", {
 
 export type OdooAiEntry = typeof odooAiEntries.$inferSelect;
 export type InsertOdooAiEntry = typeof odooAiEntries.$inferInsert;
+
+// ── Module Access Control ────────────────────────────────────────────────────
+/**
+ * Per-user module access overrides.
+ * When no row exists for a (userId, moduleKey) pair, the default role-based
+ * access applies (admins get all, users get only enabled modules).
+ * When a row exists, it explicitly grants or revokes access for that user.
+ */
+export const moduleAccess = mysqlTable("module_access", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  moduleKey: varchar("moduleKey", { length: 64 }).notNull(), // e.g. "neo_chat", "odoo", "hr", "kpi"
+  granted: boolean("granted").notNull().default(true),
+  grantedBy: int("grantedBy"),  // admin userId who made the change
+  notes: varchar("notes", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type ModuleAccess = typeof moduleAccess.$inferSelect;
+export type InsertModuleAccess = typeof moduleAccess.$inferInsert;
 
 // ── Scheduled Reports ──────────────────────────────────────────────────────
 export const scheduledReports = mysqlTable("scheduled_reports", {

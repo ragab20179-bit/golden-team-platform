@@ -751,4 +751,62 @@ export const modulesRouter = router({
         return { success, failed, errors };
       }),
   }),
+
+  // ── Module Access Control ──────────────────────────────────────────────────────
+  /**
+   * Get the module access map for the current user.
+   * Returns { [moduleKey]: boolean } or null for admins (full access).
+   */
+  getMyModuleAccess: protectedProcedure
+    .query(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) return {};
+      if (ctx.user.role === "admin") return null; // null = admin full access
+      const { moduleAccess } = await import("../../drizzle/schema.js");
+      const rows = await db.select().from(moduleAccess).where(eq(moduleAccess.userId, ctx.user.id));
+      const map: Record<string, boolean> = {};
+      for (const row of rows) { map[row.moduleKey] = row.granted; }
+      return map;
+    }),
+
+  /**
+   * Admin-only: Set module access for a specific user.
+   */
+  setUserModuleAccess: protectedProcedure
+    .input(z.object({
+      userId: z.number().int().positive(),
+      moduleKey: z.string().min(1).max(64),
+      granted: z.boolean(),
+      notes: z.string().max(255).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new (await import("@trpc/server")).TRPCError({ code: "FORBIDDEN", message: "Only admins can manage module access" });
+      }
+      const db = await getDb();
+      if (!db) throw new Error("DB unavailable");
+      const { moduleAccess } = await import("../../drizzle/schema.js");
+      await db.insert(moduleAccess).values({
+        userId: input.userId, moduleKey: input.moduleKey,
+        granted: input.granted, grantedBy: ctx.user.id, notes: input.notes,
+      }).onDuplicateKeyUpdate({
+        set: { granted: input.granted, grantedBy: ctx.user.id, notes: input.notes },
+      });
+      return { success: true };
+    }),
+
+  /**
+   * Admin-only: Get all module access rows for a specific user.
+   */
+  getUserModuleAccess: protectedProcedure
+    .input(z.object({ userId: z.number().int().positive() }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") {
+        throw new (await import("@trpc/server")).TRPCError({ code: "FORBIDDEN", message: "Only admins can view module access" });
+      }
+      const db = await getDb();
+      if (!db) return [];
+      const { moduleAccess } = await import("../../drizzle/schema.js");
+      return db.select().from(moduleAccess).where(eq(moduleAccess.userId, input.userId));
+    }),
 });

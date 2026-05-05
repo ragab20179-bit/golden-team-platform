@@ -19,7 +19,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { neoConversations, neoMessages } from "../../drizzle/schema";
+import { neoConversations, neoMessages, odooAiEntries } from "../../drizzle/schema";
 import { eq, desc, and } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { invokeGPT, isGPTConfigured, buildAnalyticalSystemPrompt } from "../_core/gpt";
@@ -433,10 +433,29 @@ export const neoChatRouter = router({
         })
         .where(eq(neoConversations.id, input.conversationId));
 
-      // 7. Return both messages
+       // 7. Unified AI Audit Trail — log every NEO Chat AI interaction
+      try {
+        await db.insert(odooAiEntries).values({
+          userId: ctx.user.id,
+          userName: ctx.user.name ?? undefined,
+          userEmail: ctx.user.email ?? undefined,
+          userPrompt: input.body.slice(0, 2000),
+          operation: `NEO_CHAT_${actualEngine.toUpperCase()}`,
+          odooModel: null,
+          odooRecordId: null,
+          odooRecordName: `conv:${input.conversationId}`,
+          status: "success",
+          parsedPayload: { engine: actualEngine, routing: routing.breakdown, conversationId: input.conversationId },
+          odooResponse: null,
+          source: "neo_chat",
+          executionMs: null,
+        });
+      } catch {
+        // Non-critical: audit log failure must never break the chat response
+      }
+      // 8. Return both messages
       const [userMsg] = await db.select().from(neoMessages).where(eq(neoMessages.id, userMsgId));
       const [aiMsg] = await db.select().from(neoMessages).where(eq(neoMessages.id, aiMsgId));
-
       return {
         userMessage: userMsg,
         aiMessage: aiMsg,

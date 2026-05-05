@@ -501,3 +501,58 @@
   - [x] hr.ts — CREATE_EMPLOYEE
   - [x] registry.ts — central registry + executeOperation dispatcher
 - [x] 303 tests passing, 0 TypeScript errors
+
+## Phase 26 — Full Implementation (All 10 Items)
+
+### Item 1: NEO FastAPI Bridge Activation
+- [ ] Add NEO_BRIDGE_URL and NEO_BRIDGE_API_KEY secrets
+- [ ] Wire neoBridgeHealth check into OdooAIDataEntry header badge
+- [ ] Add bridge status indicator to portal settings
+
+### Item 2: Change Password UI
+- [ ] Add changePassword tRPC procedure to routers.ts (bcrypt verify old + hash new)
+- [ ] Build ChangePassword section in PortalSettings page
+- [ ] Wire form to changePassword mutation
+
+### Item 3: Employee Account Creation
+- [ ] Add createEmployeeAccount tRPC procedure (admin-only, creates user + sets role)
+- [ ] Build CreateEmployeeDialog in admin UserManagement page
+- [ ] Wire dialog to admin user management table
+
+### Item 4: Audit Log CSV/Excel Export
+- [ ] Add exportAiEntries tRPC procedure (returns all entries as JSON)
+- [ ] Add Export CSV button to OdooAuditLog.tsx with client-side CSV generation
+- [ ] Add Export Excel option using xlsx library
+
+### Item 5: Voice Input on NEO Chat
+- [ ] Add mic button to NEOChat.tsx composer (Web Speech API)
+- [ ] Add visual recording indicator (pulsing red dot)
+- [ ] Handle transcript injection into message input
+
+### Item 6: Unified AI Audit Trail
+- [ ] Add source field to odoo_ai_entries table (odoo/neo_chat/astra/risk)
+- [ ] Wire NEO Chat messages to logOdooAiEntry with source='neo_chat'
+- [ ] Add source filter to OdooAuditLog.tsx
+
+### Item 7: Odoo Sales Orders Tab
+- [ ] Add getSalesOrders tRPC procedure to odoo router
+- [ ] Add Sales Orders tab to OdooDashboard with table + stats card
+- [ ] Add create sale order quick action button
+
+### Item 8: Role-based Portal Access
+- [ ] Add module_access table to Drizzle schema
+- [ ] Add getModuleAccess + setModuleAccess tRPC procedures
+- [ ] Add module access control UI in admin SystemSettings
+- [ ] Gate portal module routes by module_access table
+
+### Item 9: Scheduled AI Reports
+- [ ] Add /api/scheduled/weekly-report POST endpoint
+- [ ] Build weeklyReport tRPC procedure (KPI + Odoo summary)
+- [ ] Schedule weekly report via Manus schedule tool
+- [ ] Add Reports page at /portal/reports
+
+### Item 10: Mobile-Responsive Portal
+- [ ] Add hamburger menu button to DashboardLayout sidebar (mobile)
+- [ ] Add slide-in sidebar drawer for mobile (Sheet component)
+- [ ] Fix OdooDashboard grid for mobile (single column)
+- [ ] Fix portal module pages for mobile (responsive tables)
