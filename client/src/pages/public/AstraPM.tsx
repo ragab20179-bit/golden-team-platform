@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 
-const GT_LOGO_MAIN = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt_main_logo_4ff8866b.png";
+const GT_LOGO_MAIN = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/golden_logo_transparent_1c08f3ce.png";
 
 const ASTRA_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-astra-pm-HFtSuwmFhd8RXqX7n7bRpw.webp";
 
@@ -269,11 +269,8 @@ export default function AstraPM() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#05080F]/95 backdrop-blur-md border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <button onClick={() => navigate("/")} className="flex items-center gap-3">
-            <img src={GT_LOGO_MAIN} alt="Golden Team" className="h-10 w-auto object-contain" />
-            <div>
-              <div className="text-white font-bold text-sm tracking-wide" style={{ fontFamily: "'Playfair Display', serif" }}>GOLDEN TEAM</div>
-              <div className="text-amber-400/60 text-[9px] tracking-widest uppercase">{t("For Investment", "للاستثمار")}</div>
-            </div>
+            <div className="rounded-xl px-2.5 py-1.5" style={{ background: "#0C343D" }}><img src={GT_LOGO_MAIN} alt="Golden Team For Investment Co." className="h-9 w-auto object-contain" style={{ maxWidth: "160px" }} /></div>
+            
           </button>
           <div className="hidden md:flex items-center gap-8">
             {[

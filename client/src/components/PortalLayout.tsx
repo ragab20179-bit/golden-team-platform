@@ -128,20 +128,23 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className={`flex items-center gap-3 px-4 py-5 border-b border-white/5 ${collapsed ? "justify-center" : ""}`}>
-        <img
-          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/golden_team_logo_official_9ed0423c.png"
-          alt="Golden Team For Investment Co."
-          className="w-9 h-9 rounded-lg shrink-0 object-contain bg-white/5 p-0.5"
-        />
-        {!collapsed && (
-          <div>
-            <div className="font-bold text-xs leading-tight text-white" style={{ fontFamily: "'Cairo', 'Space Grotesk', sans-serif" }}>
-              {isRTL ? "شركة الفريق الذهبي للاستثمار" : "Golden Team For Investment Co."}
-            </div>
-            <div className="text-[10px] text-[#FADC96]/50">
-              {isRTL ? "بوابة الموظفين" : "Employee Portal"}
-            </div>
+      <div className={`flex items-center px-4 py-4 border-b border-white/5 ${collapsed ? "justify-center" : ""}`}>
+        {collapsed ? (
+          <div className="rounded-lg p-1.5 shrink-0" style={{ background: "#0C343D" }}>
+            <img
+              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/golden_logo_transparent_1c08f3ce.png"
+              alt="GT"
+              className="w-7 h-7 object-contain"
+            />
+          </div>
+        ) : (
+          <div className="rounded-xl px-2.5 py-1.5 w-full" style={{ background: "#0C343D" }}>
+            <img
+              src="https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/golden_logo_transparent_1c08f3ce.png"
+              alt="Golden Team For Investment Co."
+              className="h-9 w-auto object-contain"
+              style={{ maxWidth: "180px" }}
+            />
           </div>
         )}
       </div>

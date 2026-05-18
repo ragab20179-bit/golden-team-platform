@@ -22,8 +22,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { t } from "@/lib/i18n";
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/hero_desert_futurism_e40a75ad.jpg";
-const GT_LOGO_MAIN = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/golden_team_logo_official_9ed0423c.png";
-const GT_LOGO_WHITE = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/golden_team_white_logo_0c6c4395.png";
+const GT_LOGO_MAIN = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/golden_logo_transparent_1c08f3ce.png";
+const GT_LOGO_WHITE = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/golden_logo_transparent_1c08f3ce.png";
 const IT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-it-solutions-kBJmggmFapCwtnocCUjwuj.webp";
 const ASTRA_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-astra-pm-HFtSuwmFhd8RXqX7n7bRpw.webp";
 const CONSULT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-consulting-NxW47h5uQRtwgqAX4Dbu4R.webp";
@@ -63,19 +63,14 @@ export default function Home() {
         style={scrolled ? { background: "rgba(5,14,16,0.96)", borderColor: "rgba(200,168,48,0.12)" } : {}}>
         <div className="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between py-4">
           {/* Logo */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-            <img
-              src={GT_LOGO_MAIN}
-              alt="Golden Team"
-              className="h-10 w-auto object-contain"
-            />
-            <div>
-              <div className="text-white font-bold text-sm leading-tight" style={{ fontFamily: "'Cairo', 'Space Grotesk', sans-serif" }}>
-                {isRTL ? "شركة الفريق الذهبي للاستثمار" : "Golden Team For Investment Co."}
-              </div>
-              <div className="text-[10px] tracking-widest uppercase" style={{ color: "#FADC96", opacity: 0.6 }}>
-                {isRTL ? "شركة استثمارية متنوعة" : "Diversified Investment Company"}
-              </div>
+          <div className="flex items-center cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+            <div className="rounded-xl px-3 py-1.5" style={{ background: "#0C343D" }}>
+              <img
+                src={GT_LOGO_MAIN}
+                alt="Golden Team For Investment Co."
+                className="h-10 w-auto object-contain"
+                style={{ maxWidth: "180px" }}
+              />
             </div>
           </div>
 
@@ -804,15 +799,9 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-10 mb-12">
             <div className="md:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <img src={GT_LOGO_MAIN} alt="Golden Team" className="h-12 w-auto object-contain" />
-                <div>
-                  <div className="text-white font-bold font-display">
-                    {isRTL ? "الفريق الذهبي" : "GOLDEN TEAM"}
-                  </div>
-                  <div className="text-[#FADC96]/60 text-[10px] tracking-widest uppercase">
-                    {isRTL ? "للاستثمار" : "For Investment"}
-                  </div>
+              <div className="flex items-center mb-4">
+                <div className="rounded-xl px-3 py-2" style={{ background: "#0C343D" }}>
+                  <img src={GT_LOGO_MAIN} alt="Golden Team For Investment Co." className="h-10 w-auto object-contain" style={{ maxWidth: "200px" }} />
                 </div>
               </div>
               <p className="text-white/40 text-sm leading-relaxed max-w-xs">

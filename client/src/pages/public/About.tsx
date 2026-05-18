@@ -12,13 +12,10 @@ import {
   ArrowRight, ChevronRight, CheckCircle, Star, TrendingUp, Zap
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const GT_LOGO_MAIN = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt_main_logo_4ff8866b.png";
+const GT_LOGO_MAIN = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/golden_logo_transparent_1c08f3ce.png";
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-hero-corporate-LAR4ea7VBJH3jL9DF5uSJy.webp";
-
 const fadeUp = { hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } } };
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
-
 const VALUES_EN = [
   { icon: Shield, titleEn: "Integrity First", titleAr: "النزاهة أولاً", descEn: "Every engagement is governed by transparency, honesty, and ethical conduct. We build trust through consistent delivery and open communication.", descAr: "كل تعامل يحكمه الشفافية والأمانة والسلوك الأخلاقي. نبني الثقة عبر التسليم المتسق والتواصل المفتوح." },
   { icon: Target, titleEn: "Results-Driven", titleAr: "موجّه بالنتائج", descEn: "We measure our success by your outcomes. Every project has clear KPIs, and we hold ourselves accountable to delivering measurable value.", descAr: "نقيس نجاحنا بنتائجك. لكل مشروع مؤشرات أداء واضحة ونتحمل المسؤولية عن تحقيق قيمة ملموسة." },
@@ -27,7 +24,6 @@ const VALUES_EN = [
   { icon: Users, titleEn: "Partnership Mindset", titleAr: "عقلية الشراكة", descEn: "We work as an extension of your team, not as external vendors. Long-term relationships and client success are our primary metrics.", descAr: "نعمل كامتداد لفريقك، لا كموردين خارجيين. العلاقات طويلة الأمد ونجاح العميل هما مقياسانا الأساسيان." },
   { icon: Heart, titleEn: "People-Centered", titleAr: "محورية الإنسان", descEn: "Technology serves people, not the other way around. We design solutions that empower employees and improve the human experience at work.", descAr: "التقنية في خدمة الإنسان لا العكس. نصمم حلولاً تمكّن الموظفين وتحسّن تجربة العمل." },
 ];
-
 const MILESTONES = [
   { year: "2010", titleEn: "Founded in Riyadh", titleAr: "التأسيس في الرياض", descEn: "Golden Team established as an IT services and business consultancy firm serving the Saudi market.", descAr: "تأسيس الفريق الذهبي كشركة خدمات تقنية واستشارات أعمال تخدم السوق السعودي." },
   { year: "2014", titleEn: "ISO 9001 Certification", titleAr: "شهادة ISO 9001", descEn: "Achieved ISO 9001:2008 certification, demonstrating commitment to quality management excellence.", descAr: "حصلنا على شهادة ISO 9001:2008 تجسيداً لالتزامنا بالتميز في إدارة الجودة." },
@@ -37,7 +33,6 @@ const MILESTONES = [
   { year: "2024", titleEn: "NEO AI Core v1.0", titleAr: "NEO AI Core v1.0", descEn: "Released NEO AI Core — the first hybrid Manus + GPT-4 enterprise AI orchestration platform for the GCC market.", descAr: "إصدار NEO AI Core — أول منصة ذكاء اصطناعي هجينة للمؤسسات في سوق الخليج." },
   { year: "2026", titleEn: "Golden Team Enterprise Platform", titleAr: "منصة الفريق الذهبي المؤسسية", descEn: "Launched the fully integrated enterprise platform combining all services, NEO AI, and ASTRA PM in one unified ecosystem.", descAr: "إطلاق المنصة المؤسسية المتكاملة التي تجمع جميع الخدمات و NEO AI و ASTRA PM في نظام بيئي موحد." },
 ];
-
 const TEAM = [
   { name: "محمد الراشدي", roleEn: "Chief Executive Officer", roleAr: "الرئيس التنفيذي", expertiseEn: "20+ years in enterprise IT and business development across the GCC", expertiseAr: "أكثر من 20 عاماً في تقنية المعلومات المؤسسية وتطوير الأعمال عبر الخليج" },
   { name: "سارة المحمود", roleEn: "Chief Technology Officer", roleAr: "رئيسة قسم التقنية", expertiseEn: "AI/ML architecture, cloud infrastructure, and digital transformation", expertiseAr: "هندسة الذكاء الاصطناعي والبنية السحابية والتحول الرقمي" },
@@ -46,30 +41,23 @@ const TEAM = [
   { name: "خالد العتيبي", roleEn: "Head of Cybersecurity", roleAr: "رئيس قسم الأمن السيبراني", expertiseEn: "NCA ECC, SAMA CSF, ISO 27001, and enterprise security architecture", expertiseAr: "NCA ECC وSAMA CSF وISO 27001 وهندسة أمن المؤسسات" },
   { name: "نور الحسن", roleEn: "NEO AI Lead Architect", roleAr: "كبير مهندسي NEO AI", expertiseEn: "LLM orchestration, RAG systems, and enterprise AI integration", expertiseAr: "تنسيق نماذج LLM وأنظمة RAG وتكامل الذكاء الاصطناعي المؤسسي" },
 ];
-
 const STATS = [
   { value: "15+", labelEn: "Years of Excellence", labelAr: "سنة من التميز" },
   { value: "200+", labelEn: "Projects Delivered", labelAr: "مشروع مُنجز" },
   { value: "50+", labelEn: "Expert Team Members", labelAr: "خبير في الفريق" },
   { value: "3", labelEn: "GCC Countries", labelAr: "دولة خليجية" },
 ];
-
 export default function About() {
   const [, navigate] = useLocation();
   const { t, lang } = useLanguage();
   const VALUES = VALUES_EN.map(v => ({ icon: v.icon, title: lang === "ar" ? v.titleAr : v.titleEn, desc: lang === "ar" ? v.descAr : v.descEn }));
-
   return (
     <div className="min-h-screen bg-[#05080F] text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
       {/* ── Top Nav ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#05080F]/95 backdrop-blur-md border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <button onClick={() => navigate("/")} className="flex items-center gap-3">
-            <img src={GT_LOGO_MAIN} alt="Golden Team" className="h-10 w-auto object-contain" />
-            <div>
-              <div className="text-white font-bold text-sm tracking-wide" style={{ fontFamily: "'Playfair Display', serif" }}>GOLDEN TEAM</div>
-              <div className="text-amber-400/60 text-[9px] tracking-widest uppercase">{t("For Investment", "للاستثمار")}</div>
-            </div>
+            <div className="rounded-xl px-2.5 py-1.5" style={{ background: "#0C343D" }}><img src={GT_LOGO_MAIN} alt="Golden Team For Investment Co." className="h-9 w-auto object-contain" style={{ maxWidth: "160px" }} /></div>
           </button>
           <div className="hidden md:flex items-center gap-8">
             {[
@@ -92,7 +80,6 @@ export default function About() {
           </Button>
         </div>
       </nav>
-
       {/* ── Hero ── */}
       <section className="relative pt-16 min-h-[55vh] flex items-center overflow-hidden">
         <div className="absolute inset-0">
@@ -119,7 +106,6 @@ export default function About() {
           </motion.div>
         </div>
       </section>
-
       {/* ── Stats ── */}
       <section className="border-y border-white/8 bg-white/2 py-10">
         <div className="max-w-7xl mx-auto px-6">
@@ -134,7 +120,6 @@ export default function About() {
           </motion.div>
         </div>
       </section>
-
       {/* ── Story ── */}
       <section className="py-28">
         <div className="max-w-7xl mx-auto px-6">
@@ -196,7 +181,6 @@ export default function About() {
           </motion.div>
         </div>
       </section>
-
       {/* ── Values ── */}
       <section className="py-20 bg-gradient-to-b from-[#080D1A] to-[#05080F]">
         <div className="max-w-7xl mx-auto px-6">
@@ -223,7 +207,6 @@ export default function About() {
           </motion.div>
         </div>
       </section>
-
       {/* ── Milestones ── */}
       <section className="py-28">
         <div className="max-w-7xl mx-auto px-6">
@@ -256,7 +239,6 @@ export default function About() {
           </motion.div>
         </div>
       </section>
-
       {/* ── Leadership Team ── */}
       <section className="py-20 bg-gradient-to-b from-[#080D1A] to-[#05080F]">
         <div className="max-w-7xl mx-auto px-6">
@@ -286,7 +268,6 @@ export default function About() {
           </motion.div>
         </div>
       </section>
-
       {/* ── CTA ── */}
       <section className="py-24">
         <div className="max-w-4xl mx-auto px-6 text-center">
@@ -310,7 +291,6 @@ export default function About() {
           </motion.div>
         </div>
       </section>
-
       {/* ── Footer ── */}
       <footer className="border-t border-white/8 bg-[#05080F] py-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
