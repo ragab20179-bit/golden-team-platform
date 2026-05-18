@@ -6,7 +6,7 @@
    - Secondary: Olive Green #5A6446 (letterhead accent triangles)
    - Accent: Warm Gold #FADC96 / #C8A830 (letterhead gold triangles)
    - Background: Near-black teal-tinted dark
-   - Cairo (Arabic) + Space Grotesk (English/headings) + Inter (body)
+   - Cairo (Arabic) + Cormorant Garamond/Cinzel (display headings) + Manrope (body) — Golden Team Brand
    ============================================================ */
 
 @import "tailwindcss";
@@ -133,10 +133,10 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Cairo', 'Inter', sans-serif;
+    font-family: 'Cairo', 'Manrope', 'Inter', sans-serif;
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', 'Cairo', sans-serif;
+    font-family: 'Cormorant Garamond', 'Cinzel', 'Cairo', 'Space Grotesk', serif;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),

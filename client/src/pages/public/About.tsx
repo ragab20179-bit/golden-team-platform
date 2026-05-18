@@ -68,7 +68,7 @@ export default function About() {
             <img src={GT_LOGO_MAIN} alt="Golden Team" className="h-10 w-auto object-contain" />
             <div>
               <div className="text-white font-bold text-sm tracking-wide" style={{ fontFamily: "'Playfair Display', serif" }}>GOLDEN TEAM</div>
-              <div className="text-amber-400/60 text-[9px] tracking-widest uppercase">{t("Trading Services", "خدمات تجارية")}</div>
+              <div className="text-amber-400/60 text-[9px] tracking-widest uppercase">{t("For Investment", "للاستثمار")}</div>
             </div>
           </button>
           <div className="hidden md:flex items-center gap-8">
@@ -114,7 +114,7 @@ export default function About() {
               {t("Fifteen Years of", "خمسة عشر عاماً من")}<br /><span className="text-amber-400">{t("Building the Future", "بناء مستقبل")}</span><br />{t("of GCC Enterprise", "مؤسسات الخليج")}
             </motion.h1>
             <motion.p variants={fadeUp} className="text-white/60 text-xl max-w-2xl leading-relaxed">
-              {t("Golden Team Trading Services was founded with a singular mission: to help GCC organizations harness the power of technology and strategic thinking to achieve their full potential.", "تأسست شركة الفريق الذهبي بمهمة واحدة: مساعدة منظمات الخليج على تسخير قوة التكنولوجيا والتفكير الاستراتيجي لتحقيق كامل إمكاناتها.")}
+              {t("Golden Team For Investment Co. was founded with a singular mission: to help GCC organizations harness the power of technology and strategic thinking to achieve their full potential.", "تأسست شركة الفريق الذهبي بمهمة واحدة: مساعدة منظمات الخليج على تسخير قوة التكنولوجيا والتفكير الاستراتيجي لتحقيق كامل إمكاناتها.")}
             </motion.p>
           </motion.div>
         </div>
@@ -147,8 +147,8 @@ export default function About() {
               <div className="space-y-4 text-white/60 leading-relaxed">
                 <p>
                   {t(
-                    "Golden Team Trading Services is a Riyadh-headquartered enterprise services company operating across Saudi Arabia, the UAE, and Bahrain. We specialize in three interconnected domains: IT Solutions, Project Management (ASTRA PM), and Strategic Business Consultancy.",
-                    "شركة الفريق الذهبي للخدمات التجارية شركة خدمات مؤسسية مقرها الرياض تعمل عبر المملكة العربية السعودية والإمارات والبحرين. نتخصص في ثلاثة مجالات مترابطة: حلول تقنية المعلومات وإدارة المشاريع (ASTRA PM) والاستشارة التجارية الاستراتيجية."
+                    "Golden Team For Investment Co. is a Riyadh-headquartered enterprise services company operating across Saudi Arabia, the UAE, and Bahrain. We specialize in three interconnected domains: IT Solutions, Project Management (ASTRA PM), and Strategic Business Consultancy.",
+                    "شركة الفريق الذهبي للاستثمار شركة خدمات مؤسسية مقرها الرياض تعمل عبر المملكة العربية السعودية والإمارات والبحرين. نتخصص في ثلاثة مجالات مترابطة: حلول تقنية المعلومات وإدارة المشاريع (ASTRA PM) والاستشارة التجارية الاستراتيجية."
                   )}
                 </p>
                 <p>
@@ -314,7 +314,7 @@ export default function About() {
       {/* ── Footer ── */}
       <footer className="border-t border-white/8 bg-[#05080F] py-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-white/30 text-sm">© 2026 Golden Team Trading Services. All rights reserved.</div>
+          <div className="text-white/30 text-sm">© 2026 Golden Team For Investment Co.. All rights reserved.</div>
           <div className="flex gap-6">
             {["/", "/it-solutions", "/astra-pm", "/consultancy", "/about", "/contact"].map((path, i) => (
               <button key={path} onClick={() => navigate(path)}

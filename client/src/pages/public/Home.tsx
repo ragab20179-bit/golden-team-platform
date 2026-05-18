@@ -1,5 +1,5 @@
 /**
- * شركة الفريق الذهبي للإستثمار — Corporate Website (Public)
+ * شركة الفريق الذهبي للاستثمار — Corporate Website (Public)
  * Design: "Prestige Dark" — Official brand: Teal #0A323C + Olive #5A6446 + Gold #FADC96
  * This is the CLIENT-FACING company website. The Employee Portal is a completely separate world.
  * Three main service pillars: IT Solutions | ASTRA PM | Business Consultancy
@@ -21,8 +21,9 @@ import ParticleNetwork from "@/components/ParticleNetwork";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { t } from "@/lib/i18n";
 
-const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-hero-clean-dubai_424dffdd.jpeg";
-const GT_LOGO_MAIN = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt_logo_official_d0b30b07.png";
+const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/hero_desert_futurism_e40a75ad.jpg";
+const GT_LOGO_MAIN = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/golden_team_logo_official_9ed0423c.png";
+const GT_LOGO_WHITE = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/golden_team_white_logo_0c6c4395.png";
 const IT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-it-solutions-kBJmggmFapCwtnocCUjwuj.webp";
 const ASTRA_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-astra-pm-HFtSuwmFhd8RXqX7n7bRpw.webp";
 const CONSULT_IMG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt-consulting-NxW47h5uQRtwgqAX4Dbu4R.webp";
@@ -70,10 +71,10 @@ export default function Home() {
             />
             <div>
               <div className="text-white font-bold text-sm leading-tight" style={{ fontFamily: "'Cairo', 'Space Grotesk', sans-serif" }}>
-                {isRTL ? "شركة الفريق الذهبي للإستثمار" : "Golden Team Co. for Investment"}
+                {isRTL ? "شركة الفريق الذهبي للاستثمار" : "Golden Team For Investment Co."}
               </div>
               <div className="text-[10px] tracking-widest uppercase" style={{ color: "#FADC96", opacity: 0.6 }}>
-                {isRTL ? "شركة إبداعية" : "Creative Company"}
+                {isRTL ? "شركة استثمارية متنوعة" : "Diversified Investment Company"}
               </div>
             </div>
           </div>
@@ -486,8 +487,8 @@ export default function Home() {
                 {/* Description */}
                 <p className="text-white/60 text-base leading-relaxed mb-6">
                   {isRTL
-                    ? "يهدف المشروع إلى تحويل قلب مدينة الخبر التاريخي إلى بيئة حضرية عصرية متعددة الاستخدامات، تشمل مناطق تجارية وسكنية وترفيهية وواجهة بحرية، مع الحفاظ على الموروث الثقافي للفرضة التاريخية. تضطلع شركة الفريق الذهبي للإستثمار بدور محوري في تنفيذ أعمال التشجير والبنية التحتية الخضراء."
-                    : "The project transforms Al Khobar's historic city center into a modern mixed-use urban environment — commercial, residential, leisure, and a waterfront promenade — while preserving the cultural heritage of the historic Furdha. Golden Team Co. for Investment plays a key role in landscape and green infrastructure delivery."}
+                    ? "يهدف المشروع إلى تحويل قلب مدينة الخبر التاريخي إلى بيئة حضرية عصرية متعددة الاستخدامات، تشمل مناطق تجارية وسكنية وترفيهية وواجهة بحرية، مع الحفاظ على الموروث الثقافي للفرضة التاريخية. تضطلع شركة الفريق الذهبي للاستثمار بدور محوري في تنفيذ أعمال التشجير والبنية التحتية الخضراء."
+                    : "The project transforms Al Khobar's historic city center into a modern mixed-use urban environment — commercial, residential, leisure, and a waterfront promenade — while preserving the cultural heritage of the historic Furdha. Golden Team For Investment Co. plays a key role in landscape and green infrastructure delivery."}
                 </p>
 
                 {/* Key features */}
@@ -810,7 +811,7 @@ export default function Home() {
                     {isRTL ? "الفريق الذهبي" : "GOLDEN TEAM"}
                   </div>
                   <div className="text-[#FADC96]/60 text-[10px] tracking-widest uppercase">
-                    {isRTL ? "للخدمات التجارية" : "Trading Services"}
+                    {isRTL ? "للاستثمار" : "For Investment"}
                   </div>
                 </div>
               </div>

@@ -50,7 +50,7 @@ function SettingRow({ label, desc, children }: { label: string; desc?: string; c
 
 export default function SystemSettings() {
   const [general, setGeneral] = useState({
-    companyName: "Golden Team Trading Services",
+    companyName: "Golden Team For Investment Co.",
     domain: "goldenteam.sa",
     timezone: "Asia/Riyadh",
     language: "en",
@@ -100,7 +100,7 @@ export default function SystemSettings() {
               </h3>
               <div className="grid md:grid-cols-2 gap-5">
                 {[
-                  { label: "Company Name", key: "companyName", placeholder: "Golden Team Trading Services" },
+                  { label: "Company Name", key: "companyName", placeholder: "Golden Team For Investment Co." },
                   { label: "Primary Domain", key: "domain", placeholder: "goldenteam.sa" },
                 ].map(({ label, key, placeholder }) => (
                   <div key={key}>

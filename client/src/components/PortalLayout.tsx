@@ -130,14 +130,14 @@ export default function PortalLayout({ children, title, subtitle, badge, badgeCo
       {/* Logo */}
       <div className={`flex items-center gap-3 px-4 py-5 border-b border-white/5 ${collapsed ? "justify-center" : ""}`}>
         <img
-          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/gt_logo_official_d0b30b07.png"
-          alt="Golden Team Logo"
+          src="https://d2xsxph8kpxj0f.cloudfront.net/310519663123919079/J23mrANZtynYBnxwEV4vcJ/golden_team_logo_official_9ed0423c.png"
+          alt="Golden Team For Investment Co."
           className="w-9 h-9 rounded-lg shrink-0 object-contain bg-white/5 p-0.5"
         />
         {!collapsed && (
           <div>
             <div className="font-bold text-xs leading-tight text-white" style={{ fontFamily: "'Cairo', 'Space Grotesk', sans-serif" }}>
-              {isRTL ? "شركة الفريق الذهبي للإستثمار" : "Golden Team Co. for Investment"}
+              {isRTL ? "شركة الفريق الذهبي للاستثمار" : "Golden Team For Investment Co."}
             </div>
             <div className="text-[10px] text-[#FADC96]/50">
               {isRTL ? "بوابة الموظفين" : "Employee Portal"}

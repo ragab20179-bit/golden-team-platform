@@ -207,7 +207,7 @@ export default function KDPProject() {
               <span className="text-[#050E10] font-bold text-xs">GT</span>
             </div>
             <span className="text-white/70 text-sm hidden sm:block">
-              {t("Golden Team Co. for Investment", "شركة الفريق الذهبي للإستثمار")}
+              {t("Golden Team For Investment Co.", "شركة الفريق الذهبي للاستثمار")}
             </span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#C8A830]/15 border border-[#C8A830]/30">
@@ -577,7 +577,7 @@ export default function KDPProject() {
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}>
             <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#C8A830]/30 bg-[#C8A830]/10 text-[#FADC96] text-xs tracking-widest uppercase mb-6">
               <Building2 className="w-3 h-3" />
-              {t("Golden Team Co. for Investment", "شركة الفريق الذهبي للإستثمار")}
+              {t("Golden Team For Investment Co.", "شركة الفريق الذهبي للاستثمار")}
             </motion.div>
             <motion.h2 variants={fadeUp} className="font-display text-4xl md:text-5xl font-bold text-white mb-6">
               {isRTL ? (
@@ -588,8 +588,8 @@ export default function KDPProject() {
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/60 text-lg leading-relaxed mb-10">
               {t(
-                "From infrastructure and landscape to structural and MEP works, Golden Team Co. for Investment brings comprehensive construction expertise to every phase of the Khobar Development Project.",
-                "من البنية التحتية والتشجير إلى الأعمال الإنشائية وأنظمة MEP، تجلب شركة الفريق الذهبي للإستثمار خبرة إنشائية شاملة لكل مرحلة من مراحل مشروع تطوير الخبر."
+                "From infrastructure and landscape to structural and MEP works, Golden Team For Investment Co. brings comprehensive construction expertise to every phase of the Khobar Development Project.",
+                "من البنية التحتية والتشجير إلى الأعمال الإنشائية وأنظمة MEP، تجلب شركة الفريق الذهبي للاستثمار خبرة إنشائية شاملة لكل مرحلة من مراحل مشروع تطوير الخبر."
               )}
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center">

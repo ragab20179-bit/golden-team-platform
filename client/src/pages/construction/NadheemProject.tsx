@@ -133,8 +133,8 @@ export default function NadheemProject() {
               </h2>
               <p className="text-white/60 text-base leading-relaxed mb-6">
                 {isRTL
-                  ? "مشروع النظيم هو مشروع تطوير مناظر طبيعية ضمن مبادرة الرياض الخضراء التابعة لرؤية 2030، يشمل القطاع 1 من حي النظيم في الرياض. تضطلع شركة الفريق الذهبي للإستثمار بتنفيذ أعمال التشجير والبنية التحتية الخضراء بموجب عقد من الباطن مع شركة MOBCO بقيمة SAR 33.2 مليون."
-                  : "An-Nadheem is a landscape development project under the Green Riyadh Initiative (Vision 2030), covering Sector 1 of the An-Nadheem district in Riyadh. Golden Team Co. for Investment executes the landscape and green infrastructure works under a subcontract with MOBCO valued at SAR 33.2 million."}
+                  ? "مشروع النظيم هو مشروع تطوير مناظر طبيعية ضمن مبادرة الرياض الخضراء التابعة لرؤية 2030، يشمل القطاع 1 من حي النظيم في الرياض. تضطلع شركة الفريق الذهبي للاستثمار بتنفيذ أعمال التشجير والبنية التحتية الخضراء بموجب عقد من الباطن مع شركة MOBCO بقيمة SAR 33.2 مليون."
+                  : "An-Nadheem is a landscape development project under the Green Riyadh Initiative (Vision 2030), covering Sector 1 of the An-Nadheem district in Riyadh. Golden Team For Investment Co. executes the landscape and green infrastructure works under a subcontract with MOBCO valued at SAR 33.2 million."}
               </p>
               <p className="text-white/60 text-base leading-relaxed mb-8">
                 {isRTL
@@ -355,8 +355,8 @@ export default function NadheemProject() {
             </motion.h2>
             <motion.p variants={fadeUp} className="text-white/50 text-lg mb-8 max-w-xl mx-auto">
               {isRTL
-                ? "تواصل مع فريق الفريق الذهبي للإستثمار لمناقشة مشاريع التشجير والبنية التحتية الخضراء"
-                : "Contact Golden Team Co. for Investment to discuss landscape and green infrastructure projects"}
+                ? "تواصل مع فريق الفريق الذهبي للاستثمار لمناقشة مشاريع التشجير والبنية التحتية الخضراء"
+                : "Contact Golden Team For Investment Co. to discuss landscape and green infrastructure projects"}
             </motion.p>
             <motion.div variants={fadeUp} className={`flex flex-col sm:flex-row items-center justify-center gap-4 ${isRTL ? "flex-row-reverse" : ""}`}>
               <Button

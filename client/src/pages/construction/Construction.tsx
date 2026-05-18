@@ -1,5 +1,5 @@
 /**
- * Construction Division — Golden Team Co. for Investment
+ * Construction Division — Golden Team For Investment Co.
  * Public-facing page showcasing construction services and ongoing/completed projects
  * Design: Prestige Dark — Deep teal/charcoal, gold accents
  * Bilingual: Full Arabic/English support via useLanguage context
@@ -96,7 +96,7 @@ export default function Construction() {
               <span className="text-[#050E10] font-bold text-xs">GT</span>
             </div>
             <span className="text-white/70 text-sm hidden sm:block">
-              {t("Golden Team Co. for Investment", "شركة الفريق الذهبي للإستثمار")}
+              {t("Golden Team For Investment Co.", "شركة الفريق الذهبي للاستثمار")}
             </span>
           </div>
           <Button

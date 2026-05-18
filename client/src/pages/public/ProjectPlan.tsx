@@ -113,7 +113,7 @@ export default function ProjectPlan() {
             {t("Golden Team Enterprise Platform", "منصة الفريق الذهبي المؤسسية")}
           </h1>
           <p className="text-white/50 max-w-2xl mx-auto">
-            {t("A comprehensive enterprise platform combining 12 integrated modules, NEO AI Core, and ASTRA AMG governance — built for Golden Team Trading Services.", "منصة مؤسسية شاملة تجمع 12 وحدة متكاملة ونواة NEO AI وحوكمة ASTRA AMG — مبنية لشركة الفريق الذهبي للخدمات التجارية.")}
+            {t("A comprehensive enterprise platform combining 12 integrated modules, NEO AI Core, and ASTRA AMG governance — built for Golden Team For Investment Co..", "منصة مؤسسية شاملة تجمع 12 وحدة متكاملة ونواة NEO AI وحوكمة ASTRA AMG — مبنية لشركة الفريق الذهبي للاستثمار.")}
           </p>
         </motion.div>
 

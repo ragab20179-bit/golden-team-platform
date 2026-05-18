@@ -212,7 +212,7 @@ export default function SupplierBidPortal() {
             <span className="text-white font-bold text-sm">GT</span>
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">Golden Team Trading Services</h1>
+            <h1 className="text-lg font-bold text-gray-900">Golden Team For Investment Co.</h1>
             <p className="text-xs text-gray-500">Supplier Bid Submission Portal</p>
           </div>
         </div>
@@ -479,7 +479,7 @@ export default function SupplierBidPortal() {
 
           {/* Disclaimer */}
           <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-xs text-blue-700 leading-relaxed">
-            <strong>Declaration:</strong> By submitting this bid, I confirm that all information provided is accurate and complete. I understand that this submission is binding and that Golden Team Trading Services reserves the right to accept or reject any bid without obligation to provide reasons.
+            <strong>Declaration:</strong> By submitting this bid, I confirm that all information provided is accurate and complete. I understand that this submission is binding and that Golden Team For Investment Co. reserves the right to accept or reject any bid without obligation to provide reasons.
           </div>
 
           {/* Submit Button */}
@@ -504,7 +504,7 @@ export default function SupplierBidPortal() {
 
         {/* Footer */}
         <div className="text-center text-xs text-gray-400 pb-8">
-          Golden Team Trading Services — Procurement Portal · This link is for one-time use only
+          Golden Team For Investment Co. — Procurement Portal · This link is for one-time use only
         </div>
       </div>
     </div>

@@ -240,7 +240,7 @@ export default function ITSolutions() {
             <img src={GT_LOGO_MAIN} alt="Golden Team" className="h-10 w-auto object-contain" />
             <div>
               <div className="text-white font-bold text-sm tracking-wide" style={{ fontFamily: "'Playfair Display', serif" }}>GOLDEN TEAM</div>
-              <div className="text-amber-400/60 text-[9px] tracking-widest uppercase">{t("Trading Services", "خدمات تجارية")}</div>
+              <div className="text-amber-400/60 text-[9px] tracking-widest uppercase">{t("For Investment", "للاستثمار")}</div>
             </div>
           </button>
           <div className="hidden md:flex items-center gap-8">
@@ -476,7 +476,7 @@ export default function ITSolutions() {
       {/* ── Footer ── */}
       <footer className="border-t border-white/8 bg-[#05080F] py-10">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="text-white/30 text-sm">{t("© 2026 Golden Team Trading Services. All rights reserved.", "© 2026 شركة الفريق الذهبي للخدمات التجارية. جميع الحقوق محفوظة.")}</div>
+          <div className="text-white/30 text-sm">{t("© 2026 Golden Team For Investment Co.. All rights reserved.", "© 2026 شركة الفريق الذهبي للاستثمار. جميع الحقوق محفوظة.")}</div>
           <div className="flex gap-6 flex-wrap justify-center">
             {["/", "/it-solutions", "/astra-pm", "/consultancy", "/about", "/contact"].map((path, i) => (
               <button key={path} onClick={() => navigate(path)}

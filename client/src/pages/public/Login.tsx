@@ -139,7 +139,7 @@ export default function Login() {
               {t("Employee Portal", "بوابة الموظفين")}
             </h1>
             <p className="text-white/40 text-sm">
-              {t("Golden Team Trading Services", "شركة الفريق الذهبي للخدمات التجارية")}
+              {t("Golden Team For Investment Co.", "شركة الفريق الذهبي للاستثمار")}
             </p>
           </div>
 

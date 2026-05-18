@@ -1,5 +1,5 @@
 /**
- * Golden Team Trading Services — Bilingual i18n System
+ * Golden Team For Investment Co. — Bilingual i18n System
  * Arabic/English — Semantic trade and business language
  * NOT literal translation — uses authentic Gulf business Arabic terminology
  *
@@ -24,7 +24,7 @@ export const translations = {
   // ─── Global / Shared ───────────────────────────────────────────────
   global: {
     en: {
-      appName: "Golden Team Trading Services",
+      appName: "Golden Team For Investment Co.",
       appShort: "Golden Team",
       tagline: "Enterprise Technology · Powered by AI",
       employeePortal: "Employee Portal",
@@ -66,7 +66,7 @@ export const translations = {
       success: "Operation successful",
     },
     ar: {
-      appName: "الفريق الذهبي للخدمات التجارية",
+      appName: "الفريق الذهبي للاستثمار",
       appShort: "الفريق الذهبي",
       tagline: "تقنية المؤسسات · مدعومة بالذكاء الاصطناعي",
       employeePortal: "بوابة الموظفين",
@@ -240,7 +240,7 @@ export const translations = {
           { label: "Contact" },
           { label: "Employee Portal" },
         ],
-        copyright: "© 2026 Golden Team Trading Services. All rights reserved.",
+        copyright: "© 2026 Golden Team For Investment Co. All rights reserved.",
         certLine: "ISO 9001:2015 Certified · Powered by NEO AI",
       },
     },
@@ -373,7 +373,7 @@ export const translations = {
           { label: "تواصل معنا" },
           { label: "بوابة الموظفين" },
         ],
-        copyright: "© 2026 الفريق الذهبي للخدمات التجارية. جميع الحقوق محفوظة.",
+        copyright: "© 2026 الفريق الذهبي للاستثمار. جميع الحقوق محفوظة.",
         certLine: "معتمد ISO 9001:2015 · مدعوم بمحرك NEO الذكي",
       },
     },
